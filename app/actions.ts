@@ -37,13 +37,23 @@ export async function addTrialExam(name: string) {
   return exam;
 }
 
+export async function deleteExamResult(studentId: string, examResultId: string) {
+  await prisma.examResult.delete({ where: { id: examResultId } });
+  revalidatePath(`/student/${studentId}`);
+  revalidatePath('/');
+}
+
 export async function saveExamResult(studentId: string, data: any) {
   let trialExamId = data.trialExamId;
+  const examDate = new Date(data.date);
 
   // If trialExamId is "NEW", we need to create one using the provided newTrialName
   if (trialExamId === 'NEW') {
     const exam = await prisma.trialExam.create({
-      data: { name: data.newTrialName }
+      data: { 
+        name: data.newTrialName,
+        date: examDate 
+      }
     });
     trialExamId = exam.id;
   }
@@ -52,7 +62,7 @@ export async function saveExamResult(studentId: string, data: any) {
     data: {
       studentId: studentId,
       trialExamId: trialExamId,
-      date: new Date(data.date),
+      date: examDate,
       ogrenciSayisi: Number(data.ogrenciSayisi),
       basariSirasi: Number(data.basariSirasi),
       toplamNet: Number(data.toplamNet),

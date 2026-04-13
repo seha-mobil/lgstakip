@@ -82,9 +82,18 @@ export default function AddExamForm({ studentId, trialExams }: { studentId: stri
           </div>
           <div>
             <label className="input-label">Mevcut Denemelerden Seç</label>
-            <select className="input" value={trialExamId} onChange={e => setTrialExamId(e.target.value)}>
+            <select className="input" value={trialExamId} onChange={e => {
+              const val = e.target.value;
+              setTrialExamId(val);
+              if (val !== 'NEW') {
+                const selected = trialExams.find(t => t.id === val);
+                if (selected && selected.date) {
+                  setDate(new Date(selected.date).toISOString().split('T')[0]);
+                }
+              }
+            }}>
               <option value="NEW">+ Yeni Deneme Ekle</option>
-              {trialExams.map(te => <option key={te.id} value={te.id}>{te.name}</option>)}
+              {trialExams.map(te => <option key={te.id} value={te.id}>{te.name} {te.date ? "(" + new Date(te.date).toLocaleDateString('tr-TR') + ")" : ''}</option>)}
             </select>
           </div>
           {trialExamId === 'NEW' && (

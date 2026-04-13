@@ -4,7 +4,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("POSTGRES_URL") // Uses Postgres URL from Vercel env
+  url = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 model Student {
@@ -18,6 +19,7 @@ model Student {
 model TrialExam {
   id          String       @id @default(uuid())
   name        String
+  date        DateTime?    // Optional because older exams might not have it
   createdAt   DateTime     @default(now())
   examResults ExamResult[]
 }

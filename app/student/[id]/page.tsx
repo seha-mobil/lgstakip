@@ -1,13 +1,14 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
-import { ProgressChart } from '@/components/ClientCharts';
+import { ProgressChart, SubjectBarChart, NetRadarChart } from '@/components/ClientCharts';
+import { deleteExamResult } from '@/app/actions';
 
 export default async function StudentDetail({ params }: { params: { id: string } }) {
   const student = await prisma.student.findUnique({
     where: { id: params.id },
     include: {
       examResults: {
-        include: { trialExam: true },
+        include: { trialExam: true, subjects: true },
         orderBy: { date: 'asc' }
       }
     }
@@ -21,7 +22,7 @@ export default async function StudentDetail({ params }: { params: { id: string }
 
   return (
     <div className="page animate-fade-up">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyItems: 'space-between', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <Link href="/" className="btn btn-ghost" style={{ width: '36px', height: '36px', padding: 0, justifyContent: 'center' }}>
             <i className="fas fa-arrow-left"></i>
@@ -35,6 +36,16 @@ export default async function StudentDetail({ params }: { params: { id: string }
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          {exams.length > 1 && (
+            <Link href={"/student/" + student.id + "/exam-compare"} className="btn btn-ghost">
+              <i className="fas fa-balance-scale"></i> Karşılaştır
+            </Link>
+          )}
+          {exams.length > 0 && (
+            <a href={"/student/" + student.id + "/print"} target="_blank" className="btn btn-ghost">
+              <i className="fas fa-print"></i> Yazdır
+            </a>
+          )}
           <Link href={"/student/" + student.id + "/add-exam"} className="btn btn-primary">
             <i className="fas fa-plus"></i> Yeni Deneme
           </Link>
@@ -54,13 +65,13 @@ export default async function StudentDetail({ params }: { params: { id: string }
         </div>
       ) : (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '20px' }}>
             <div className="glass-card animate-fade-up" style={{ padding: '20px' }}>
-              <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text3)' }}>Son Deneme</div>
+              <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text3)' }}>Son Deneme ({lastExam!.trialExam.name})</div>
               <div style={{ fontSize: '26px', fontWeight: 900, color: lastExam!.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>{lastExam!.lgsPuani.toFixed(2)}</div>
             </div>
             <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: '0.07s' }}>
-              <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text3)' }}>En Yüksek</div>
+              <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text3)' }}>En Yüksek ({bestExam!.trialExam.name})</div>
               <div style={{ fontSize: '26px', fontWeight: 900, color: bestExam!.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>{bestExam!.lgsPuani.toFixed(2)}</div>
             </div>
           </div>
@@ -69,6 +80,74 @@ export default async function StudentDetail({ params }: { params: { id: string }
             <div className="sec-title">Puan İlerlemesi</div>
             <div style={{ position: 'relative', height: '250px' }}>
               <ProgressChart exams={exams} color={student.color} />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+            <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: '0.2s' }}>
+              <div className="sec-title">Sözel Net Dağılımı</div>
+              <div style={{ position: 'relative', height: '200px' }}>
+                <SubjectBarChart exams={exams} subjects={['Turkce', 'Inkilap', 'Dinkultur', 'Ingilizce']} title="Sözel Bölüm" color="var(--purple)" />
+              </div>
+            </div>
+            <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: '0.25s' }}>
+              <div className="sec-title">Sayısal Net Dağılımı</div>
+              <div style={{ position: 'relative', height: '200px' }}>
+                <SubjectBarChart exams={exams} subjects={['Matematik', 'Fen']} title="Sayısal Bölüm" color="var(--blue)" />
+              </div>
+            </div>
+            <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: '0.3s' }}>
+              <div className="sec-title">Son Deneme Radar</div>
+              <div style={{ position: 'relative', height: '200px' }}>
+                <NetRadarChart exams={exams} color={student.color} />
+              </div>
+            </div>
+          </div>
+
+          <div className="glass-card animate-fade-up" style={{ padding: '24px', animationDelay: '0.35s' }}>
+            <div className="sec-title">Geçmiş Denemeler</div>
+            
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text3)' }}>
+                    <th style={{ padding: '12px 8px' }}>Tarih</th>
+                    <th style={{ padding: '12px 8px' }}>Deneme Adı</th>
+                    <th style={{ padding: '12px 8px' }}>Top. Net</th>
+                    <th style={{ padding: '12px 8px' }}>Puan</th>
+                    <th style={{ padding: '12px 8px' }}>Fark</th>
+                    <th style={{ padding: '12px 8px', textAlign: 'right' }}>İşlem</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {exams.map((ex, i) => {
+                    const prevLgs = i > 0 ? exams[i - 1].lgsPuani : null;
+                    const diff = prevLgs ? ex.lgsPuani - prevLgs : 0;
+                    return (
+                      <tr key={ex.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <td style={{ padding: '12px 8px', color: 'var(--text2)' }}>{new Date(ex.date).toLocaleDateString('tr-TR')}</td>
+                        <td style={{ padding: '12px 8px', fontWeight: 600 }}>{ex.trialExam.name}</td>
+                        <td style={{ padding: '12px 8px', fontFamily: 'var(--mono)' }}>{ex.toplamNet}</td>
+                        <td style={{ padding: '12px 8px', fontWeight: 700, color: ex.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>{ex.lgsPuani.toFixed(2)}</td>
+                        <td style={{ padding: '12px 8px', fontSize: '12px' }}>
+                          {prevLgs ? (
+                            <span style={{ color: diff > 0 ? 'var(--green)' : diff < 0 ? 'var(--red)' : 'var(--text3)' }}>
+                              {diff > 0 ? '+' : ''}{diff.toFixed(2)}
+                            </span>
+                          ) : '-'}
+                        </td>
+                        <td style={{ padding: '12px 8px', textAlign: 'right' }}>
+                          <form action={deleteExamResult.bind(null, student.id, ex.id)} style={{ display: 'inline-block' }}>
+                            <button type="submit" style={{ background: 'transparent', border: 'none', color: 'var(--red)', cursor: 'pointer', padding: '6px', borderRadius: '4px', opacity: 0.7, transition: 'all 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity = '1'} onMouseOut={e => e.currentTarget.style.opacity = '0.7'}>
+                              <i className="fas fa-trash"></i>
+                            </button>
+                          </form>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         </>
