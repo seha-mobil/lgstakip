@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL") // Uses Postgres URL from Vercel env
+}
+
+model Student {
+  id          String       @id @default(uuid())
+  name        String
+  color       String
+  createdAt   DateTime     @default(now())
+  examResults ExamResult[]
+}
+
+model TrialExam {
+  id          String       @id @default(uuid())
+  name        String
+  createdAt   DateTime     @default(now())
+  examResults ExamResult[]
+}
+
+model ExamResult {
+  id            String          @id @default(uuid())
+  studentId     String
+  trialExamId   String
+  date          DateTime
+  ogrenciSayisi Int             @default(0)
+  basariSirasi  Int             @default(0)
+  lgsPuani      Float
+  toplamNet     Float
+  createdAt     DateTime        @default(now())
+  
+  student       Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  trialExam     TrialExam       @relation(fields: [trialExamId], references: [id], onDelete: Restrict)
+  subjects      SubjectResult[]
+}
+
+model SubjectResult {
+  id           String     @id @default(uuid())
+  examResultId String
+  subjectKey   String     // e.g. "turkce", "matematik"
+  dogru        Float
+  yanlis       Float
+  
+  examResult   ExamResult @relation(fields: [examResultId], references: [id], onDelete: Cascade)
+
+  @@unique([examResultId, subjectKey])
+}

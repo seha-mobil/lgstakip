@@ -1,0 +1,167 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { addStudent, removeStudent } from '@/app/actions';
+
+export default function SidebarClient({ initialStudents }: { initialStudents: any[] }) {
+  const pathname = usePathname();
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [newStudentName, setNewStudentName] = useState('');
+
+  const handleAddStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newStudentName.trim()) {
+      await addStudent(newStudentName.trim());
+      setNewStudentName('');
+      setModalOpen(false);
+    }
+  };
+
+  return (
+    <>
+      <aside style={{
+        width: '270px', minWidth: '270px', height: '100%',
+        background: 'var(--sidebar-bg)',
+        borderRight: '1px solid var(--border)',
+        display: 'flex', flexDirection: 'column',
+        position: 'relative',
+        backdropFilter: 'blur(20px)'
+      }}>
+        {/* Glow behind Sidebar header */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, height: '200px',
+          background: 'radial-gradient(ellipse at 50% -10%, rgba(232,184,75,0.08) 0%, transparent 70%)',
+          pointerEvents: 'none'
+        }} />
+
+        <div style={{ padding: '22px 20px 18px', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '38px', height: '38px',
+              background: 'var(--accent-dim)',
+              border: '1px solid rgba(232,184,75,0.25)',
+              borderRadius: '10px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'var(--accent)', fontSize: '15px'
+            }}>
+              <i className="fas fa-graduation-cap"></i>
+            </div>
+            <div style={{ lineHeight: 1 }}>
+              <h1 style={{ fontSize: '16px', fontWeight: 800, letterSpacing: '-0.4px', color: 'var(--text)' }}>
+                LGS Takip
+              </h1>
+              <span style={{ fontSize: '10px', fontWeight: 500, color: 'var(--text3)', letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'var(--mono)' }}>
+                Deneme Çizelgesi
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <nav style={{ display: 'flex', gap: '4px', padding: '10px 12px', borderBottom: '1px solid var(--border)' }}>
+          <Link href="/" style={{
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+            padding: '8px 10px', borderRadius: '8px',
+            background: pathname === '/' ? 'var(--accent-dim)' : 'transparent',
+            color: pathname === '/' ? 'var(--accent)' : 'var(--text3)',
+            border: pathname === '/' ? '1px solid rgba(232,184,75,0.2)' : '1px solid transparent',
+            fontSize: '12px', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s'
+          }}>
+            <i className="fas fa-th-large"></i> Ana Sayfa
+          </Link>
+          <Link href="/compare" style={{
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+            padding: '8px 10px', borderRadius: '8px',
+            background: pathname === '/compare' ? 'var(--accent-dim)' : 'transparent',
+            color: pathname === '/compare' ? 'var(--accent)' : 'var(--text3)',
+            border: pathname === '/compare' ? '1px solid rgba(232,184,75,0.2)' : '1px solid transparent',
+            fontSize: '12px', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s'
+          }}>
+            <i className="fas fa-chart-bar"></i> Karşılaştırma
+          </Link>
+        </nav>
+
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '12px 18px 8px', fontSize: '10px', fontWeight: 700, color: 'var(--text3)',
+            textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: 'var(--mono)'
+          }}>
+            Öğrenciler
+            <span style={{
+              background: 'rgba(0,0,0,0.3)', color: 'var(--text3)', border: '1px solid var(--border)',
+              padding: '1px 7px', borderRadius: '20px', fontSize: '10px', fontFamily: 'var(--mono)'
+            }}>{initialStudents.length}</span>
+          </div>
+
+          <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px' }}>
+            {initialStudents.map(s => {
+              const isActive = pathname.startsWith(`/student/${s.id}`);
+              const lastExam = s.examResults?.[s.examResults.length - 1];
+              return (
+                <Link href={`/student/${s.id}`} key={s.id} style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  padding: '10px 12px', borderRadius: '9px', textDecoration: 'none',
+                  background: isActive ? 'var(--accent-dim)' : 'transparent',
+                  border: isActive ? '1px solid rgba(232,184,75,0.2)' : '1px solid transparent',
+                  marginBottom: '2px', transition: 'all 0.18s'
+                }}>
+                  <div style={{ width: '9px', height: '9px', borderRadius: '50%', background: s.color, flexShrink: 0 }}></div>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: isActive ? 'var(--text)' : 'var(--text2)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {s.name}
+                  </span>
+                  {lastExam && (
+                    <span style={{ fontSize: '11px', fontWeight: 700, fontFamily: 'var(--mono)', marginLeft: 'auto', color: lastExam.lgsPuani >= 450 ? '#3dd68c' : lastExam.lgsPuani >= 400 ? '#84cc16' : '#e8b84b' }}>
+                      {lastExam.lgsPuani.toFixed(2)}
+                    </span>
+                  )}
+                  <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeStudent(s.id); }}
+                    style={{
+                      width: '22px', height: '22px', borderRadius: '6px', border: 'none', 
+                      background: 'transparent', color: 'var(--text3)', cursor: 'pointer',
+                    }}>
+                    <i className="fas fa-times"></i>
+                  </button>
+                </Link>
+              );
+            })}
+          </div>
+
+          <button onClick={() => setModalOpen(true)} style={{
+            margin: '4px 8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+            padding: '10px', borderRadius: '9px', background: 'var(--card-bg)', border: '1px dashed var(--border)',
+            color: 'var(--text3)', fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font)', cursor: 'pointer'
+          }}>
+            <i className="fas fa-plus" style={{ fontSize: '10px' }}></i> Yeni Öğrenci
+          </button>
+        </div>
+      </aside>
+
+      {/* Modal - Add Student */}
+      {isModalOpen && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(0,0,0,0.65)',
+          backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
+        }} onClick={() => setModalOpen(false)}>
+          <div className="glass-card animate-fade-up" style={{ padding: '24px', maxWidth: '420px', width: '100%' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 800 }}>Yeni Öğrenci Ekle</h3>
+              <button onClick={() => setModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '16px' }}>
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            <form onSubmit={handleAddStudent}>
+              <label className="input-label">Öğrenci Adı</label>
+              <input type="text" className="input" autoFocus required value={newStudentName} onChange={e => setNewStudentName(e.target.value)} style={{ marginBottom: '16px' }} placeholder="Adı girin…" />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button type="button" className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setModalOpen(false)}>İptal</button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>Ekle</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
