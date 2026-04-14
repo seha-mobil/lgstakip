@@ -288,7 +288,7 @@ export default function ExamsClient({ initialExams, students }: { initialExams: 
                               >
                                 <option value="">Hedef Sınav Seç...</option>
                                 {exams.filter(e => e.id !== ex.id).map(e => (
-                                  <option key={e.id} value={e.id}>{e.name} ({ex.date ? new Date(ex.date).toLocaleDateString('tr-TR') : '-'})</option>
+                                  <option key={e.id} value={e.id}>{e.name} ({e.date ? new Date(e.date).toLocaleDateString('tr-TR') : '-'})</option>
                                 ))}
                               </select>
                               <button onClick={() => handleMerge(ex.id)} disabled={!targetExamId || loading} className="btn btn-primary" style={{ padding: '6px 10px', fontSize: '11px' }}>

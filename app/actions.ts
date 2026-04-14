@@ -170,13 +170,19 @@ export async function mergeTrialExams(sourceId: string, targetId: string) {
   if (sourceId === targetId) throw new Error("Aynı sınavı kendisiyle birleştiremezsiniz.");
 
   await prisma.$transaction(async (tx) => {
-    // 1. Kaynak sınavdaki öğrencileri bul
+    // 1. Hedef sınavın bilgilerini al (tarihini korumak ve sonuçlara uygulamak için)
+    const targetExam = await tx.trialExam.findUnique({
+      where: { id: targetId }
+    });
+    if (!targetExam) throw new Error("Hedef sınav bulunamadı.");
+
+    // 2. Kaynak sınavdaki sonuçları bul
     const sourceResults = await tx.examResult.findMany({
       where: { trialExamId: sourceId }
     });
 
     for (const res of sourceResults) {
-      // 2. Bu öğrencinin HEDEF sınavda zaten bir sonucu var mı?
+      // 3. Bu öğrencinin HEDEF sınavda zaten bir sonucu var mı?
       const existingInTarget = await tx.examResult.findFirst({
         where: { studentId: res.studentId, trialExamId: targetId }
       });
@@ -185,15 +191,18 @@ export async function mergeTrialExams(sourceId: string, targetId: string) {
         // Çakışma var: Kaynak sonucu sil (Hedef tercih edilir)
         await tx.examResult.delete({ where: { id: res.id } });
       } else {
-        // Çakışma yok: Sonucu hedef sınava aktar
+        // Çakışma yok: Sonucu hedef sınava aktar ve tarihini hedefle eşitle
         await tx.examResult.update({
           where: { id: res.id },
-          data: { trialExamId: targetId }
+          data: { 
+            trialExamId: targetId,
+            date: targetExam.date || res.date // Hedefin tarihi varsa onu kullan
+          }
         });
       }
     }
 
-    // 3. Kaynak sınavı sil
+    // 4. Kaynak sınavı sil (Hedef sınava dokunmuyoruz, tarihi sabit kalıyor)
     await tx.trialExam.delete({ where: { id: sourceId } });
   });
 
