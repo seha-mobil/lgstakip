@@ -12,37 +12,44 @@ export default function ExamsClient({ initialExams }: { initialExams: any[] }) {
   const [newName, setNewName] = useState('');
   const [newDate, setNewDate] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [showPaste, setShowPaste] = useState(false);
+  const [pasteText, setPasteText] = useState('');
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handlePasteData = async () => {
+    if (!pasteText.trim()) return;
+    setLoading(true);
     try {
-      setLoading(true);
-      const XLSX = await import('xlsx');
-      const reader = new FileReader();
-
-      reader.onload = async (evt) => {
-        const bstr = evt.target?.result;
-        if (!bstr) return;
-        const wb = XLSX.read(bstr, { type: 'binary' });
-        const wsname = wb.SheetNames[0];
-        const ws = wb.Sheets[wsname];
-        const data = XLSX.utils.sheet_to_json(ws);
-        
-        await importExcelData(data);
-        alert('Excel verileri başarıyla sisteme aktarıldı! (Değişiklikleri görmek için sayfayı yenileyiniz)');
-        if (fileInputRef.current) fileInputRef.current.value = '';
+      // Satırları \n ile ayır
+      const rows = pasteText.split('\n').filter(r => r.trim());
+      if (rows.length < 2) {
+        alert("Geçersiz veri: Başlıklar ve en az 1 satır veri olmalıdır.");
         setLoading(false);
-      };
-
-      reader.readAsBinaryString(file);
+        return;
+      }
+      
+      // Hücreleri \t (tab) ile ayır
+      const headers = rows[0].split('\t').map(h => h.trim());
+      const data = [];
+      
+      for (let i = 1; i < rows.length; i++) {
+        const rowData = rows[i].split('\t');
+        const obj: any = {};
+        for (let j = 0; j < headers.length; j++) {
+          obj[headers[j]] = rowData[j]?.trim();
+        }
+        data.push(obj);
+      }
+      
+      await importExcelData(data);
+      alert('Veriler başarıyla sisteme aktarıldı! (Değişiklikleri görmek için sayfayı yenileyiniz)');
+      setPasteText('');
+      setShowPaste(false);
     } catch (err) {
       console.error(err);
-      alert('Dosya yüklenirken bir hata oluştu');
-      setLoading(false);
+      alert('Veriler işlenirken bir hata oluştu');
     }
+    setLoading(false);
   };
 
   const startEdit = (exam: any) => {
@@ -105,26 +112,42 @@ export default function ExamsClient({ initialExams }: { initialExams: any[] }) {
           </button>
         </form>
         
-        <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ flex: 1 }}>
-            <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '4px' }}>Excel'den Toplu Kayıt</h4>
-            <p style={{ fontSize: '12px', color: 'var(--text3)' }}>Öğrenci isimleri ve branş netlerini içeren .xlsx doyasını sisteme topluca yükleyin.</p>
+        <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+            <div>
+              <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '4px' }}>Excel'den Tablo Kopyala-Yapıştır</h4>
+              <p style={{ fontSize: '12px', color: 'var(--text3)' }}>Excelinizdeki sütunları farenizle seçip Kopyalayın (Ctrl+C). Aşağıya Yapıştırarak (Ctrl+V) toplu kayıt edebilirsiniz.</p>
+            </div>
+            <button 
+              type="button" 
+              className="btn btn-secondary" 
+              onClick={() => setShowPaste(!showPaste)} 
+            >
+              <i className={`fas fa-chevron-${showPaste ? 'up' : 'down'}`}></i> {showPaste ? 'İptal' : 'Veri Yapıştır'}
+            </button>
           </div>
-          <input 
-            type="file" 
-            accept=".xls,.xlsx" 
-            ref={fileInputRef} 
-            onChange={handleFileUpload} 
-            style={{ display: 'none' }} 
-          />
-          <button 
-            type="button" 
-            className="btn btn-secondary" 
-            onClick={() => fileInputRef.current?.click()} 
-            disabled={loading}
-          >
-            <i className="fas fa-file-excel"></i> Dosya Seç
-          </button>
+          
+          {showPaste && (
+            <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <textarea 
+                placeholder="Başlıklar ve verileri buraya yapıştırın (CTRL+V)..."
+                value={pasteText}
+                onChange={e => setPasteText(e.target.value)}
+                style={{ width: '100%', minHeight: '150px', background: 'var(--bg-card)', border: '1px dashed var(--border)', borderRadius: '8px', padding: '12px', color: 'var(--text)', fontSize: '12px', fontFamily: 'monospace' }}
+                disabled={loading}
+              />
+              <div style={{ alignSelf: 'flex-end' }}>
+                <button 
+                  type="button" 
+                  className="btn btn-primary" 
+                  onClick={handlePasteData} 
+                  disabled={loading || !pasteText.trim()}
+                >
+                  {loading ? 'İşleniyor...' : 'Verileri Kaydet'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
