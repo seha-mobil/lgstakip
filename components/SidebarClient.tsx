@@ -59,7 +59,7 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
         {/* Glow behind Sidebar header */}
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, height: '200px',
-          background: 'radial-gradient(ellipse at 50% -10%, rgba(232,184,75,0.08) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse at 50% -10%, var(--accent-dim) 0%, transparent 70%)',
           pointerEvents: 'none'
         }} />
 
@@ -68,7 +68,7 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
             <div style={{
               width: '38px', height: '38px',
               background: 'var(--accent-dim)',
-              border: '1px solid rgba(232,184,75,0.25)',
+              border: '1px solid var(--accent-glow)',
               borderRadius: '10px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: 'var(--accent)', fontSize: '15px'
@@ -92,7 +92,7 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
             padding: '10px 12px', borderRadius: '8px',
             background: pathname === '/' ? 'var(--accent-dim)' : 'transparent',
             color: pathname === '/' ? 'var(--accent)' : 'var(--text3)',
-            border: pathname === '/' ? '1px solid rgba(232,184,75,0.2)' : '1px solid transparent',
+            border: pathname === '/' ? '1px solid var(--accent-glow)' : '1px solid transparent',
             fontSize: '13px', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s'
           }}>
             <i className="fas fa-th-large" style={{ width: '16px', textAlign: 'center' }}></i> Ana Sayfa
@@ -102,7 +102,7 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
             padding: '10px 12px', borderRadius: '8px',
             background: pathname === '/compare' ? 'var(--accent-dim)' : 'transparent',
             color: pathname === '/compare' ? 'var(--accent)' : 'var(--text3)',
-            border: pathname === '/compare' ? '1px solid rgba(232,184,75,0.2)' : '1px solid transparent',
+            border: pathname === '/compare' ? '1px solid var(--accent-glow)' : '1px solid transparent',
             fontSize: '13px', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s'
           }}>
             <i className="fas fa-chart-bar" style={{ width: '16px', textAlign: 'center' }}></i> Karşılaştırma
@@ -131,7 +131,7 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
                   display: 'flex', alignItems: 'center', gap: '10px',
                   padding: '10px 12px', borderRadius: '9px', textDecoration: 'none',
                   background: isActive ? 'var(--accent-dim)' : 'transparent',
-                  border: isActive ? '1px solid rgba(232,184,75,0.2)' : '1px solid transparent',
+                  border: isActive ? '1px solid var(--accent-glow)' : '1px solid transparent',
                   marginBottom: '2px', transition: 'all 0.18s'
                 }}>
                   <div style={{ width: '9px', height: '9px', borderRadius: '50%', background: s.color, flexShrink: 0 }}></div>
@@ -139,7 +139,7 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
                     {s.name}
                   </span>
                   {lastExam && (
-                    <span style={{ fontSize: '11px', fontWeight: 700, fontFamily: 'var(--mono)', marginLeft: 'auto', color: lastExam.lgsPuani >= 450 ? '#3dd68c' : lastExam.lgsPuani >= 400 ? '#84cc16' : '#e8b84b' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 700, fontFamily: 'var(--mono)', marginLeft: 'auto', color: lastExam.lgsPuani >= 450 ? '#3dd68c' : lastExam.lgsPuani >= 400 ? '#84cc16' : 'var(--accent)' }}>
                       {lastExam.lgsPuani.toFixed(2)}
                     </span>
                   )}
@@ -158,22 +158,26 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
 
           <div style={{ padding: '0 16px 20px' }}>
             <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px', fontFamily: 'var(--mono)' }}>Görünüm Seç</div>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '10px' }}>
               {[
-                { id: 'gold', color: '#e8b84b' },
-                { id: 'emerald', color: '#10b981' },
-                { id: 'indigo', color: '#6366f1' },
-                { id: 'rose', color: '#f43f5e' }
+                { id: 'gold', color1: '#e8b84b', color2: '#151e32' },
+                { id: 'emerald', color1: '#10b981', color2: '#064e3b' },
+                { id: 'indigo', color1: '#6366f1', color2: '#1e1b4b' },
+                { id: 'rose', color1: '#f43f5e', color2: '#4c0519' }
               ].map(t => (
                 <button 
                   key={t.id} 
                   onClick={() => setTheme(t.id as any)}
                   style={{
-                    width: '24px', height: '24px', borderRadius: '50%', background: t.color,
-                    border: theme === t.id ? '2px solid white' : '2px solid transparent',
-                    cursor: 'pointer', transform: theme === t.id ? 'scale(1.1)' : 'scale(1)',
-                    transition: 'all 0.2s', boxShadow: theme === t.id ? `0 0 10px ${t.color}` : 'none'
+                    width: '32px', height: '32px', borderRadius: '10px', 
+                    background: `linear-gradient(135deg, ${t.color1}, ${t.color2})`,
+                    border: theme === t.id ? '2px solid white' : '1px solid rgba(255,255,255,0.1)',
+                    cursor: 'pointer', transform: theme === t.id ? 'scale(1.15)' : 'scale(1)',
+                    transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 
+                    boxShadow: theme === t.id ? `0 6px 15px ${t.color1}44` : 'none',
+                    padding: 0
                   }}
+                  title={t.id.charAt(0).toUpperCase() + t.id.slice(1)}
                 />
               ))}
             </div>

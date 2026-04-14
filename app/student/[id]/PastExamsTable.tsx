@@ -125,28 +125,29 @@ export default function PastExamsTable({
       {/* Analysis Modal (Screen Dominating) */}
       {selectedExamId && (
         <>
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', zIndex: 10000 }} onClick={() => setSelectedExamId(null)}></div>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)', zIndex: 10000 }} onClick={() => setSelectedExamId(null)}></div>
           <div style={{
                 position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                width: '95%', maxWidth: '600px', height: 'auto', zIndex: 10001,
-                boxShadow: '0 40px 100px rgba(0,0,0,0.8)',
+                width: '95vw', maxWidth: '1000px', height: 'auto', maxHeight: '90vh', zIndex: 10001,
+                boxShadow: '0 40px 100px rgba(0,0,0,1)',
                 border: '1px solid var(--accent)',
-                padding: '32px'
+                padding: '40px',
+                overflowY: 'auto'
             }} className="glass-card animate-fade-up">
 
               <button 
                 onClick={() => setSelectedExamId(null)}
-                style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '24px' }}
+                style={{ position: 'absolute', top: '25px', right: '25px', background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '32px', zIndex: 10 }}
               >
                 <i className="fas fa-times"></i>
               </button>
               
-              <div style={{ marginBottom: '15px' }}>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Deneme Analizi</div>
-                <div style={{ fontSize: '18px', fontWeight: 900 }}>{exams.find(e => e.id === selectedExamId)?.trialExam.name}</div>
+              <div style={{ marginBottom: '32px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '2px' }}>Deneme Analizi & Karşılaştırma</div>
+                <div style={{ fontSize: '28px', fontWeight: 900, marginTop: '4px' }}>{exams.find(e => e.id === selectedExamId)?.trialExam.name}</div>
               </div>
               
-              <div style={{ height: '220px' }}>
+              <div style={{ height: '450px', width: '100%', marginBottom: '10px' }}>
                 <SubjectComparisonMiniChart 
                   studentNets={
                     (() => {
@@ -161,6 +162,11 @@ export default function PastExamsTable({
                   avgNets={personalAverages}
                   color={studentColor}
                 />
+              </div>
+
+              <div style={{ marginTop: '20px', padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', fontSize: '14px', color: 'var(--text2)', textAlign: 'center' }}>
+                <i className="fas fa-info-circle" style={{ marginRight: '8px', color: 'var(--accent)' }}></i>
+                Bu grafik, mevcut sınavdaki netlerinizi **tüm sınavlarınızın ortalaması** ile karşılaştırır.
               </div>
           </div>
         </>
