@@ -64,15 +64,40 @@ export function ProgressChart({ exams, color }: { exams: any[], color: string })
 
 export function SubjectBarChart({ exams, subjects, title, color }: { exams: any[], subjects: string[], title: string, color: string }) {
   const lastExam = exams[exams.length - 1];
+  
+  const getGradientColor = (net: number, max: number) => {
+    const ratio = Math.max(0, Math.min(1, net / max));
+    let r, g, b;
+    if (ratio < 0.5) {
+      const pct = ratio / 0.5; // 0 to 1
+      r = 232;
+      g = Math.round(75 + (184 - 75) * pct);
+      b = 75;
+    } else {
+      const pct = (ratio - 0.5) / 0.5; // 0 to 1
+      r = Math.round(232 + (61 - 232) * pct);
+      g = Math.round(184 + (214 - 184) * pct);
+      b = Math.round(75 + (140 - 75) * pct);
+    }
+    return `rgba(${r}, ${g}, ${b}, 0.85)`;
+  };
+
+  const nets = subjects.map(sKey => {
+    const sub = lastExam?.subjects?.find((s:any) => s.subjectKey === sKey.toLowerCase());
+    return sub ? Math.max(0, sub.dogru - (sub.yanlis / 4)) : 0;
+  });
+
+  const bgColors = subjects.map((sKey, idx) => {
+    const maxVal = ['Turkce', 'Matematik', 'Fen'].includes(sKey) ? 20 : 10;
+    return getGradientColor(nets[idx], maxVal);
+  });
+
   const data = {
     labels: subjects,
     datasets: [{
       label: 'Net',
-      data: subjects.map(sKey => {
-        const sub = lastExam?.subjects?.find((s:any) => s.subjectKey === sKey.toLowerCase());
-        return sub ? Math.max(0, sub.dogru - (sub.yanlis / 4)) : 0;
-      }),
-      backgroundColor: color + 'cc',
+      data: nets,
+      backgroundColor: bgColors,
       borderRadius: 6
     }]
   };

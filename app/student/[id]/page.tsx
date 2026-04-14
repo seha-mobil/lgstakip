@@ -113,6 +113,12 @@ export default async function StudentDetail({ params }: { params: { id: string }
                   <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text3)' }}>
                     <th style={{ padding: '12px 8px' }}>Tarih</th>
                     <th style={{ padding: '12px 8px' }}>Deneme Adı</th>
+                    <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>TR</th>
+                    <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>İNK</th>
+                    <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>DİN</th>
+                    <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>İNG</th>
+                    <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>MAT</th>
+                    <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>FEN</th>
                     <th style={{ padding: '12px 8px' }}>Top. Net</th>
                     <th style={{ padding: '12px 8px' }}>Puan</th>
                     <th style={{ padding: '12px 8px' }}>Fark</th>
@@ -127,6 +133,11 @@ export default async function StudentDetail({ params }: { params: { id: string }
                       <tr key={ex.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                         <td style={{ padding: '12px 8px', color: 'var(--text2)' }}>{new Date(ex.date).toLocaleDateString('tr-TR')}</td>
                         <td style={{ padding: '12px 8px', fontWeight: 600 }}>{ex.trialExam.name}</td>
+                        {['turkce', 'inkilap', 'dinkultur', 'ingilizce', 'matematik', 'fen'].map(key => {
+                          const sub = ex.subjects?.find((s:any) => s.subjectKey === key);
+                          const net = sub ? Math.max(0, sub.dogru - (sub.yanlis / 4)) : 0;
+                          return <td key={key} style={{ padding: '12px 8px', textAlign: 'center', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text2)' }}>{net}</td>;
+                        })}
                         <td style={{ padding: '12px 8px', fontFamily: 'var(--mono)' }}>{ex.toplamNet}</td>
                         <td style={{ padding: '12px 8px', fontWeight: 700, color: ex.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>{ex.lgsPuani.toFixed(2)}</td>
                         <td style={{ padding: '12px 8px', fontSize: '12px' }}>
