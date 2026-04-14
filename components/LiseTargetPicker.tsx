@@ -10,12 +10,17 @@ const topSchools = [
   { name: 'Hüseyin Avni Sözen AL', puan: 490.50 },
   { name: 'Atatürk Fen Lisesi', puan: 491.50 },
   { name: 'Cağaloğlu Anadolu Lisesi', puan: 488.40 },
+  { name: 'Ş. İlhan Varank Fen Lisesi', puan: 486.20 },
+  { name: 'Kartal Anadolu Lisesi', puan: 485.40 },
   { name: 'Burak Bora Anadolu Lisesi', puan: 486.20 },
   { name: 'Beşiktaş Sakıp Sabancı AL', puan: 486.20 },
   { name: 'Kadıköy Anadolu Lisesi', puan: 485.50 },
-  { name: 'Y.İ. Alanyalı Fen Lisesi', puan: 473.10 },
-  { name: 'Validebağ Fen Lisesi', puan: 477.21 },
+  { name: 'İstanbul Anadolu Lisesi', puan: 483.50 },
   { name: 'Haydarpaşa Lisesi', puan: 484.80 },
+  { name: 'Hacı Sabancı Anadolu Lisesi', puan: 481.30 },
+  { name: 'Validebağ Fen Lisesi', puan: 477.21 },
+  { name: 'Kartal Köy Hizmetleri AL', puan: 475.20 },
+  { name: 'Y.İ. Alanyalı Fen Lisesi', puan: 473.10 },
 ];
 
 export default function LiseTargetPicker({ studentId, currentName, currentPuan }: { studentId: string, currentName?: string | null, currentPuan?: number | null }) {
