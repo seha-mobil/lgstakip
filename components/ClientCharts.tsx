@@ -233,7 +233,7 @@ export function SubjectComparisonMiniChart({ studentNets, avgNets, color }: { st
         borderRadius: 4,
       },
       {
-        label: 'Ortalama',
+        label: 'Kendi Ortalaman',
         data: subjects.map(s => avgNets[s] || 0),
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
         borderRadius: 4,

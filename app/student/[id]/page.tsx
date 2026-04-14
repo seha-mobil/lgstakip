@@ -29,7 +29,21 @@ export default async function StudentDetail({ params }: { params: { id: string }
   const lastExam = exams.length ? exams[exams.length - 1] : null;
   const avgScore = exams.length ? exams.reduce((acc, ex) => acc + ex.lgsPuani, 0) / exams.length : 0;
   
-  const averages = await getExamAverages();
+  // Calculate personal subject averages
+  const personalAverages: Record<string, number> = {};
+  const totals: Record<string, { sum: number, count: number }> = {};
+  
+  exams.forEach(ex => {
+    ex.subjects.forEach(sub => {
+      if (!totals[sub.subjectKey]) totals[sub.subjectKey] = { sum: 0, count: 0 };
+      totals[sub.subjectKey].sum += Math.max(0, sub.dogru - (sub.yanlis / 4));
+      totals[sub.subjectKey].count += 1;
+    });
+  });
+  
+  Object.keys(totals).forEach(key => {
+    personalAverages[key] = totals[key].sum / totals[key].count;
+  });
 
   return (
     <div className="page animate-fade-up">
@@ -125,7 +139,7 @@ export default async function StudentDetail({ params }: { params: { id: string }
               exams={exams} 
               studentId={student.id} 
               studentColor={student.color} 
-              averages={averages} 
+              personalAverages={personalAverages} 
             />
           </div>
         </>
