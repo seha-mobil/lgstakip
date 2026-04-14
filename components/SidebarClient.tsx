@@ -135,6 +135,7 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
                   <span style={{ fontSize: '13px', fontWeight: 600, color: isActive ? 'var(--text)' : 'var(--text2)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {s.name}
                   </span>
+                  {lastExam && (
                     <span style={{ fontSize: '11px', fontWeight: 700, fontFamily: 'var(--mono)', marginLeft: 'auto', color: lastExam.lgsPuani >= 450 ? '#3dd68c' : lastExam.lgsPuani >= 400 ? '#84cc16' : '#e8b84b' }}>
                       {lastExam.lgsPuani.toFixed(2)}
                     </span>
