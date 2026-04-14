@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { addStudent, removeStudent } from '@/app/actions';
@@ -9,6 +9,14 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
   const pathname = usePathname();
   const [isModalOpen, setModalOpen] = useState(false);
   const [newStudentName, setNewStudentName] = useState('');
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  useEffect(() => {
+    // Default collapse on mobile
+    if (window.innerWidth <= 768) {
+      setIsCollapsed(true);
+    }
+  }, []);
 
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,14 +29,30 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
 
   return (
     <>
-      <aside style={{
-        width: '270px', minWidth: '270px', height: '100%',
-        background: 'var(--sidebar-bg)',
-        borderRight: '1px solid var(--border)',
-        display: 'flex', flexDirection: 'column',
-        position: 'relative',
-        backdropFilter: 'blur(20px)'
+      <button onClick={() => setIsCollapsed(false)} style={{
+        position: 'fixed', top: '16px', left: '16px', zIndex: 40,
+        opacity: isCollapsed ? 1 : 0, pointerEvents: isCollapsed ? 'auto' : 'none',
+        width: '42px', height: '42px', background: 'var(--card-bg)', border: '1px solid var(--border)',
+        borderRadius: '10px', color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'all 0.3s', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
       }}>
+        <i className="fas fa-bars"></i>
+      </button>
+
+      {!isCollapsed && (
+        <div className="mobile-overlay" onClick={() => setIsCollapsed(true)} 
+          style={{ opacity: isCollapsed ? 0 : 1, pointerEvents: isCollapsed ? 'none' : 'auto' }} 
+        />
+      )}
+
+      <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+        <button onClick={() => setIsCollapsed(true)} style={{
+          position: 'absolute', top: '24px', right: '16px', background: 'transparent',
+          border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '16px', zIndex: 10
+        }}>
+          <i className="fas fa-chevron-left"></i>
+        </button>
+
         {/* Glow behind Sidebar header */}
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, height: '200px',
