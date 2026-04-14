@@ -45,6 +45,7 @@ export default async function Dashboard() {
         <>
           <div className="sec-title" style={{ marginBottom: '14px' }}>Öğrenciler</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+            {students.map((s, i) => {
               const lastExam = s.examResults[s.examResults.length - 1];
               const prevExam = s.examResults.length > 1 ? s.examResults[s.examResults.length - 2] : null;
               const trend = lastExam && prevExam ? lastExam.lgsPuani - prevExam.lgsPuani : 0;
