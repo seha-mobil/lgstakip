@@ -304,3 +304,46 @@ export async function getExamAverages() {
 
   return averages;
 }
+
+export async function updateExamResult(studentId: string, examResultId: string, data: any) {
+  const SUBJECT_COEFFS: Record<string, number> = {
+    turkce: 2.024,
+    inkilap: 1.018,
+    dinkultur: 0.512,
+    ingilizce: 0.512,
+    matematik: 3.992,
+    fen: 3.992
+  };
+  const MAX_WEIGHTED = 220.58;
+  const LGS_MIN = 180;
+  const LGS_MAX = 500;
+
+  let weightedSum = 0;
+  let totalNet = 0;
+
+  for (const sub of data.subjects) {
+    const net = Math.max(0, sub.dogru - (sub.yanlis / 4));
+    weightedSum += net * (SUBJECT_COEFFS[sub.key] || 0);
+    totalNet += net;
+  }
+
+  const lgsPuani = Math.round(((weightedSum / MAX_WEIGHTED) * (LGS_MAX - LGS_MIN) + LGS_MIN) * 100) / 100;
+
+  await prisma.$transaction([
+    prisma.examResult.update({
+      where: { id: examResultId },
+      data: {
+        toplamNet: Math.round(totalNet * 100) / 100,
+        lgsPuani
+      }
+    }),
+    ...data.subjects.map((sub: any) => 
+      prisma.subjectResult.updateMany({
+        where: { examResultId, subjectKey: sub.key },
+        data: { dogru: sub.dogru, yanlis: sub.yanlis }
+      })
+    )
+  ]);
+
+  revalidatePath(`/student/${studentId}`);
+}

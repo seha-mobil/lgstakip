@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { deleteExamResult } from '@/app/actions';
+import { deleteExamResult, updateExamResult } from '@/app/actions';
 import { SubjectComparisonMiniChart } from '@/components/ClientCharts';
 
 export default function PastExamsTable({ 
@@ -16,16 +16,42 @@ export default function PastExamsTable({
   personalAverages: Record<string, number>
 }) {
   const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
+  const [selectedEditExamId, setSelectedEditExamId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // For Edit Form
+  const [editData, setEditData] = useState<any>(null);
+
+  const openEdit = (ex: any) => {
+    const subjects = ['turkce', 'inkilap', 'dinkultur', 'ingilizce', 'matematik', 'fen'].map(key => {
+      const sub = ex.subjects.find((s: any) => s.subjectKey === key);
+      return { key, dogru: sub?.dogru || 0, yanlis: sub?.yanlis || 0 };
+    });
+    setEditData({ id: ex.id, subjects });
+    setSelectedEditExamId(ex.id);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedEditExamId || !editData) return;
+    setLoading(true);
+    try {
+      await updateExamResult(studentId, selectedEditExamId, editData);
+      setSelectedEditExamId(null);
+    } catch (err) {
+      alert("Güncelleme sırasında hata oluştu.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div style={{ overflowX: 'auto', position: 'relative' }}>
+    <div style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
-        {/* ... (thead remains same) ... */}
         <thead>
           <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text3)' }}>
             <th style={{ padding: '12px 8px' }}>Tarih</th>
             <th style={{ padding: '12px 8px' }}>Deneme Adı</th>
-            {/* ... other ths ... */}
+            {/* ... subjects ... */}
             <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>TR</th>
             <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>İNK</th>
             <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>DİN</th>
@@ -67,7 +93,10 @@ export default function PastExamsTable({
                     </span>
                   ) : '-'}
                 </td>
-                <td style={{ padding: '12px 8px', textAlign: 'right' }}>
+                <td style={{ padding: '12px 8px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                  <button onClick={() => openEdit(ex)} style={{ background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', padding: '6px', borderRadius: '4px', transition: 'all 0.2s' }}>
+                    <i className="fas fa-edit"></i>
+                  </button>
                   <form action={deleteExamResult.bind(null, studentId, ex.id)} style={{ display: 'inline-block' }}>
                     <button type="submit" className="delete-btn" style={{ background: 'transparent', border: 'none', color: 'var(--red)', cursor: 'pointer', padding: '6px', borderRadius: '4px', transition: 'all 0.2s' }}>
                       <i className="fas fa-trash"></i>
@@ -80,37 +109,29 @@ export default function PastExamsTable({
         </tbody>
       </table>
 
+      {/* Analysis Modal */}
       {selectedExamId && (
-        <div style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '90%',
-          maxWidth: '450px',
-          height: '350px',
-          zIndex: 1000,
-          boxShadow: '0 20px 50px rgba(0,0,0,0.8)',
-          border: '1px solid var(--accent)'
-        }} className="glass-card animate-fade-up">
-           <div style={{ padding: '20px', height: '100%', position: 'relative' }}>
+        <>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 10000 }} onClick={() => setSelectedExamId(null)}></div>
+          <div style={{
+            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            width: '95%', maxWidth: '500px', height: 'auto', minHeight: '380px',
+            zIndex: 10001, boxShadow: '0 30px 60px rgba(0,0,0,0.9)', border: '1px solid var(--accent)',
+            padding: '24px'
+          }} className="glass-card animate-fade-up">
               <button 
                 onClick={() => setSelectedExamId(null)}
-                style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '18px' }}
+                style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '20px' }}
               >
                 <i className="fas fa-times"></i>
               </button>
               
-              <div style={{ marginBottom: '15px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                  Deneme Analizi
-                </div>
-                <div style={{ fontSize: '18px', fontWeight: 900 }}>
-                  {exams.find(e => e.id === selectedExamId)?.trialExam.name}
-                </div>
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Deneme Analizi</div>
+                <div style={{ fontSize: '22px', fontWeight: 900 }}>{exams.find(e => e.id === selectedExamId)?.trialExam.name}</div>
               </div>
               
-              <div style={{ height: 'calc(100% - 70px)' }}>
+              <div style={{ height: '240px' }}>
                 <SubjectComparisonMiniChart 
                   studentNets={
                     (() => {
@@ -126,15 +147,64 @@ export default function PastExamsTable({
                   color={studentColor}
                 />
               </div>
-           </div>
-        </div>
+          </div>
+        </>
       )}
-      
-      {selectedExamId && (
-        <div 
-          onClick={() => setSelectedExamId(null)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 999 }}
-        ></div>
+
+      {/* Edit Modal */}
+      {selectedEditExamId && editData && (
+        <>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 10000 }} onClick={() => setSelectedEditExamId(null)}></div>
+          <div style={{
+            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            width: '95%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto',
+            zIndex: 10001, boxShadow: '0 30px 60px rgba(0,0,0,0.9)', border: '1px solid var(--accent)',
+            padding: '24px'
+          }} className="glass-card animate-fade-up">
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase' }}>Deneme Düzenle</div>
+                <div style={{ fontSize: '20px', fontWeight: 900 }}>{exams.find(e => e.id === selectedEditExamId)?.trialExam.name}</div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
+                {editData.subjects.map((sub: any, idx: number) => (
+                  <div key={sub.key} style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '8px', color: 'var(--text2)' }}>{['Türkçe', 'İnkılap', 'Din', 'İngilizce', 'Matematik', 'Fen'][idx]}</div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '10px', color: 'var(--text3)' }}>Doğru</div>
+                        <input type="number" className="input" style={{ padding: '6px' }} value={sub.dogru} 
+                          onChange={e => {
+                            const newSubs = [...editData.subjects];
+                            newSubs[idx].dogru = Number(e.target.value);
+                            setEditData({...editData, subjects: newSubs});
+                          }} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '10px', color: 'var(--text3)' }}>Yanlış</div>
+                        <input type="number" className="input" style={{ padding: '6px' }} value={sub.yanlis} 
+                          onChange={e => {
+                            const newSubs = [...editData.subjects];
+                            newSubs[idx].yanlis = Number(e.target.value);
+                            setEditData({...editData, subjects: newSubs});
+                          }} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginTop: '24px', display: 'flex', gap: '12px' }}>
+                <button 
+                  onClick={handleSaveEdit}
+                  disabled={loading}
+                  className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
+                  {loading ? "Kaydediliyor..." : "Kaydet"}
+                </button>
+                <button onClick={() => setSelectedEditExamId(null)} className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }}>Vazgeç</button>
+              </div>
+          </div>
+        </>
       )}
     </div>
   );
