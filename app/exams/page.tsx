@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import ExamsClient from './ExamsClient';
+import CountdownCard from '@/components/CountdownCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,13 +16,20 @@ export default async function ExamsPage() {
 
   return (
     <div className="page animate-fade-up">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '24px' }}>
-        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'var(--accent-dim)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <i className="fas fa-hammer"></i>
+      <div className="flex-mobile-col" style={{ alignItems: 'center', justifyContent: 'space-between', gap: '20px', marginBottom: '32px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--accent-dim)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+            <i className="fas fa-hammer"></i>
+          </div>
+          <div>
+            <h2 style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.5px' }}>Yönetim Paneli</h2>
+            <p style={{ fontSize: '13px', color: 'var(--text3)', marginTop: '2px' }}>Sistem ayarlarını ve öğrenci hesaplarını yönetin</p>
+          </div>
         </div>
-        <div>
-          <h2 style={{ fontSize: '22px', fontWeight: 900, letterSpacing: '-0.5px' }}>Yönetim Paneli</h2>
-          <p style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '2px' }}>Sistem ayarlarını ve öğrenci hesaplarını yönetin</p>
+
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <CountdownCard targetDate="2026-06-13T09:30:00" title="LGS 2026" color="var(--accent)" />
+          <CountdownCard targetDate="2027-06-11T09:30:00" title="LGS 2027" color="var(--blue)" />
         </div>
       </div>
       
