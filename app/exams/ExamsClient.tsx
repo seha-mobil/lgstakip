@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { updateTrialExam, deleteTrialExam, createStandaloneTrialExam } from '@/app/actions';
+import { useState, useRef } from 'react';
+import { updateTrialExam, deleteTrialExam, createStandaloneTrialExam, importExcelData } from '@/app/actions';
 
 export default function ExamsClient({ initialExams }: { initialExams: any[] }) {
   const [exams, setExams] = useState(initialExams);
@@ -12,6 +12,38 @@ export default function ExamsClient({ initialExams }: { initialExams: any[] }) {
   const [newName, setNewName] = useState('');
   const [newDate, setNewDate] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setLoading(true);
+      const XLSX = await import('xlsx');
+      const reader = new FileReader();
+
+      reader.onload = async (evt) => {
+        const bstr = evt.target?.result;
+        if (!bstr) return;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws);
+        
+        await importExcelData(data);
+        alert('Excel verileri başarıyla sisteme aktarıldı! (Değişiklikleri görmek için sayfayı yenileyiniz)');
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        setLoading(false);
+      };
+
+      reader.readAsBinaryString(file);
+    } catch (err) {
+      console.error(err);
+      alert('Dosya yüklenirken bir hata oluştu');
+      setLoading(false);
+    }
+  };
 
   const startEdit = (exam: any) => {
     setEditingId(exam.id);
@@ -72,6 +104,28 @@ export default function ExamsClient({ initialExams }: { initialExams: any[] }) {
             <i className="fas fa-plus"></i> Ekle
           </button>
         </form>
+        
+        <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ flex: 1 }}>
+            <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '4px' }}>Excel'den Toplu Kayıt</h4>
+            <p style={{ fontSize: '12px', color: 'var(--text3)' }}>Öğrenci isimleri ve branş netlerini içeren .xlsx doyasını sisteme topluca yükleyin.</p>
+          </div>
+          <input 
+            type="file" 
+            accept=".xls,.xlsx" 
+            ref={fileInputRef} 
+            onChange={handleFileUpload} 
+            style={{ display: 'none' }} 
+          />
+          <button 
+            type="button" 
+            className="btn btn-secondary" 
+            onClick={() => fileInputRef.current?.click()} 
+            disabled={loading}
+          >
+            <i className="fas fa-file-excel"></i> Dosya Seç
+          </button>
+        </div>
       </div>
 
       <div className="glass-card" style={{ padding: '24px' }}>

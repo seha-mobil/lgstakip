@@ -120,3 +120,98 @@ export async function createStandaloneTrialExam(name: string, date: string) {
   revalidatePath('/exams');
   return exam;
 }
+
+function parseTRNumber(val: any): number {
+  if (typeof val === 'number') return val;
+  if (!val) return 0;
+  const str = String(val).replace(',', '.');
+  return parseFloat(str) || 0;
+}
+
+export async function importExcelData(parsedRows: any[]) {
+  const colors = ['#e84b4b', '#e8b84b', '#3dd68c', '#a855f7', '#3b82f6'];
+  let colorIdx = 0;
+
+  for (const row of parsedRows) {
+    if (!row['Öğrenci'] || !row['Sınav']) continue;
+
+    // 1. Get or Create Student
+    const studentName = String(row['Öğrenci']).trim();
+    let student = await prisma.student.findFirst({
+      where: { name: { equals: studentName, mode: 'insensitive' } }
+    });
+    if (!student) {
+      student = await prisma.student.create({
+        data: {
+          name: studentName,
+          color: colors[colorIdx % colors.length]
+        }
+      });
+      colorIdx++;
+    }
+
+    // 2. Get or Create TrialExam
+    const examName = String(row['Sınav']).trim();
+    let examDate = new Date();
+    if (row['Tarih']) {
+      // Excel might give Date object or string
+      examDate = new Date(row['Tarih']);
+      if (isNaN(examDate.getTime())) examDate = new Date();
+    }
+    
+    let trialExam = await prisma.trialExam.findFirst({
+      where: { name: examName }
+    });
+    if (!trialExam) {
+      trialExam = await prisma.trialExam.create({
+        data: { name: examName, date: examDate }
+      });
+    }
+
+    // 3. Clear Existing ExamResult for this student+exam to avoid duplicates
+    await prisma.examResult.deleteMany({
+      where: { studentId: student.id, trialExamId: trialExam.id }
+    });
+
+    // 4. Create ExamResult
+    const examResult = await prisma.examResult.create({
+      data: {
+        studentId: student.id,
+        trialExamId: trialExam.id,
+        date: trialExam.date,
+        ogrenciSayisi: 0,
+        basariSirasi: 0,
+        lgsPuani: parseTRNumber(row['LGS'] || 0),
+        toplamNet: parseTRNumber(row['Net'] || 0),
+      }
+    });
+
+    // 5. Create Subject Results
+    const subjectsMap = [
+      { key: 'Turkce', d: 'Türkçe D', y: 'Türkçe Y' },
+      { key: 'Inkilap', d: 'İnkılap D', y: 'İnkılap Y' },
+      { key: 'Dinkultur', d: 'Din D', y: 'Din Y' },
+      { key: 'Matematik', d: 'Mat D', y: 'Mat Y' },
+      { key: 'Fen', d: 'Fen D', y: 'Fen Y' },
+      { key: 'Ingilizce', d: 'İng D', y: 'İng Y' },
+    ];
+
+    for (const sub of subjectsMap) {
+      const d = parseTRNumber(row[sub.d]);
+      const y = parseTRNumber(row[sub.y]);
+      await prisma.subjectResult.create({
+        data: {
+          examResultId: examResult.id,
+          subjectKey: sub.key.toLowerCase(),
+          dogru: d,
+          yanlis: y,
+          bos: 0
+        }
+      });
+    }
+  }
+
+  revalidatePath('/');
+  revalidatePath('/exams');
+  return { success: true, count: parsedRows.length };
+}
