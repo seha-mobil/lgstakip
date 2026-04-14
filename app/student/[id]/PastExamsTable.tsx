@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { deleteExamResult, updateExamResult } from '@/app/actions';
 import { SubjectComparisonMiniChart } from '@/components/ClientCharts';
@@ -20,7 +20,6 @@ export default function PastExamsTable({
   const [selectedEditExamId, setSelectedEditExamId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [editData, setEditData] = useState<any>(null);
-  const [popupPos, setPopupPos] = useState({ top: 0, left: 0 });
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -49,9 +48,8 @@ export default function PastExamsTable({
     }
   };
 
-  const handleOpenAnalysis = (e: React.MouseEvent, examId: string) => {
+  const handleOpenAnalysis = (examId: string) => {
     setSelectedExamId(examId);
-    setPopupPos({ top: 0, left: 0 }); // Reset to center
   };
 
   return (
@@ -63,18 +61,13 @@ export default function PastExamsTable({
         .exam-cell:hover .chart-icon { opacity: 1; transform: translateX(0); }
       `}</style>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
-        {/* ... */}
         <thead>
           <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text3)' }}>
             <th style={{ padding: '12px 8px' }}>Tarih</th>
             <th style={{ padding: '12px 8px' }}>Deneme Adı</th>
-            {/* ... */}
-            <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>TR</th>
-            <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>İNK</th>
-            <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>DİN</th>
-            <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>İNG</th>
-            <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>MAT</th>
-            <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>FEN</th>
+            {['TR', 'İNK', 'DİN', 'İNG', 'MAT', 'FEN'].map(h => (
+              <th key={h} style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>{h}</th>
+            ))}
             <th style={{ padding: '12px 8px' }}>Top. Net</th>
             <th style={{ padding: '12px 8px' }}>Puan</th>
             <th style={{ padding: '12px 8px' }}>Fark</th>
@@ -88,12 +81,12 @@ export default function PastExamsTable({
             const diff = prevLgs ? ex.lgsPuani - prevLgs : 0;
             
             return (
-              <tr key={ex.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: selectedExamId === ex.id ? 'rgba(232, 184, 75, 0.05)' : 'transparent' }}>
+              <tr key={ex.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: selectedExamId === ex.id ? 'var(--accent-dim)' : 'transparent' }}>
                 <td style={{ padding: '12px 8px', color: 'var(--text2)' }}>{new Date(ex.date).toLocaleDateString('tr-TR')}</td>
                 <td 
                   className="exam-cell"
                   style={{ padding: '12px 8px', fontWeight: 600, cursor: 'pointer', color: 'var(--text)' }}
-                  onClick={(e) => handleOpenAnalysis(e, ex.id)}
+                  onClick={() => handleOpenAnalysis(ex.id)}
                 >
                   <i className="fas fa-chart-simple chart-icon"></i>
                   {ex.trialExam.name}
@@ -129,30 +122,29 @@ export default function PastExamsTable({
       </table>
 
       {mounted && selectedExamId && createPortal(
-        <>
-          <div 
-            style={{ 
-                position: 'fixed', inset: 0, 
-                background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)', zIndex: 10000,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
-            }} 
-            onClick={() => setSelectedExamId(null)}
-          >
-            <div style={{
-                    width: '100%', maxWidth: '1000px', height: 'auto', maxHeight: '90vh', zIndex: 10001,
-                    boxShadow: '0 40px 100px rgba(0,0,0,1)',
-                    border: '1px solid var(--accent)',
-                    padding: '40px',
-                    overflowY: 'auto',
-                    position: 'relative' // to center close button
-                }} className="glass-card animate-fade-up" onClick={(e) => e.stopPropagation()}>
+        <div 
+          style={{ 
+              position: 'fixed', inset: 0, 
+              background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)', zIndex: 10000,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+          }} 
+          onClick={() => setSelectedExamId(null)}
+        >
+          <div style={{
+                  width: '100%', maxWidth: '1000px', height: 'auto', maxHeight: '90vh', zIndex: 10001,
+                  boxShadow: '0 40px 100px rgba(0,0,0,1)',
+                  border: '1px solid var(--accent)',
+                  padding: '40px',
+                  overflowY: 'auto',
+                  position: 'relative'
+              }} className="glass-card animate-fade-up" onClick={(e) => e.stopPropagation()}>
 
-                <button 
-                    onClick={() => setSelectedExamId(null)}
-                    style={{ position: 'absolute', top: '25px', right: '25px', background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '32px', zIndex: 10 }}
-                >
-                    <i className="fas fa-times"></i>
-                </button>
+              <button 
+                  onClick={() => setSelectedExamId(null)}
+                  style={{ position: 'absolute', top: '25px', right: '25px', background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '32px', zIndex: 10 }}
+              >
+                  <i className="fas fa-times"></i>
+              </button>
               
               <div style={{ marginBottom: '32px' }}>
                 <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '2px' }}>Deneme Analizi & Karşılaştırma</div>
@@ -181,11 +173,10 @@ export default function PastExamsTable({
                 Bu grafik, mevcut sınavdaki netlerinizi **tüm sınavlarınızın ortalaması** ile karşılaştırır.
               </div>
           </div>
-        </>,
+        </div>,
         document.body
       )}
 
-      {/* Edit Modal */}
       {selectedEditExamId && editData && (
         <>
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 10000 }} onClick={() => setSelectedEditExamId(null)}></div>
@@ -207,7 +198,7 @@ export default function PastExamsTable({
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: '10px', color: 'var(--text3)' }}>Doğru</div>
-                        <input type="number" className="input" style={{ padding: '6px' }} value={sub.dogru} 
+                        <input type="number" style={{ width: '100%', padding: '6px', background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid var(--border)', borderRadius: '4px' }} value={sub.dogru} 
                           onChange={e => {
                             const newSubs = [...editData.subjects];
                             newSubs[idx].dogru = Number(e.target.value);
@@ -216,7 +207,7 @@ export default function PastExamsTable({
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: '10px', color: 'var(--text3)' }}>Yanlış</div>
-                        <input type="number" className="input" style={{ padding: '6px' }} value={sub.yanlis} 
+                        <input type="number" style={{ width: '100%', padding: '6px', background: 'rgba(0,0,0,0.2)', color: '#fff', border: '1px solid var(--border)', borderRadius: '4px' }} value={sub.yanlis} 
                           onChange={e => {
                             const newSubs = [...editData.subjects];
                             newSubs[idx].yanlis = Number(e.target.value);
@@ -232,10 +223,10 @@ export default function PastExamsTable({
                 <button 
                   onClick={handleSaveEdit}
                   disabled={loading}
-                  className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
+                  style={{ flex: 1, padding: '12px', background: 'var(--accent)', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}>
                   {loading ? "Kaydediliyor..." : "Kaydet"}
                 </button>
-                <button onClick={() => setSelectedEditExamId(null)} className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }}>Vazgeç</button>
+                <button onClick={() => setSelectedEditExamId(null)} style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}>Vazgeç</button>
               </div>
           </div>
         </>
