@@ -36,7 +36,7 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
         borderRadius: '10px', color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'all 0.3s', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
       }}>
-        <i className="fas fa-bars"></i>
+        <i className="fas fa-chevron-right"></i>
       </button>
 
       {!isCollapsed && (
