@@ -83,7 +83,7 @@ export function SubjectBarChart({ exams, subjects, title, color }: { exams: any[
   };
 
   const nets = subjects.map(sKey => {
-    const sub = lastExam?.subjects?.find((s:any) => s.subjectKey === sKey.toLowerCase());
+    const sub = lastExam?.subjects?.find((s:any) => s.subjectKey.toLowerCase() === sKey.toLowerCase());
     return sub ? Math.max(0, sub.dogru - (sub.yanlis / 4)) : 0;
   });
 
@@ -127,7 +127,7 @@ export function NetRadarChart({ exams, color }: { exams: any[], color: string })
     datasets: [{
       label: 'Net Yüzdesi (%)',
       data: subjectsKeys.map((key, i) => {
-        const sub = lastExam?.subjects?.find((s:any) => s.subjectKey === key);
+        const sub = lastExam?.subjects?.find((s:any) => s.subjectKey.toLowerCase() === key.toLowerCase());
         const net = sub ? Math.max(0, sub.dogru - (sub.yanlis / 4)) : 0;
         return (net / maxQ[i]) * 100;
       }),
@@ -142,10 +142,13 @@ export function NetRadarChart({ exams, color }: { exams: any[], color: string })
     responsive: true, maintainAspectRatio: false,
     scales: {
       r: {
+        min: 0,
+        max: 100,
+        beginAtZero: true,
         angleLines: { color: '#1e2d42' },
         grid: { color: '#111827' },
         pointLabels: { color: '#617496', font: { size: 10 } },
-        ticks: { display: false, min: 0, max: 100 }
+        ticks: { display: false }
       }
     },
     plugins: { legend: { display: false }, tooltip: { ...chartTip } }
