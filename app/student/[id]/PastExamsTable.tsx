@@ -44,19 +44,8 @@ export default function PastExamsTable({
   };
 
   const handleOpenAnalysis = (e: React.MouseEvent, examId: string) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const isMobile = window.innerWidth <= 768;
-    
-    if (isMobile) {
-        setPopupPos({ top: 0, left: 0 });
-    } else {
-        // Position relative to viewport (fixed) - centered above name
-        setPopupPos({ 
-            top: rect.top - 12, 
-            left: rect.left + rect.width / 2 
-        });
-    }
     setSelectedExamId(examId);
+    setPopupPos({ top: 0, left: 0 }); // Reset to center
   };
 
   return (
@@ -133,39 +122,21 @@ export default function PastExamsTable({
         </tbody>
       </table>
 
-      {/* Analysis Popover */}
+      {/* Analysis Modal (Screen Dominating) */}
       {selectedExamId && (
         <>
-          <div style={{ position: 'fixed', inset: 0, zIndex: 10000 }} onClick={() => setSelectedExamId(null)}></div>
-          <div style={
-            popupPos.top !== 0 ? {
-                position: 'fixed',
-                top: popupPos.top,
-                left: popupPos.left,
-                width: '400px',
-                zIndex: 10001,
-                boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
-                border: '1px solid var(--accent)',
-                padding: '20px',
-                transform: 'translate(-50%, -100%)'
-            } : {
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', zIndex: 10000 }} onClick={() => setSelectedExamId(null)}></div>
+          <div style={{
                 position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                width: '95%', maxWidth: '450px', zIndex: 10001, border: '1px solid var(--accent)', padding: '20px'
-            }
-          } className="glass-card animate-fade-up">
-              {/* Arrow Indicator for Desktop */}
-              {popupPos.top !== 0 && (
-                <div style={{
-                    position: 'absolute', bottom: '-8px', left: '50%',
-                    width: '14px', height: '14px', background: 'var(--card-hover)',
-                    borderRight: '1px solid var(--accent)', borderBottom: '1px solid var(--accent)',
-                    transform: 'translateX(-50%) rotate(45deg)', zIndex: -1
-                }}></div>
-              )}
+                width: '95%', maxWidth: '600px', height: 'auto', zIndex: 10001,
+                boxShadow: '0 40px 100px rgba(0,0,0,0.8)',
+                border: '1px solid var(--accent)',
+                padding: '32px'
+            }} className="glass-card animate-fade-up">
 
               <button 
                 onClick={() => setSelectedExamId(null)}
-                style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '18px' }}
+                style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '24px' }}
               >
                 <i className="fas fa-times"></i>
               </button>
