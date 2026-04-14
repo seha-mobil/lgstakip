@@ -50,10 +50,10 @@ export default function PastExamsTable({
     if (isMobile) {
         setPopupPos({ top: 0, left: 0 });
     } else {
-        // Position relative to viewport (fixed)
+        // Position relative to viewport (fixed) - centered above name
         setPopupPos({ 
-            top: rect.top, 
-            left: rect.left + rect.width + 15 
+            top: rect.top - 12, 
+            left: rect.left + rect.width / 2 
         });
     }
     setSelectedExamId(examId);
@@ -147,7 +147,7 @@ export default function PastExamsTable({
                 boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
                 border: '1px solid var(--accent)',
                 padding: '20px',
-                transform: 'translateY(-20%)'
+                transform: 'translate(-50%, -100%)'
             } : {
                 position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
                 width: '95%', maxWidth: '450px', zIndex: 10001, border: '1px solid var(--accent)', padding: '20px'
@@ -156,10 +156,10 @@ export default function PastExamsTable({
               {/* Arrow Indicator for Desktop */}
               {popupPos.top !== 0 && (
                 <div style={{
-                    position: 'absolute', top: '25%', left: '-8px',
+                    position: 'absolute', bottom: '-8px', left: '50%',
                     width: '14px', height: '14px', background: 'var(--card-hover)',
-                    borderLeft: '1px solid var(--accent)', borderBottom: '1px solid var(--accent)',
-                    transform: 'rotate(45deg)', zIndex: -1
+                    borderRight: '1px solid var(--accent)', borderBottom: '1px solid var(--accent)',
+                    transform: 'translateX(-50%) rotate(45deg)', zIndex: -1
                 }}></div>
               )}
 
