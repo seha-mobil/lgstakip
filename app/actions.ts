@@ -39,13 +39,16 @@ export async function removeStudent(id: string) {
 
 export async function syncDatabaseSchema() {
   try {
-    // Check if the column exists first
-    // For PostgreSQL/SQLite, we can try to add it and ignore if it exists
+    // Add password column if missing
     await prisma.$executeRawUnsafe(`ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "password" TEXT DEFAULT '123456';`);
+    
+    // Add Target Lise columns if missing
+    await prisma.$executeRawUnsafe(`ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "targetLiseName" TEXT;`);
+    await prisma.$executeRawUnsafe(`ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "targetLisePuan" DOUBLE PRECISION;`);
+    
     return { success: true };
   } catch (error: any) {
     console.error('Schema sync error:', error);
-    // If IF NOT EXISTS is not supported by the DB, we might get an error if it's already there
     return { success: false, error: error.message };
   }
 }
