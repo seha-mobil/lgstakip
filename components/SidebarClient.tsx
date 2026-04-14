@@ -158,26 +158,27 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
 
           <div style={{ padding: '0 16px 20px' }}>
             <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px', fontFamily: 'var(--mono)' }}>Görünüm Seç</div>
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {[
-                { id: 'gold', color1: '#e8b84b', color2: '#151e32' },
-                { id: 'emerald', color1: '#10b981', color2: '#064e3b' },
-                { id: 'indigo', color1: '#6366f1', color2: '#1e1b4b' },
-                { id: 'rose', color1: '#f43f5e', color2: '#4c0519' }
+                { id: 'gold', color1: '#151e32', color2: '#e8b84b', name: 'Midnight Gold' },
+                { id: 'emerald', color1: '#041a1a', color2: '#10b981', name: 'Emerald' },
+                { id: 'indigo', color1: '#08081a', color2: '#6366f1', name: 'Indigo' },
+                { id: 'rose', color1: '#1a080c', color2: '#f43f5e', name: 'Rose' },
+                { id: 'platinum', color1: '#f8fafc', color2: '#64748b', name: 'Platinum' }
               ].map(t => (
                 <button 
                   key={t.id} 
                   onClick={() => setTheme(t.id as any)}
                   style={{
-                    width: '32px', height: '32px', borderRadius: '10px', 
+                    width: '30px', height: '30px', borderRadius: '8px', 
                     background: `linear-gradient(135deg, ${t.color1}, ${t.color2})`,
-                    border: theme === t.id ? '2px solid white' : '1px solid rgba(255,255,255,0.1)',
-                    cursor: 'pointer', transform: theme === t.id ? 'scale(1.15)' : 'scale(1)',
+                    border: theme === t.id ? (t.id === 'platinum' ? '2px solid #64748b' : '2px solid white') : '1px solid rgba(255,255,255,0.1)',
+                    cursor: 'pointer', transform: theme === t.id ? 'scale(1.1)' : 'scale(1)',
                     transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 
-                    boxShadow: theme === t.id ? `0 6px 15px ${t.color1}44` : 'none',
+                    boxShadow: theme === t.id ? `0 4px 12px ${t.color2}44` : 'none',
                     padding: 0
                   }}
-                  title={t.id.charAt(0).toUpperCase() + t.id.slice(1)}
+                  title={t.name}
                 />
               ))}
             </div>

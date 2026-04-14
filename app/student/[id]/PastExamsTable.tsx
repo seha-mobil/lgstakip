@@ -128,25 +128,31 @@ export default function PastExamsTable({
         </tbody>
       </table>
 
-      {/* Analysis Modal (Screen Dominating) - Rendered via Portal to escape parent transforms */}
       {mounted && selectedExamId && createPortal(
         <>
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)', zIndex: 10000 }} onClick={() => setSelectedExamId(null)}></div>
-          <div style={{
-                position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                width: '95vw', maxWidth: '1000px', height: 'auto', maxHeight: '90vh', zIndex: 10001,
-                boxShadow: '0 40px 100px rgba(0,0,0,1)',
-                border: '1px solid var(--accent)',
-                padding: '40px',
-                overflowY: 'auto'
-            }} className="glass-card animate-fade-up">
+          <div 
+            style={{ 
+                position: 'fixed', inset: 0, 
+                background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)', zIndex: 10000,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+            }} 
+            onClick={() => setSelectedExamId(null)}
+          >
+            <div style={{
+                    width: '100%', maxWidth: '1000px', height: 'auto', maxHeight: '90vh', zIndex: 10001,
+                    boxShadow: '0 40px 100px rgba(0,0,0,1)',
+                    border: '1px solid var(--accent)',
+                    padding: '40px',
+                    overflowY: 'auto',
+                    position: 'relative' // to center close button
+                }} className="glass-card animate-fade-up" onClick={(e) => e.stopPropagation()}>
 
-              <button 
-                onClick={() => setSelectedExamId(null)}
-                style={{ position: 'absolute', top: '25px', right: '25px', background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '32px', zIndex: 10 }}
-              >
-                <i className="fas fa-times"></i>
-              </button>
+                <button 
+                    onClick={() => setSelectedExamId(null)}
+                    style={{ position: 'absolute', top: '25px', right: '25px', background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '32px', zIndex: 10 }}
+                >
+                    <i className="fas fa-times"></i>
+                </button>
               
               <div style={{ marginBottom: '32px' }}>
                 <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '2px' }}>Deneme Analizi & Karşılaştırma</div>

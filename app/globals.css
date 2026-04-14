@@ -61,6 +61,22 @@
   --border-focus: rgba(244, 63, 94, 0.6);
 }
 
+[data-theme="platinum"] {
+  --bg-color: #f8fafc;
+  --bg-gradient: radial-gradient(circle at 50% -20%, #e2e8f0, #f8fafc 80%);
+  --text: #0f172a;
+  --text2: #334155;
+  --text3: #64748b;
+  --border: rgba(0, 0, 0, 0.08);
+  --sidebar-bg: rgba(255, 255, 255, 0.8);
+  --card-bg: rgba(255, 255, 255, 0.6);
+  --card-hover: rgba(255, 255, 255, 0.9);
+  --accent: #475569;
+  --accent-glow: rgba(71, 85, 105, 0.2);
+  --accent-dim: rgba(71, 85, 105, 0.1);
+  --border-focus: rgba(71, 85, 105, 0.4);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
