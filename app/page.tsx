@@ -1,5 +1,6 @@
 import { getStudents } from '@/app/actions';
 import Link from 'next/link';
+import CountdownCard from '@/components/CountdownCard';
 
 export default async function Dashboard() {
   const students = await getStudents();
@@ -11,9 +12,18 @@ export default async function Dashboard() {
 
   return (
     <div className="page animate-fade-up">
-      <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '26px', fontWeight: 900, letterSpacing: '-0.8px' }}>Ana Sayfa</h2>
-        <p style={{ fontSize: '13px', color: 'var(--text3)', marginTop: '3px' }}>LGS deneme takip özetiniz</p>
+      <div className="flex-mobile-col" style={{ alignItems: 'center', justifyContent: 'space-between', gap: '20px', marginBottom: '32px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <h2 style={{ fontSize: '28px', fontWeight: 900, letterSpacing: '-0.8px' }}>Ana Sayfa</h2>
+          <div>
+            <p style={{ fontSize: '13px', color: 'var(--text3)', marginTop: '3px', whiteSpace: 'nowrap' }}>LGS deneme takip özetiniz</p>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <CountdownCard targetDate="2026-06-13T09:30:00" title="LGS 2026" color="#FFFFFF" labelColor="#FFFFFF" />
+          <CountdownCard targetDate="2027-06-11T09:30:00" title="LGS 2027" color="#FF8C00" labelColor="#FFFFFF" />
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
