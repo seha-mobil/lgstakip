@@ -28,8 +28,8 @@ export default async function ExamsPage() {
         </div>
 
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <CountdownCard targetDate="2026-06-13T09:30:00" title="LGS 2026" color="#FFFFFF" />
-          <CountdownCard targetDate="2027-06-11T09:30:00" title="LGS 2027" color="#FF8C00" />
+          <CountdownCard targetDate="2026-06-13T09:30:00" title="LGS 2026" color="#FFFFFF" labelColor="#FFFFFF" />
+          <CountdownCard targetDate="2027-06-11T09:30:00" title="LGS 2027" color="#FF8C00" labelColor="#FFFFFF" />
         </div>
       </div>
       
