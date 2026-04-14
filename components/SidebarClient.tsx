@@ -107,16 +107,6 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
           }}>
             <i className="fas fa-chart-bar" style={{ width: '16px', textAlign: 'center' }}></i> Karşılaştırma
           </Link>
-          <Link href="/lab" style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            padding: '10px 12px', borderRadius: '8px',
-            background: pathname === '/lab' ? 'var(--accent-dim)' : 'transparent',
-            color: pathname === '/lab' ? 'var(--accent)' : 'var(--text3)',
-            border: pathname === '/lab' ? '1px solid var(--accent-glow)' : '1px solid transparent',
-            fontSize: '13px', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s'
-          }}>
-            <i className="fas fa-flask" style={{ width: '16px', textAlign: 'center' }}></i> Laboratuvar
-          </Link>
         </nav>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
