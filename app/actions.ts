@@ -86,3 +86,25 @@ export async function saveExamResult(studentId: string, data: any) {
   revalidatePath(`/student/${studentId}`);
   redirect(`/student/${studentId}`);
 }
+
+export async function updateTrialExam(id: string, data: { name: string, date: string }) {
+  await prisma.trialExam.update({
+    where: { id },
+    data: { name: data.name, date: new Date(data.date) }
+  });
+  revalidatePath('/');
+  revalidatePath('/exams');
+}
+
+export async function deleteTrialExam(id: string) {
+  // Manually delete dependent exam results to bypass potential DB constraint issues
+  await prisma.examResult.deleteMany({
+    where: { trialExamId: id }
+  });
+
+  await prisma.trialExam.delete({
+    where: { id }
+  });
+  revalidatePath('/');
+  revalidatePath('/exams');
+}

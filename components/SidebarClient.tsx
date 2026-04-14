@@ -59,26 +59,36 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
           </div>
         </div>
 
-        <nav style={{ display: 'flex', gap: '4px', padding: '10px 12px', borderBottom: '1px solid var(--border)' }}>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '10px 12px', borderBottom: '1px solid var(--border)' }}>
           <Link href="/" style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-            padding: '8px 10px', borderRadius: '8px',
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '10px 12px', borderRadius: '8px',
             background: pathname === '/' ? 'var(--accent-dim)' : 'transparent',
             color: pathname === '/' ? 'var(--accent)' : 'var(--text3)',
             border: pathname === '/' ? '1px solid rgba(232,184,75,0.2)' : '1px solid transparent',
-            fontSize: '12px', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s'
+            fontSize: '13px', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s'
           }}>
-            <i className="fas fa-th-large"></i> Ana Sayfa
+            <i className="fas fa-th-large" style={{ width: '16px', textAlign: 'center' }}></i> Ana Sayfa
           </Link>
           <Link href="/compare" style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-            padding: '8px 10px', borderRadius: '8px',
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '10px 12px', borderRadius: '8px',
             background: pathname === '/compare' ? 'var(--accent-dim)' : 'transparent',
             color: pathname === '/compare' ? 'var(--accent)' : 'var(--text3)',
             border: pathname === '/compare' ? '1px solid rgba(232,184,75,0.2)' : '1px solid transparent',
-            fontSize: '12px', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s'
+            fontSize: '13px', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s'
           }}>
-            <i className="fas fa-chart-bar"></i> Karşılaştırma
+            <i className="fas fa-chart-bar" style={{ width: '16px', textAlign: 'center' }}></i> Karşılaştırma
+          </Link>
+          <Link href="/exams" style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '10px 12px', borderRadius: '8px',
+            background: pathname === '/exams' ? 'var(--accent-dim)' : 'transparent',
+            color: pathname === '/exams' ? 'var(--accent)' : 'var(--text3)',
+            border: pathname === '/exams' ? '1px solid rgba(232,184,75,0.2)' : '1px solid transparent',
+            fontSize: '13px', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s'
+          }}>
+            <i className="fas fa-clipboard-list" style={{ width: '16px', textAlign: 'center' }}></i> Deneme Yönetimi
           </Link>
         </nav>
 

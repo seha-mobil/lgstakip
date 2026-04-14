@@ -36,7 +36,7 @@ model ExamResult {
   createdAt     DateTime        @default(now())
   
   student       Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  trialExam     TrialExam       @relation(fields: [trialExamId], references: [id], onDelete: Restrict)
+  trialExam     TrialExam       @relation(fields: [trialExamId], references: [id], onDelete: Cascade)
   subjects      SubjectResult[]
 }
 
