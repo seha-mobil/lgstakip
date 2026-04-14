@@ -1,19 +1,34 @@
 'use client';
 
 import { useState } from 'react';
-import { updateTrialExam, deleteTrialExam } from '@/app/actions';
+import { updateTrialExam, deleteTrialExam, createStandaloneTrialExam } from '@/app/actions';
 
 export default function ExamsClient({ initialExams }: { initialExams: any[] }) {
   const [exams, setExams] = useState(initialExams);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editDate, setEditDate] = useState('');
+  
+  const [newName, setNewName] = useState('');
+  const [newDate, setNewDate] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(false);
 
   const startEdit = (exam: any) => {
     setEditingId(exam.id);
     setEditName(exam.name);
     setEditDate(exam.date ? new Date(exam.date).toISOString().split('T')[0] : '');
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim()) return;
+    setLoading(true);
+    const newExam = await createStandaloneTrialExam(newName, newDate);
+    // Add to top of list with count 0
+    setExams([{ ...newExam, _count: { examResults: 0 } }, ...exams]);
+    setNewName('');
+    setNewDate(new Date().toISOString().split('T')[0]);
+    setLoading(false);
   };
 
   const handleSave = async (id: string) => {
@@ -41,7 +56,25 @@ export default function ExamsClient({ initialExams }: { initialExams: any[] }) {
   };
 
   return (
-    <div className="glass-card" style={{ padding: '24px' }}>
+    <>
+      <div className="glass-card" style={{ padding: '16px 24px', marginBottom: '24px' }}>
+        <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>Yeni Deneme Ekle</h3>
+        <form onSubmit={handleCreate} style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div style={{ flex: '1 1 200px' }}>
+            <label className="input-label">Deneme Adı</label>
+            <input type="text" className="input" placeholder="Örn: Özdebir TG-2" value={newName} onChange={e => setNewName(e.target.value)} required disabled={loading} />
+          </div>
+          <div style={{ flex: '0 0 150px' }}>
+            <label className="input-label">Tarih</label>
+            <input type="date" className="input" value={newDate} onChange={e => setNewDate(e.target.value)} required disabled={loading} />
+          </div>
+          <button type="submit" className="btn btn-primary" disabled={loading} style={{ height: '42px', padding: '0 20px' }}>
+            <i className="fas fa-plus"></i> Ekle
+          </button>
+        </form>
+      </div>
+
+      <div className="glass-card" style={{ padding: '24px' }}>
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'left' }}>
           <thead>
@@ -104,5 +137,6 @@ export default function ExamsClient({ initialExams }: { initialExams: any[] }) {
         </table>
       </div>
     </div>
+    </>
   );
 }

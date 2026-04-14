@@ -108,3 +108,15 @@ export async function deleteTrialExam(id: string) {
   revalidatePath('/');
   revalidatePath('/exams');
 }
+
+export async function createStandaloneTrialExam(name: string, date: string) {
+  const exam = await prisma.trialExam.create({
+    data: {
+      name,
+      date: new Date(date)
+    }
+  });
+  revalidatePath('/');
+  revalidatePath('/exams');
+  return exam;
+}

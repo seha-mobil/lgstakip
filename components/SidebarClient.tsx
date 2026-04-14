@@ -80,16 +80,6 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
           }}>
             <i className="fas fa-chart-bar" style={{ width: '16px', textAlign: 'center' }}></i> Karşılaştırma
           </Link>
-          <Link href="/exams" style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            padding: '10px 12px', borderRadius: '8px',
-            background: pathname === '/exams' ? 'var(--accent-dim)' : 'transparent',
-            color: pathname === '/exams' ? 'var(--accent)' : 'var(--text3)',
-            border: pathname === '/exams' ? '1px solid rgba(232,184,75,0.2)' : '1px solid transparent',
-            fontSize: '13px', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s'
-          }}>
-            <i className="fas fa-clipboard-list" style={{ width: '16px', textAlign: 'center' }}></i> Deneme Yönetimi
-          </Link>
         </nav>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
