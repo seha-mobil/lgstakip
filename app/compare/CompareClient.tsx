@@ -100,8 +100,13 @@ export default function CompareClient({ students }: { students: any[] }) {
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontWeight: 800, fontFamily: 'var(--mono)', color: item.color, fontSize: '15px' }}>
-                    {hasData ? item.avgNet : '--'}
+                    {hasData ? item.avgNet : '--'} <span style={{ fontSize: '10px', opacity: 0.7, fontWeight: 500 }}>net</span>
                   </div>
+                  {hasData && (
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text2)', fontFamily: 'var(--mono)' }}>
+                      {item.avgLgs} <span style={{ fontSize: '10px', opacity: 0.7, fontWeight: 500 }}>puan</span>
+                    </div>
+                  )}
                   <div style={{ fontSize: '10px', color: 'var(--text3)', marginTop: '2px' }}>
                     {item.count} Sınav
                   </div>
