@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: 'Gelişmiş LGS Deneme Takip Çizelgesi',
 };
 
+import { ThemeProvider } from '@/components/ThemeProvider';
+
 export default function RootLayout({
   children,
 }: {
@@ -21,12 +23,14 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
-          <Sidebar />
-          <main style={{ flex: 1, height: '100%', overflowY: 'auto', position: 'relative' }}>
-            {children}
-          </main>
-        </div>
+        <ThemeProvider>
+          <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+            <Sidebar />
+            <main style={{ flex: 1, height: '100%', overflowY: 'auto', position: 'relative' }}>
+              {children}
+            </main>
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );

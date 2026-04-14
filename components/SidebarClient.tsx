@@ -3,13 +3,16 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { addStudent, removeStudent } from '@/app/actions';
+import { addStudent } from '@/app/actions';
+import { useTheme } from '@/components/ThemeProvider';
 
 export default function SidebarClient({ initialStudents }: { initialStudents: any[] }) {
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
   const [isModalOpen, setModalOpen] = useState(false);
   const [newStudentName, setNewStudentName] = useState('');
   const [isCollapsed, setIsCollapsed] = useState(false);
+  // ... rest of the code ...
 
   useEffect(() => {
     // Default collapse on mobile
@@ -152,6 +155,29 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
           }}>
             <i className="fas fa-plus" style={{ fontSize: '10px' }}></i> Yeni Öğrenci
           </button>
+
+          <div style={{ padding: '0 16px 20px' }}>
+            <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px', fontFamily: 'var(--mono)' }}>Görünüm Seç</div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {[
+                { id: 'gold', color: '#e8b84b' },
+                { id: 'emerald', color: '#10b981' },
+                { id: 'indigo', color: '#6366f1' },
+                { id: 'rose', color: '#f43f5e' }
+              ].map(t => (
+                <button 
+                  key={t.id} 
+                  onClick={() => setTheme(t.id as any)}
+                  style={{
+                    width: '24px', height: '24px', borderRadius: '50%', background: t.color,
+                    border: theme === t.id ? '2px solid white' : '2px solid transparent',
+                    cursor: 'pointer', transform: theme === t.id ? 'scale(1.1)' : 'scale(1)',
+                    transition: 'all 0.2s', boxShadow: theme === t.id ? `0 0 10px ${t.color}` : 'none'
+                  }}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </aside>
 

@@ -18,9 +18,8 @@ export default function PastExamsTable({
   const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
   const [selectedEditExamId, setSelectedEditExamId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  // For Edit Form
   const [editData, setEditData] = useState<any>(null);
+  const [popupPos, setPopupPos] = useState({ top: 0, left: 0 });
 
   const openEdit = (ex: any) => {
     const subjects = ['turkce', 'inkilap', 'dinkultur', 'ingilizce', 'matematik', 'fen'].map(key => {
@@ -44,14 +43,36 @@ export default function PastExamsTable({
     }
   };
 
+  const handleOpenAnalysis = (e: React.MouseEvent, examId: string) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        setPopupPos({ top: 0, left: 0 });
+    } else {
+        setPopupPos({ 
+            top: rect.top + window.scrollY - 10, 
+            left: rect.left + rect.width + 15 
+        });
+    }
+    setSelectedExamId(examId);
+  };
+
   return (
     <div style={{ overflowX: 'auto' }}>
+      <style>{`
+        .exam-cell { transition: all 0.2s; position: relative; }
+        .exam-cell:hover { background: rgba(255,255,255,0.03); color: var(--accent) !important; padding-left: 12px !important; }
+        .exam-cell .chart-icon { opacity: 0; transform: translateX(-5px); transition: all 0.2s; color: var(--accent); margin-right: 6px; font-size: 10px; }
+        .exam-cell:hover .chart-icon { opacity: 1; transform: translateX(0); }
+      `}</style>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
+        {/* ... */}
         <thead>
           <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text3)' }}>
             <th style={{ padding: '12px 8px' }}>Tarih</th>
             <th style={{ padding: '12px 8px' }}>Deneme Adı</th>
-            {/* ... subjects ... */}
+            {/* ... */}
             <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>TR</th>
             <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>İNK</th>
             <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>DİN</th>
@@ -74,9 +95,11 @@ export default function PastExamsTable({
               <tr key={ex.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: selectedExamId === ex.id ? 'rgba(232, 184, 75, 0.05)' : 'transparent' }}>
                 <td style={{ padding: '12px 8px', color: 'var(--text2)' }}>{new Date(ex.date).toLocaleDateString('tr-TR')}</td>
                 <td 
-                  style={{ padding: '12px 8px', fontWeight: 600, cursor: 'pointer', color: 'var(--accent)', textDecoration: 'underline' }}
-                  onClick={() => setSelectedExamId(selectedExamId === ex.id ? null : ex.id)}
+                  className="exam-cell"
+                  style={{ padding: '12px 8px', fontWeight: 600, cursor: 'pointer', color: 'var(--text)' }}
+                  onClick={(e) => handleOpenAnalysis(e, ex.id)}
                 >
+                  <i className="fas fa-chart-simple chart-icon"></i>
                   {ex.trialExam.name}
                 </td>
                 {['turkce', 'inkilap', 'dinkultur', 'ingilizce', 'matematik', 'fen'].map(key => {
@@ -109,29 +132,49 @@ export default function PastExamsTable({
         </tbody>
       </table>
 
-      {/* Analysis Modal */}
+      {/* Analysis Popover */}
       {selectedExamId && (
         <>
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 10000 }} onClick={() => setSelectedExamId(null)}></div>
-          <div style={{
-            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-            width: '95%', maxWidth: '500px', height: 'auto', minHeight: '380px',
-            zIndex: 10001, boxShadow: '0 30px 60px rgba(0,0,0,0.9)', border: '1px solid var(--accent)',
-            padding: '24px'
-          }} className="glass-card animate-fade-up">
+          <div style={{ position: 'fixed', inset: 0, zIndex: 10000 }} onClick={() => setSelectedExamId(null)}></div>
+          <div style={
+            popupPos.top !== 0 ? {
+                position: 'absolute',
+                top: popupPos.top,
+                left: popupPos.left,
+                width: '400px',
+                zIndex: 10001,
+                boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
+                border: '1px solid var(--accent)',
+                padding: '20px',
+                transform: 'translateY(-20%)'
+            } : {
+                position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                width: '95%', maxWidth: '450px', zIndex: 10001, border: '1px solid var(--accent)', padding: '20px'
+            }
+          } className="glass-card animate-fade-up">
+              {/* Arrow Indicator for Desktop */}
+              {popupPos.top !== 0 && (
+                <div style={{
+                    position: 'absolute', top: '25%', left: '-8px',
+                    width: '14px', height: '14px', background: 'var(--card-hover)',
+                    borderLeft: '1px solid var(--accent)', borderBottom: '1px solid var(--accent)',
+                    transform: 'rotate(45deg)', zIndex: -1
+                }}></div>
+              )}
+
               <button 
                 onClick={() => setSelectedExamId(null)}
-                style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '20px' }}
+                style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '18px' }}
               >
                 <i className="fas fa-times"></i>
               </button>
               
-              <div style={{ marginBottom: '20px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Deneme Analizi</div>
-                <div style={{ fontSize: '22px', fontWeight: 900 }}>{exams.find(e => e.id === selectedExamId)?.trialExam.name}</div>
+              <div style={{ marginBottom: '15px' }}>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Deneme Analizi</div>
+                <div style={{ fontSize: '18px', fontWeight: 900 }}>{exams.find(e => e.id === selectedExamId)?.trialExam.name}</div>
               </div>
               
-              <div style={{ height: '240px' }}>
+              <div style={{ height: '220px' }}>
                 <SubjectComparisonMiniChart 
                   studentNets={
                     (() => {
