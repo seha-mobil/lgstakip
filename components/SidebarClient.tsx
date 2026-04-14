@@ -149,12 +149,21 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
           </div>
 
           <button onClick={() => setModalOpen(true)} style={{
-            margin: '4px 8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+            margin: '4px 8px 4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
             padding: '10px', borderRadius: '9px', background: 'var(--card-bg)', border: '1px dashed var(--border)',
-            color: 'var(--text3)', fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font)', cursor: 'pointer'
+            color: 'var(--text3)', fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font)', cursor: 'pointer', width: 'calc(100% - 16px)'
           }}>
             <i className="fas fa-plus" style={{ fontSize: '10px' }}></i> Yeni Öğrenci
           </button>
+
+          <Link href="/lab" style={{
+            margin: '4px 8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+            padding: '10px', borderRadius: '9px', background: pathname === '/lab' ? 'var(--accent-glow)' : 'rgba(255,255,255,0.03)', 
+            border: '1px solid var(--border)', textDecoration: 'none',
+            color: pathname === '/lab' ? 'var(--text)' : 'var(--text3)', fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font)', cursor: 'pointer'
+          }}>
+            <i className="fas fa-flask" style={{ color: 'var(--accent)' }}></i> Laboratuvar
+          </Link>
 
           <div style={{ padding: '0 16px 20px' }}>
             <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px', fontFamily: 'var(--mono)' }}>Görünüm Seç</div>
