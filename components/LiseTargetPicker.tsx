@@ -13,6 +13,7 @@ const topSchools = [
   { name: 'Burak Bora Anadolu Lisesi', puan: 486.20 },
   { name: 'Beşiktaş Sakıp Sabancı AL', puan: 486.20 },
   { name: 'Kadıköy Anadolu Lisesi', puan: 485.50 },
+  { name: 'Y.İ. Alanyalı Fen Lisesi', puan: 473.10 },
   { name: 'Validebağ Fen Lisesi', puan: 477.21 },
   { name: 'Haydarpaşa Lisesi', puan: 484.80 },
 ];
@@ -28,9 +29,9 @@ export default function LiseTargetPicker({ studentId, currentName, currentPuan }
   };
 
   return (
-    <>
+    <div style={{ position: 'relative' }}>
       <button 
-        onClick={() => setIsOpen(true)}
+        onClick={() => setIsOpen(!isOpen)}
         className="btn btn-ghost"
         style={{ padding: '8px 12px', fontSize: '12px', borderColor: 'var(--accent-glow)' }}
       >
@@ -39,46 +40,62 @@ export default function LiseTargetPicker({ studentId, currentName, currentPuan }
       </button>
 
       {isOpen && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.7)',
-          backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
-        }} onClick={() => setIsOpen(false)}>
-          <div className="glass-card animate-fade-up" style={{ padding: '24px', maxWidth: '500px', width: '100%', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 800 }}>Hedef Lise Belirle</h3>
-              <button onClick={() => setIsOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '20px' }}>
+        <>
+          <div 
+            style={{ position: 'fixed', inset: 0, zIndex: 90 }} 
+            onClick={() => setIsOpen(false)} 
+          />
+          <div 
+            className="glass-card animate-fade-up" 
+            style={{ 
+              position: 'absolute', 
+              top: 'calc(100% + 8px)', 
+              right: 0, 
+              zIndex: 100, 
+              padding: '20px', 
+              width: '320px', 
+              maxHeight: '400px', 
+              overflowY: 'auto',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+              border: '1px solid var(--accent-glow)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 800 }}>Hedef Lise</h3>
+              <button onClick={() => setIsOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer' }}>
                 <i className="fas fa-times"></i>
               </button>
             </div>
 
-            <div style={{ marginBottom: '20px' }}>
-              <p style={{ fontSize: '13px', color: 'var(--text3)', marginBottom: '12px' }}>Popüler Liseler (2025 Taban Puanları)</p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div style={{ marginBottom: '16px' }}>
+              <p style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '10px' }}>Popüler Seçenekler</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {topSchools.map(school => (
                   <button 
                     key={school.name}
                     onClick={() => handleSave(school.name, school.puan)}
                     style={{
-                      padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)',
+                      padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)',
                       border: '1px solid var(--border)', color: 'var(--text)', cursor: 'pointer',
-                      textAlign: 'left', fontSize: '12px', transition: 'all 0.2s'
+                      textAlign: 'left', fontSize: '11px', transition: 'all 0.2s', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                     }}
                     onMouseOver={e => e.currentTarget.style.borderColor = 'var(--accent)'}
                     onMouseOut={e => e.currentTarget.style.borderColor = 'var(--border)'}
                   >
-                    <div style={{ fontWeight: 700, marginBottom: '2px' }}>{school.name}</div>
-                    <div style={{ fontSize: '10px', color: 'var(--accent)' }}>{school.puan.toFixed(2)} Puan</div>
+                    <span style={{ fontWeight: 600 }}>{school.name}</span>
+                    <span style={{ color: 'var(--accent)', fontSize: '10px' }}>{school.puan.toFixed(1)}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px dashed var(--border)' }}>
-              <p style={{ fontSize: '13px', color: 'var(--text3)', marginBottom: '12px', fontWeight: 600 }}>Özel Hedef Gir</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px dashed var(--border)' }}>
+              <p style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '10px' }}>Veya Manuel Gir</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <input 
                   type="text" 
                   className="input" 
+                  style={{ height: '32px', fontSize: '12px' }}
                   placeholder="Okul Adı" 
                   value={customName} 
                   onChange={e => setCustomName(e.target.value)} 
@@ -87,23 +104,24 @@ export default function LiseTargetPicker({ studentId, currentName, currentPuan }
                   type="number" 
                   step="0.01"
                   className="input" 
-                  placeholder="Taban Puan" 
+                  style={{ height: '32px', fontSize: '12px' }}
+                  placeholder="Puan" 
                   value={customPuan} 
                   onChange={e => setCustomPuan(e.target.value)} 
                 />
                 <button 
                   className="btn btn-primary" 
-                  style={{ width: '100%', justifyContent: 'center' }}
+                  style={{ width: '100%', height: '32px', fontSize: '11px', justifyContent: 'center' }}
                   onClick={() => handleSave(customName, parseFloat(customPuan))}
                   disabled={!customName || !customPuan}
                 >
-                  Özel Hedefi Kaydet
+                  Kaydet
                 </button>
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
-    </>
+    </div>
   );
 }
