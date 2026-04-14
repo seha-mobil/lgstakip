@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { ProgressChart, SubjectBarChart, NetRadarChart } from '@/components/ClientCharts';
 import { deleteExamResult, getExamAverages } from '@/app/actions';
 import PastExamsTable from './PastExamsTable';
+import SubjectStatsTable from '@/components/SubjectStatsTable';
 
 export default async function StudentDetail({ params }: { params: { id: string } }) {
   // Auth check
@@ -103,6 +104,12 @@ export default async function StudentDetail({ params }: { params: { id: string }
               <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text3)' }}>En Yüksek ({bestExam!.trialExam.name})</div>
               <div style={{ fontSize: '26px', fontWeight: 900, color: bestExam!.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>{bestExam!.lgsPuani.toFixed(2).replace('.', ',')}</div>
             </div>
+          </div>
+
+          <div className="glass-card animate-fade-up" style={{ padding: '24px', marginBottom: '20px', animationDelay: '0.18s' }}>
+            <div className="sec-title">Total Başarı İstatistikleri</div>
+            <div style={{ fontSize: '12px', color: 'var(--text3)', marginBottom: '16px', marginTop: '-10px' }}>Tüm denemelerin toplam ders bazlı dağılımı</div>
+            <SubjectStatsTable exams={exams} />
           </div>
 
           <div className="glass-card animate-fade-up" style={{ padding: '24px', marginBottom: '20px', animationDelay: '0.21s' }}>
