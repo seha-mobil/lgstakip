@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'gold' | 'emerald' | 'indigo' | 'rose';
+type Theme = 'gold' | 'emerald' | 'indigo' | 'rose' | 'platinum';
 
 interface ThemeContextType {
   theme: Theme;
