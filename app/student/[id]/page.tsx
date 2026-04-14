@@ -19,6 +19,7 @@ export default async function StudentDetail({ params }: { params: { id: string }
   const exams = student.examResults;
   const bestExam = exams.length ? [...exams].sort((a,b) => b.lgsPuani - a.lgsPuani)[0] : null;
   const lastExam = exams.length ? exams[exams.length - 1] : null;
+  const avgScore = exams.length ? exams.reduce((acc, ex) => acc + ex.lgsPuani, 0) / exams.length : 0;
 
   return (
     <div className="page animate-fade-up">
@@ -71,12 +72,16 @@ export default async function StudentDetail({ params }: { params: { id: string }
               <div style={{ fontSize: '26px', fontWeight: 900, color: lastExam!.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>{lastExam!.lgsPuani.toFixed(2)}</div>
             </div>
             <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: '0.07s' }}>
+              <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text3)' }}>Ortalama Puan</div>
+              <div style={{ fontSize: '26px', fontWeight: 900, color: 'var(--text)' }}>{avgScore.toFixed(2)}</div>
+            </div>
+            <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: '0.14s' }}>
               <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text3)' }}>En Yüksek ({bestExam!.trialExam.name})</div>
               <div style={{ fontSize: '26px', fontWeight: 900, color: bestExam!.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>{bestExam!.lgsPuani.toFixed(2)}</div>
             </div>
           </div>
 
-          <div className="glass-card animate-fade-up" style={{ padding: '24px', marginBottom: '20px', animationDelay: '0.14s' }}>
+          <div className="glass-card animate-fade-up" style={{ padding: '24px', marginBottom: '20px', animationDelay: '0.21s' }}>
             <div className="sec-title">Puan İlerlemesi</div>
             <div style={{ position: 'relative', height: '250px' }}>
               <ProgressChart exams={exams} color={student.color} />
@@ -84,19 +89,19 @@ export default async function StudentDetail({ params }: { params: { id: string }
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-            <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: '0.2s' }}>
+            <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: '0.28s' }}>
               <div className="sec-title">Sözel Net Dağılımı</div>
               <div style={{ position: 'relative', height: '200px' }}>
                 <SubjectBarChart exams={exams} subjects={['Turkce', 'Inkilap', 'Dinkultur', 'Ingilizce']} title="Sözel Bölüm" color="var(--purple)" />
               </div>
             </div>
-            <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: '0.25s' }}>
+            <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: '0.35s' }}>
               <div className="sec-title">Sayısal Net Dağılımı</div>
               <div style={{ position: 'relative', height: '200px' }}>
                 <SubjectBarChart exams={exams} subjects={['Matematik', 'Fen']} title="Sayısal Bölüm" color="var(--blue)" />
               </div>
             </div>
-            <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: '0.3s' }}>
+            <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: '0.42s' }}>
               <div className="sec-title">Son Deneme Radar</div>
               <div style={{ position: 'relative', height: '200px' }}>
                 <NetRadarChart exams={exams} color={student.color} />
@@ -104,8 +109,8 @@ export default async function StudentDetail({ params }: { params: { id: string }
             </div>
           </div>
 
-          <div className="glass-card animate-fade-up" style={{ padding: '24px', animationDelay: '0.35s' }}>
-            <div className="sec-title">Geçmiş Denemeler</div>
+          <div className="glass-card animate-fade-up" style={{ padding: '24px', animationDelay: '0.49s' }}>
+            <div className="sec-title">Geçmiş Denemeler (Yeniye Doğru)</div>
             
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
@@ -126,8 +131,9 @@ export default async function StudentDetail({ params }: { params: { id: string }
                   </tr>
                 </thead>
                 <tbody>
-                  {exams.map((ex, i) => {
-                    const prevLgs = i > 0 ? exams[i - 1].lgsPuani : null;
+                  {[...exams].reverse().map((ex) => {
+                    const currentIndexInOriginal = exams.findIndex(e => e.id === ex.id);
+                    const prevLgs = currentIndexInOriginal > 0 ? exams[currentIndexInOriginal - 1].lgsPuani : null;
                     const diff = prevLgs ? ex.lgsPuani - prevLgs : 0;
                     return (
                       <tr key={ex.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
