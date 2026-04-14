@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { updateTrialExam, deleteTrialExam, createStandaloneTrialExam, importExcelData } from '@/app/actions';
+import VisionScanner from '@/components/VisionScanner';
 
 export default function ExamsClient({ initialExams, students }: { initialExams: any[], students: any[] }) {
   const [activeTab, setActiveTab] = useState<'exams'|'students'|'lab'>('exams');
