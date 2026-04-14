@@ -219,4 +219,43 @@ export function ComparisonRadarChart({ exam1, exam2, color }: { exam1: any, exam
 
   return <Radar options={options as any} data={data} />;
 }
+export function SubjectComparisonMiniChart({ studentNets, avgNets, color }: { studentNets: Record<string, number>, avgNets: Record<string, number>, color: string }) {
+  const subjects = ['turkce', 'inkilap', 'dinkultur', 'ingilizce', 'matematik', 'fen'];
+  const labels = ['TR', 'İNK', 'DİN', 'İNG', 'MAT', 'FEN'];
 
+  const data = {
+    labels,
+    datasets: [
+      {
+        label: 'Öğrenci',
+        data: subjects.map(s => studentNets[s] || 0),
+        backgroundColor: color,
+        borderRadius: 4,
+      },
+      {
+        label: 'Ortalama',
+        data: subjects.map(s => avgNets[s] || 0),
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: 4,
+      }
+    ]
+  };
+
+  const options = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { 
+      legend: { 
+        display: true, 
+        position: 'top', 
+        labels: { color: '#8899bb', font: { size: 9 }, boxWidth: 8, padding: 5 } 
+      }, 
+      tooltip: { ...chartTip, bodyFont: { size: 10 } } 
+    },
+    scales: {
+      y: { min: 0, max: 20, grid: { color: '#111827' }, ticks: { color: '#4a5a7a', font: { size: 8 } } },
+      x: { grid: { display: false }, ticks: { color: '#4a5a7a', font: { size: 8 } } }
+    }
+  };
+
+  return <Bar options={options as any} data={data} />;
+}

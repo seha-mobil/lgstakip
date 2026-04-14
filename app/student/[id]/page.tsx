@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { ProgressChart, SubjectBarChart, NetRadarChart } from '@/components/ClientCharts';
-import { deleteExamResult } from '@/app/actions';
+import { deleteExamResult, getExamAverages } from '@/app/actions';
+import PastExamsTable from './PastExamsTable';
 
 export default async function StudentDetail({ params }: { params: { id: string } }) {
   // Auth check
@@ -27,6 +28,8 @@ export default async function StudentDetail({ params }: { params: { id: string }
   const bestExam = exams.length ? [...exams].sort((a,b) => b.lgsPuani - a.lgsPuani)[0] : null;
   const lastExam = exams.length ? exams[exams.length - 1] : null;
   const avgScore = exams.length ? exams.reduce((acc, ex) => acc + ex.lgsPuani, 0) / exams.length : 0;
+  
+  const averages = await getExamAverages();
 
   return (
     <div className="page animate-fade-up">
@@ -118,61 +121,12 @@ export default async function StudentDetail({ params }: { params: { id: string }
 
           <div className="glass-card animate-fade-up" style={{ padding: '24px', animationDelay: '0.49s' }}>
             <div className="sec-title">Geçmiş Denemeler (Yeniye Doğru)</div>
-            
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text3)' }}>
-                    <th style={{ padding: '12px 8px' }}>Tarih</th>
-                    <th style={{ padding: '12px 8px' }}>Deneme Adı</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>TR</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>İNK</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>DİN</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>İNG</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>MAT</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'center', color: 'var(--text3)', fontSize: '11px' }}>FEN</th>
-                    <th style={{ padding: '12px 8px' }}>Top. Net</th>
-                    <th style={{ padding: '12px 8px' }}>Puan</th>
-                    <th style={{ padding: '12px 8px' }}>Fark</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'right' }}>İşlem</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...exams].reverse().map((ex) => {
-                    const currentIndexInOriginal = exams.findIndex(e => e.id === ex.id);
-                    const prevLgs = currentIndexInOriginal > 0 ? exams[currentIndexInOriginal - 1].lgsPuani : null;
-                    const diff = prevLgs ? ex.lgsPuani - prevLgs : 0;
-                    return (
-                      <tr key={ex.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <td style={{ padding: '12px 8px', color: 'var(--text2)' }}>{new Date(ex.date).toLocaleDateString('tr-TR')}</td>
-                        <td style={{ padding: '12px 8px', fontWeight: 600 }}>{ex.trialExam.name}</td>
-                        {['turkce', 'inkilap', 'dinkultur', 'ingilizce', 'matematik', 'fen'].map(key => {
-                          const sub = ex.subjects?.find((s:any) => s.subjectKey === key);
-                          const net = sub ? Math.max(0, sub.dogru - (sub.yanlis / 4)) : 0;
-                          return <td key={key} style={{ padding: '12px 8px', textAlign: 'center', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text2)' }}>{net}</td>;
-                        })}
-                        <td style={{ padding: '12px 8px', fontFamily: 'var(--mono)' }}>{ex.toplamNet}</td>
-                        <td style={{ padding: '12px 8px', fontWeight: 700, color: ex.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>{ex.lgsPuani.toFixed(2)}</td>
-                        <td style={{ padding: '12px 8px', fontSize: '12px' }}>
-                          {prevLgs ? (
-                            <span style={{ color: diff > 0 ? 'var(--green)' : diff < 0 ? 'var(--red)' : 'var(--text3)' }}>
-                              {diff > 0 ? '+' : ''}{diff.toFixed(2)}
-                            </span>
-                          ) : '-'}
-                        </td>
-                        <td style={{ padding: '12px 8px', textAlign: 'right' }}>
-                          <form action={deleteExamResult.bind(null, student.id, ex.id)} style={{ display: 'inline-block' }}>
-                            <button type="submit" className="delete-btn" style={{ background: 'transparent', border: 'none', color: 'var(--red)', cursor: 'pointer', padding: '6px', borderRadius: '4px', transition: 'all 0.2s' }}>
-                              <i className="fas fa-trash"></i>
-                            </button>
-                          </form>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <PastExamsTable 
+              exams={exams} 
+              studentId={student.id} 
+              studentColor={student.color} 
+              averages={averages} 
+            />
           </div>
         </>
       )}

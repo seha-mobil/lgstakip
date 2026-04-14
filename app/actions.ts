@@ -270,7 +270,37 @@ export async function importExcelData(parsedRows: any[]) {
     }
   }
 
-  revalidatePath('/');
   revalidatePath('/exams');
   return { success: true, count: parsedRows.length };
+}
+
+export async function getExamAverages() {
+  const allResults = await prisma.examResult.findMany({
+    include: { subjects: true }
+  });
+
+  const trialGroups: Record<string, Record<string, { totalNet: number, count: number }>> = {};
+
+  allResults.forEach(res => {
+    if (!trialGroups[res.trialExamId]) trialGroups[res.trialExamId] = {};
+    res.subjects.forEach(sub => {
+      const net = Math.max(0, sub.dogru - (sub.yanlis / 4));
+      if (!trialGroups[res.trialExamId][sub.subjectKey]) {
+        trialGroups[res.trialExamId][sub.subjectKey] = { totalNet: 0, count: 0 };
+      }
+      trialGroups[res.trialExamId][sub.subjectKey].totalNet += net;
+      trialGroups[res.trialExamId][sub.subjectKey].count += 1;
+    });
+  });
+
+  const averages: Record<string, Record<string, number>> = {};
+  Object.keys(trialGroups).forEach(trialId => {
+    averages[trialId] = {};
+    Object.keys(trialGroups[trialId]).forEach(subKey => {
+      const g = trialGroups[trialId][subKey];
+      averages[trialId][subKey] = g.totalNet / g.count;
+    });
+  });
+
+  return averages;
 }
