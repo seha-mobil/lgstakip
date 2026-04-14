@@ -235,7 +235,7 @@ export function SubjectComparisonMiniChart({ studentNets, avgNets, color }: { st
       {
         label: 'Kendi Ortalaman',
         data: subjects.map(s => avgNets[s] || 0),
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        backgroundColor: 'rgba(239, 68, 68, 0.5)',
         borderRadius: 4,
       }
     ]
