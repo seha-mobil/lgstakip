@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { AverageNetComparisonChart, AveragePuanComparisonChart } from '@/components/ClientCharts';
 
 export default function CompareClient({ students }: { students: any[] }) {
   const [mode, setMode] = useState<'all' | 'common'>('all');
@@ -72,10 +73,31 @@ export default function CompareClient({ students }: { students: any[] }) {
         </button>
       </div>
 
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+        <div className="glass-card" style={{ padding: '20px', height: '280px' }}>
+          <div className="sec-title" style={{ fontSize: '13px', marginBottom: '15px' }}>
+            <i className="fas fa-chart-bar" style={{ marginRight: '8px', color: 'var(--green)' }}></i>
+            Net Ortalamaları
+          </div>
+          <div style={{ height: '200px' }}>
+            <AverageNetComparisonChart data={stats} />
+          </div>
+        </div>
+        <div className="glass-card" style={{ padding: '20px', height: '280px' }}>
+          <div className="sec-title" style={{ fontSize: '13px', marginBottom: '15px' }}>
+            <i className="fas fa-chart-line" style={{ marginRight: '8px', color: 'var(--primary)' }}></i>
+            Puan Ortalamaları
+          </div>
+          <div style={{ height: '200px' }}>
+            <AveragePuanComparisonChart data={stats} />
+          </div>
+        </div>
+      </div>
+
       <div className="glass-card" style={{ padding: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <div className="sec-title" style={{ margin: 0 }}>
-            {mode === 'all' ? 'Tüm Denemeler Ortalaması' : 'Ortak Denemeler Ortalaması'}
+            {mode === 'all' ? 'Sıralama Listesi' : 'Ortak Sınav Sıralaması'}
           </div>
           <div style={{ fontSize: '11px', color: 'var(--text3)', fontFamily: 'var(--mono)', background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: '12px' }}>
              {mode === 'all' ? 'Tüm Kayıtlar' : `${commonExamIds.length} Ortak Sınav`}

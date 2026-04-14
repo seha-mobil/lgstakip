@@ -259,3 +259,54 @@ export function SubjectComparisonMiniChart({ studentNets, avgNets, color }: { st
 
   return <Bar options={options as any} data={data} />;
 }
+export function AverageNetComparisonChart({ data }: { data: any[] }) {
+  const chartData = {
+    labels: data.map(d => d.name),
+    datasets: [{
+      label: 'Net Ortalaması',
+      data: data.map(d => d.avgNet),
+      backgroundColor: data.map(d => d.color),
+      borderRadius: 6,
+    }]
+  };
+
+  const options = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { 
+      legend: { display: false },
+      tooltip: { ...chartTip }
+    },
+    scales: {
+      y: { min: 0, max: 90, grid: { color: '#111827' }, ticks: { color: '#4a5a7a' } },
+      x: { grid: { display: false }, ticks: { color: '#4a5a7a', font: { size: 10 } } }
+    }
+  };
+
+  return <Bar options={options as any} data={chartData} />;
+}
+
+export function AveragePuanComparisonChart({ data }: { data: any[] }) {
+  const chartData = {
+    labels: data.map(d => d.name),
+    datasets: [{
+      label: 'Puan Ortalaması',
+      data: data.map(d => d.avgLgs),
+      backgroundColor: data.map(d => d.color),
+      borderRadius: 6,
+    }]
+  };
+
+  const options = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { 
+      legend: { display: false },
+      tooltip: { ...chartTip }
+    },
+    scales: {
+      y: { min: 300, max: 500, grid: { color: '#111827' }, ticks: { color: '#4a5a7a' } },
+      x: { grid: { display: false }, ticks: { color: '#4a5a7a', font: { size: 10 } } }
+    }
+  };
+
+  return <Bar options={options as any} data={chartData} />;
+}
