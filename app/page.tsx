@@ -60,18 +60,27 @@ export default async function Dashboard() {
                     <span style={{ fontSize: '11px', color: 'var(--text3)', fontFamily: 'var(--mono)' }}>{s.examResults.length} deneme</span>
                   </div>
                   
-                  {lastExam ? (
+                  {s.examResults.length > 0 ? (
                     <>
-                      <div style={{ textAlign: 'center', padding: '8px 0 4px' }}>
-                        <div style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-1px', color: lastExam.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>
-                          {lastExam.lgsPuani.toFixed(2)}
-                        </div>
-                        <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '2px' }}>Son Deneme Puanı</div>
-                      </div>
+                      {(() => {
+                        const totalScore = s.examResults.reduce((acc, e) => acc + e.lgsPuani, 0);
+                        const avgS = totalScore / s.examResults.length;
+                        const avgFormatted = avgS.toFixed(2).replace('.', ',');
+                        
+                        return (
+                          <div style={{ textAlign: 'center', padding: '8px 0 4px' }}>
+                            <div style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-1px', color: avgS >= 400 ? 'var(--green)' : 'var(--accent)' }}>
+                              {avgFormatted}
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '2px' }}>Genel Puan Ortalaması</div>
+                          </div>
+                        );
+                      })()}
+
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '14px', paddingTop: '12px', borderTop: '1px solid var(--border)', fontSize: '12px' }}>
-                        <span style={{ color: 'var(--text3)' }}>Ort. Net <b style={{ color: 'var(--text2)' }}>{lastExam.toplamNet}</b></span>
-                        {trend > 0 && <span style={{ color: 'var(--green)', fontSize: '11px' }}><i className="fas fa-caret-up"></i> +{trend.toFixed(1)}</span>}
-                        {trend < 0 && <span style={{ color: 'var(--red)', fontSize: '11px' }}><i className="fas fa-caret-down"></i> {trend.toFixed(1)}</span>}
+                        <span style={{ color: 'var(--text3)' }}>Son Net <b style={{ color: 'var(--text2)' }}>{lastExam?.toplamNet.toString().replace('.', ',')}</b></span>
+                        {trend > 0 && <span style={{ color: 'var(--green)', fontSize: '11px' }}><i className="fas fa-caret-up"></i> +{trend.toFixed(1).replace('.', ',')}</span>}
+                        {trend < 0 && <span style={{ color: 'var(--red)', fontSize: '11px' }}><i className="fas fa-caret-down"></i> {trend.toFixed(1).replace('.', ',')}</span>}
                         {trend === 0 && <span style={{ color: 'var(--text3)', fontSize: '11px' }}>—</span>}
                       </div>
                     </>
