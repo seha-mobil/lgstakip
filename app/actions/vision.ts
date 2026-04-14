@@ -56,7 +56,7 @@ export async function scanImageAction(base64Image: string, mimeType: string) {
             }
           ],
           generationConfig: {
-            response_mime_type: "application/json",
+            temperature: 0.1, // Low temperature for more structured output
           }
         }),
       }
@@ -68,9 +68,17 @@ export async function scanImageAction(base64Image: string, mimeType: string) {
       throw new Error(data.error.message || 'API Hatası');
     }
 
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) {
       throw new Error('Yapay zeka yanıt üretemedi.');
+    }
+
+    // JSON modunu manuel olarak temizle (Markdown taglerini kaldır)
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      text = jsonMatch[0];
+    } else {
+      text = text.replace(/```json/g, '').replace(/```/g, '').trim();
     }
 
     const result = JSON.parse(text);
