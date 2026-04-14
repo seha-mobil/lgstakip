@@ -135,7 +135,10 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
           <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px' }}>
             {initialStudents.map(s => {
               const isActive = pathname.startsWith(`/student/${s.id}`);
-              const lastExam = s.examResults?.[s.examResults.length - 1];
+              const avgScore = s.examResults.length > 0 
+                ? (s.examResults.reduce((acc: number, e: any) => acc + e.lgsPuani, 0) / s.examResults.length) 
+                : 0;
+
               return (
                 <Link href={`/student/${s.id}`} key={s.id} style={{
                   display: 'flex', alignItems: 'center', gap: '10px',
@@ -148,9 +151,9 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
                   <span style={{ fontSize: '13px', fontWeight: 600, color: isActive ? 'var(--text)' : 'var(--text2)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {s.name}
                   </span>
-                  {lastExam && (
-                    <span style={{ fontSize: '11px', fontWeight: 700, fontFamily: 'var(--mono)', marginLeft: 'auto', color: lastExam.lgsPuani >= 450 ? '#3dd68c' : lastExam.lgsPuani >= 400 ? '#84cc16' : 'var(--accent)' }}>
-                      {lastExam.lgsPuani.toFixed(2)}
+                  {avgScore > 0 && (
+                    <span style={{ fontSize: '11px', fontWeight: 700, fontFamily: 'var(--mono)', marginLeft: 'auto', color: avgScore >= 450 ? '#3dd68c' : avgScore >= 400 ? '#84cc16' : 'var(--accent)' }}>
+                      {avgScore.toFixed(2).replace('.', ',')}
                     </span>
                   )}
                 </Link>

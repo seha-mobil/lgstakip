@@ -45,7 +45,6 @@ export default async function Dashboard() {
         <>
           <div className="sec-title" style={{ marginBottom: '14px' }}>Öğrenciler</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-            {students.map((s, i) => {
               const lastExam = s.examResults[s.examResults.length - 1];
               const prevExam = s.examResults.length > 1 ? s.examResults[s.examResults.length - 2] : null;
               const trend = lastExam && prevExam ? lastExam.lgsPuani - prevExam.lgsPuani : 0;
@@ -60,25 +59,16 @@ export default async function Dashboard() {
                     <span style={{ fontSize: '11px', color: 'var(--text3)', fontFamily: 'var(--mono)' }}>{s.examResults.length} deneme</span>
                   </div>
                   
-                  {s.examResults.length > 0 ? (
+                  {lastExam ? (
                     <>
-                      {(() => {
-                        const totalScore = s.examResults.reduce((acc, e) => acc + e.lgsPuani, 0);
-                        const avgS = totalScore / s.examResults.length;
-                        const avgFormatted = avgS.toFixed(2).replace('.', ',');
-                        
-                        return (
-                          <div style={{ textAlign: 'center', padding: '8px 0 4px' }}>
-                            <div style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-1px', color: avgS >= 400 ? 'var(--green)' : 'var(--accent)' }}>
-                              {avgFormatted}
-                            </div>
-                            <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '2px' }}>Genel Puan Ortalaması</div>
-                          </div>
-                        );
-                      })()}
-
+                      <div style={{ textAlign: 'center', padding: '8px 0 4px' }}>
+                        <div style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-1px', color: lastExam.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>
+                          {lastExam.lgsPuani.toFixed(2).replace('.', ',')}
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '2px' }}>Son Deneme Puanı</div>
+                      </div>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '14px', paddingTop: '12px', borderTop: '1px solid var(--border)', fontSize: '12px' }}>
-                        <span style={{ color: 'var(--text3)' }}>Son Net <b style={{ color: 'var(--text2)' }}>{lastExam?.toplamNet.toString().replace('.', ',')}</b></span>
+                        <span style={{ color: 'var(--text3)' }}>Son Net <b style={{ color: 'var(--text2)' }}>{lastExam.toplamNet.toString().replace('.', ',')}</b></span>
                         {trend > 0 && <span style={{ color: 'var(--green)', fontSize: '11px' }}><i className="fas fa-caret-up"></i> +{trend.toFixed(1).replace('.', ',')}</span>}
                         {trend < 0 && <span style={{ color: 'var(--red)', fontSize: '11px' }}><i className="fas fa-caret-down"></i> {trend.toFixed(1).replace('.', ',')}</span>}
                         {trend === 0 && <span style={{ color: 'var(--text3)', fontSize: '11px' }}>—</span>}
