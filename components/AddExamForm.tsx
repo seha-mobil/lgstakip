@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useMemo } from 'react';
 import { saveExamResult } from '@/app/actions';
 import VisionScanner from './VisionScanner';
