@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma db push --accept-data-loss && next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate"
@@ -13,9 +13,9 @@
     "@prisma/client": "^5.12.0",
     "chart.js": "^4.4.2",
     "next": "14.2.0",
-    "react": "^18",
+    "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
-    "react-dom": "^18",
+    "react-dom": "^18.2.0",
     "react-icons": "^5.0.1"
   },
   "devDependencies": {

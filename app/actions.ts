@@ -136,25 +136,29 @@ export async function importExcelData(parsedRows: any[]) {
     if (!row['Öğrenci'] || !row['Sınav']) continue;
 
     // 1. Get or Create Student
-    const studentName = String(row['Öğrenci']).trim();
+    const studentName = String(row['Öğrenci'] || '').trim();
+    if (!studentName) continue;
+
     let student = await prisma.student.findFirst({
       where: { name: { equals: studentName, mode: 'insensitive' } }
     });
     if (!student) {
+      const colorsLoc = ['#e84b4b', '#e8b84b', '#3dd68c', '#a855f7', '#3b82f6'];
       student = await prisma.student.create({
         data: {
           name: studentName,
-          color: colors[colorIdx % colors.length]
+          color: colorsLoc[colorIdx % colorsLoc.length]
         }
       });
       colorIdx++;
     }
 
     // 2. Get or Create TrialExam
-    const examName = String(row['Sınav']).trim();
+    const examName = String(row['Sınav'] || '').trim();
+    if (!examName) continue;
+
     let examDate = new Date();
     if (row['Tarih']) {
-      // Excel might give Date object or string
       examDate = new Date(row['Tarih']);
       if (isNaN(examDate.getTime())) examDate = new Date();
     }
@@ -166,7 +170,16 @@ export async function importExcelData(parsedRows: any[]) {
       trialExam = await prisma.trialExam.create({
         data: { name: examName, date: examDate }
       });
+    } else if (!trialExam.date && row['Tarih']) {
+       // Update date if it was missing
+       trialExam = await prisma.trialExam.update({
+         where: { id: trialExam.id },
+         data: { date: examDate }
+       });
     }
+
+    // Double check we have both
+    if (!student || !trialExam) continue;
 
     // 3. Clear Existing ExamResult for this student+exam to avoid duplicates
     await prisma.examResult.deleteMany({
@@ -178,7 +191,7 @@ export async function importExcelData(parsedRows: any[]) {
       data: {
         studentId: student.id,
         trialExamId: trialExam.id,
-        date: trialExam.date,
+        date: trialExam.date || new Date(),
         ogrenciSayisi: 0,
         basariSirasi: 0,
         lgsPuani: parseTRNumber(row['LGS'] || 0),
