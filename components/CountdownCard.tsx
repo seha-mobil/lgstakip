@@ -8,7 +8,7 @@ interface CountdownCardProps {
   color?: string;
 }
 
-export default function CountdownCard({ targetDate, title, color = '#00FF41' }: CountdownCardProps) {
+export default function CountdownCard({ targetDate, title, color = '#FFFFFF' }: CountdownCardProps) {
   const [timeLeft, setTimeLeft] = useState<{ d: number; h: number; m: number; s: number } | null>(null);
 
   useEffect(() => {
@@ -37,24 +37,18 @@ export default function CountdownCard({ targetDate, title, color = '#00FF41' }: 
 
   if (!timeLeft) return null;
 
-  // Derive styles from the color prop
-  const glowStyle = {
-    color: color,
-    textShadow: `0 0 8px ${color}80, 0 0 15px ${color}40`,
-  };
-
   return (
     <div className="glass-card" style={{ 
-      padding: '16px 20px', 
+      padding: '8px 14px', 
       display: 'flex', 
       flexDirection: 'column', 
       alignItems: 'center',
-      gap: '2px', 
-      background: 'rgba(0, 0, 0, 0.4)', // Darker background for pop
+      gap: '0px', 
+      background: 'rgba(0, 0, 0, 0.4)',
       backdropFilter: 'blur(20px)',
-      border: `1px solid ${color}30`,
-      boxShadow: `0 0 15px ${color}15`,
-      minWidth: '160px',
+      border: `1px solid ${color}20`,
+      boxShadow: `0 0 10px ${color}10`,
+      minWidth: '130px',
       position: 'relative',
       overflow: 'hidden'
     }}>
@@ -63,61 +57,68 @@ export default function CountdownCard({ targetDate, title, color = '#00FF41' }: 
         position: 'absolute',
         top: 0, left: 0, right: 0, height: '1px',
         background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
-        opacity: 0.3,
+        opacity: 0.2,
         animation: 'scan-anim 4s linear infinite'
       }}></div>
 
       <style>{`
         @keyframes scan-anim {
-          0% { transform: translateY(-20px); }
-          100% { transform: translateY(120px); }
+          0% { transform: translateY(-10px); }
+          100% { transform: translateY(100px); }
         }
-        .glow-text {
+        @keyframes heartbeat-glow {
+          0% { text-shadow: 0 0 5px ${color}40, 0 0 10px ${color}20; }
+          15% { text-shadow: 0 0 12px ${color}CC, 0 0 25px ${color}80, 0 0 35px ${color}40; }
+          30% { text-shadow: 0 0 5px ${color}40, 0 0 10px ${color}20; }
+          45% { text-shadow: 0 0 10px ${color}AA, 0 0 20px ${color}60; }
+          100% { text-shadow: 0 0 5px ${color}40, 0 0 10px ${color}20; }
+        }
+        .glow-heartbeat {
+          color: ${color};
           font-family: var(--mono);
           line-height: 1;
+          animation: heartbeat-glow 1s ease-in-out infinite;
         }
       `}</style>
 
-      <div style={{ fontSize: '9px', fontWeight: 800, color: color, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>
+      <div style={{ fontSize: '9px', fontWeight: 800, color: color, opacity: 0.6, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '4px' }}>
         {title}
       </div>
 
       {/* Large Days Section */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
-        <div className="glow-text" style={{ ...glowStyle, fontSize: '48px', fontWeight: 900 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '4px' }}>
+        <div className="glow-heartbeat" style={{ fontSize: '42px', fontWeight: 900 }}>
           {timeLeft.d}
         </div>
-        <div style={{ fontSize: '10px', fontWeight: 700, color: color, opacity: 0.9, marginTop: '-2px' }}>GÜN KALDI</div>
+        <div style={{ fontSize: '9px', fontWeight: 700, color: color, opacity: 0.8, marginTop: '-2px' }}>GÜN KALDI</div>
       </div>
 
-      <div style={{ width: '100%', height: '1px', background: `${color}20`, marginBottom: '10px' }}></div>
+      <div style={{ width: '80%', height: '1px', background: `${color}15`, marginBottom: '6px' }}></div>
 
       {/* HMS Section */}
-      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-        <MiniUnit val={timeLeft.h} label="SA" color={color} glowStyle={glowStyle} />
-        <span style={{ color: color, opacity: 0.3, fontWeight: 900, marginTop: '-4px' }}>:</span>
-        <MiniUnit val={timeLeft.m} label="DK" color={color} glowStyle={glowStyle} />
-        <span style={{ color: color, opacity: 0.3, fontWeight: 900, marginTop: '-4px' }}>:</span>
-        <MiniUnit val={timeLeft.s} label="SN" color={color} glowStyle={glowStyle} isSn />
+      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <MiniUnit val={timeLeft.h} label="S" color={color} />
+        <span style={{ color: color, opacity: 0.2, fontWeight: 900, marginTop: '-4px' }}>:</span>
+        <MiniUnit val={timeLeft.m} label="D" color={color} />
+        <span style={{ color: color, opacity: 0.2, fontWeight: 900, marginTop: '-4px' }}>:</span>
+        <MiniUnit val={timeLeft.s} label="Sn" color={color} isSn />
       </div>
     </div>
   );
 }
 
-function MiniUnit({ val, label, color, glowStyle, isSn = false }: { val: number; label: string; color: string; glowStyle: any; isSn?: boolean }) {
+function MiniUnit({ val, label, color, isSn = false }: { val: number; label: string; color: string; isSn?: boolean }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <div className="glow-text" style={{ 
-        ...glowStyle,
-        fontSize: '16px', 
+      <div className="glow-heartbeat" style={{ 
+        fontSize: '14px', 
         fontWeight: 700,
-        opacity: isSn ? 1 : 0.8,
-        minWidth: '22px',
+        minWidth: '20px',
         textAlign: 'center'
       }}>
         {val.toString().padStart(2, '0')}
       </div>
-      <div style={{ fontSize: '7px', fontWeight: 600, color: color, opacity: 0.5 }}>{label}</div>
+      <div style={{ fontSize: '7px', fontWeight: 600, color: color, opacity: 0.4 }}>{label}</div>
     </div>
   );
 }
