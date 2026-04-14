@@ -28,9 +28,9 @@ export default function StudentLoginPage() {
 
   return (
     <div style={{
-      height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
       background: 'radial-gradient(circle at 50% 50%, #111827 0%, #080c14 100%)',
-      padding: '20px'
+      padding: '40px 20px', overflowY: 'auto'
     }}>
       <div className="glass-card animate-fade-up" style={{ padding: '32px', maxWidth: '400px', width: '100%', textAlign: 'center' }}>
         <div style={{

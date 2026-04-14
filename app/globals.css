@@ -113,6 +113,12 @@ body {
   margin: 0 auto;
 }
 
+@media (max-width: 768px) {
+  .page {
+    padding: 20px 16px;
+  }
+}
+
 /* Input Fields */
 .input {
   width: 100%;
@@ -176,6 +182,27 @@ body {
   animation: float 4s ease-in-out infinite;
 }
 
+/* Mobile Utility Classes */
+.flex-mobile-col {
+  display: flex;
+}
+
+@media (max-width: 768px) {
+  .flex-mobile-col {
+    flex-direction: column !important;
+  }
+  
+  h2 { font-size: 20px !important; }
+  h3 { font-size: 16px !important; }
+}
+
+/* Table Responsive Container */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Progress Track */
 .prog-track {
   height: 6px;
@@ -237,13 +264,14 @@ body {
     top: 0;
     bottom: 0;
     left: 0;
+    z-index: 100;
   }
   .sidebar.collapsed {
-    /* Reset margin on mobile and use transform for hardware acceleration overlay slide */
     margin-left: 0;
     transform: translateX(-100%);
   }
   .mobile-overlay {
     display: block;
+    z-index: 90;
   }
 }

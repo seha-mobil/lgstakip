@@ -30,14 +30,14 @@ export default async function StudentDetail({ params }: { params: { id: string }
 
   return (
     <div className="page animate-fade-up">
-      <div style={{ display: 'flex', alignItems: 'center', justifyItems: 'space-between', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
+      <div className="flex-mobile-col" style={{ alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <Link href="/" className="btn btn-ghost" style={{ width: '36px', height: '36px', padding: 0, justifyContent: 'center' }}>
+          <Link href="/" className="btn btn-ghost" style={{ width: '36px', height: '36px', padding: 0, justifyContent: 'center', flexShrink: 0 }}>
             <i className="fas fa-arrow-left"></i>
           </Link>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ background: student.color, width: '12px', height: '12px', borderRadius: '50%' }}></div>
+              <div style={{ background: student.color, width: '12px', height: '12px', borderRadius: '50%', flexShrink: 0 }}></div>
               <h2 style={{ fontSize: '22px', fontWeight: 900, letterSpacing: '-0.5px' }}>{student.name}</h2>
             </div>
             <p style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '2px' }}>{exams.length} deneme kaydı</p>
@@ -45,16 +45,16 @@ export default async function StudentDetail({ params }: { params: { id: string }
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           {exams.length > 1 && (
-            <Link href={"/student/" + student.id + "/exam-compare"} className="btn btn-ghost">
+            <Link href={"/student/" + student.id + "/exam-compare"} className="btn btn-ghost" style={{ padding: '8px 12px', fontSize: '12px' }}>
               <i className="fas fa-balance-scale"></i> Karşılaştır
             </Link>
           )}
           {exams.length > 0 && (
-            <a href={"/student/" + student.id + "/print"} target="_blank" className="btn btn-ghost">
+            <a href={"/student/" + student.id + "/print"} target="_blank" className="btn btn-ghost" style={{ padding: '8px 12px', fontSize: '12px' }}>
               <i className="fas fa-print"></i> Yazdır
             </a>
           )}
-          <Link href={"/student/" + student.id + "/add-exam"} className="btn btn-primary">
+          <Link href={"/student/" + student.id + "/add-exam"} className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '12px' }}>
             <i className="fas fa-plus"></i> Yeni Deneme
           </Link>
         </div>
@@ -95,7 +95,7 @@ export default async function StudentDetail({ params }: { params: { id: string }
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '24px' }}>
             <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: '0.28s' }}>
               <div className="sec-title">Sözel Net Dağılımı</div>
               <div style={{ position: 'relative', height: '200px' }}>

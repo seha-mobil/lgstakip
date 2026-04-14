@@ -137,16 +137,16 @@ export default function ExamsClient({ initialExams, students }: { initialExams: 
         <>
           <div className="glass-card" style={{ padding: '16px 24px', marginBottom: '24px' }}>
             <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>Yeni Deneme Ekle</h3>
-            <form onSubmit={handleCreate} style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-              <div style={{ flex: '1 1 200px' }}>
+            <form onSubmit={handleCreate} className="flex-mobile-col" style={{ gap: '12px', alignItems: 'flex-end' }}>
+              <div style={{ flex: '1 1 auto', width: '100%' }}>
                 <label className="input-label">Deneme Adı</label>
                 <input type="text" className="input" placeholder="Örn: Özdebir TG-2" value={newName} onChange={e => setNewName(e.target.value)} required disabled={loading} />
               </div>
-              <div style={{ flex: '0 0 150px' }}>
+              <div style={{ flex: '0 0 auto', width: '100%' }}>
                 <label className="input-label">Tarih</label>
                 <input type="date" className="input" value={newDate} onChange={e => setNewDate(e.target.value)} required disabled={loading} />
               </div>
-              <button type="submit" className="btn btn-primary" disabled={loading} style={{ height: '42px', padding: '0 20px' }}>
+              <button type="submit" className="btn btn-primary" disabled={loading} style={{ height: '42px', padding: '0 20px', width: '100%', justifyContent: 'center' }}>
                 <i className="fas fa-plus"></i> Ekle
               </button>
             </form>
@@ -191,7 +191,7 @@ export default function ExamsClient({ initialExams, students }: { initialExams: 
           </div>
 
           <div className="glass-card" style={{ padding: '24px' }}>
-          <div style={{ overflowX: 'auto' }}>
+          <div className="table-container">
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'left' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text3)' }}>
@@ -275,20 +275,22 @@ export default function ExamsClient({ initialExams, students }: { initialExams: 
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {students.map(s => (
-            <div key={s.id} className="glass-card" style={{ padding: '14px 20px', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: s.color }}></div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '15px', fontWeight: 700 }}>{s.name}</div>
-                <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '2px' }}>
-                  Giriş Şifresi: <span style={{ fontFamily: 'var(--mono)', color: 'var(--accent)', fontWeight: 'bold' }}>{s.password}</span>
+            <div key={s.id} className="glass-card flex-mobile-col" style={{ padding: '14px 20px', background: 'rgba(255,255,255,0.02)', alignItems: 'center', gap: '15px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flex: 1, width: '100%' }}>
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: s.color, flexShrink: 0 }}></div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '15px', fontWeight: 700 }}>{s.name}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '2px' }}>
+                    Giriş Şifresi: <span style={{ fontFamily: 'var(--mono)', color: 'var(--accent)', fontWeight: 'bold' }}>{s.password}</span>
+                  </div>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={() => handleUpdatePassword(s.id, s.name, s.password)} className="btn btn-ghost" style={{ padding: '8px 12px', fontSize: '12px', gap: '6px' }}>
+              <div style={{ display: 'flex', gap: '8px', width: '100%', justifyContent: 'flex-end' }}>
+                <button onClick={() => handleUpdatePassword(s.id, s.name, s.password)} className="btn btn-ghost" style={{ padding: '8px 12px', fontSize: '11px', gap: '6px', flex: 1, justifyContent: 'center' }}>
                   <i className="fas fa-key"></i> Şifre Değiştir
                 </button>
-                <button onClick={() => handleDeleteStudent(s.id, s.name)} className="btn btn-ghost" style={{ padding: '8px 12px', fontSize: '12px', color: 'var(--red)', gap: '6px' }}>
-                  <i className="fas fa-trash"></i> Öğrenciyi Sil
+                <button onClick={() => handleDeleteStudent(s.id, s.name)} className="btn btn-ghost" style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--red)', gap: '6px', flex: 1, justifyContent: 'center' }}>
+                  <i className="fas fa-trash"></i> Sil
                 </button>
               </div>
             </div>
