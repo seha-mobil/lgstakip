@@ -9,12 +9,14 @@ datasource db {
 }
 
 model Student {
-  id          String       @id @default(uuid())
-  name        String
-  password    String       @default("123456")
-  color       String
-  createdAt   DateTime     @default(now())
-  examResults ExamResult[]
+  id              String       @id @default(uuid())
+  name            String
+  password        String       @default("123456")
+  color           String
+  targetLiseName  String?
+  targetLisePuan  Float?
+  createdAt       DateTime     @default(now())
+  examResults     ExamResult[]
 }
 
 model TrialExam {

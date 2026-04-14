@@ -6,6 +6,7 @@ import { ProgressChart, SubjectBarChart, NetRadarChart } from '@/components/Clie
 import { deleteExamResult, getExamAverages } from '@/app/actions';
 import PastExamsTable from './PastExamsTable';
 import SubjectStatsTable from '@/components/SubjectStatsTable';
+import LiseTargetPicker from '@/components/LiseTargetPicker';
 
 export default async function StudentDetail({ params }: { params: { id: string } }) {
   // Auth check
@@ -30,6 +31,11 @@ export default async function StudentDetail({ params }: { params: { id: string }
   const lastExam = exams.length ? exams[exams.length - 1] : null;
   const avgScore = exams.length ? exams.reduce((acc, ex) => acc + ex.lgsPuani, 0) / exams.length : 0;
   
+  const targetName = student.targetLiseName;
+  const targetPuan = student.targetLisePuan;
+  const progressPct = targetPuan ? Math.min(100, (avgScore / targetPuan) * 100) : 0;
+  const remainingPuan = targetPuan ? Math.max(0, targetPuan - avgScore) : 0;
+
   // Calculate personal subject averages
   const personalAverages: Record<string, number> = {};
   const totals: Record<string, { sum: number, count: number }> = {};
@@ -62,6 +68,11 @@ export default async function StudentDetail({ params }: { params: { id: string }
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <LiseTargetPicker 
+            studentId={student.id} 
+            currentName={student.targetLiseName} 
+            currentPuan={student.targetLisePuan} 
+          />
           {exams.length > 1 && (
             <Link href={"/student/" + student.id + "/exam-compare"} className="btn btn-ghost" style={{ padding: '8px 12px', fontSize: '12px' }}>
               <i className="fas fa-balance-scale"></i> Karşılaştır
@@ -77,6 +88,51 @@ export default async function StudentDetail({ params }: { params: { id: string }
           </Link>
         </div>
       </div>
+
+      {targetPuan && (
+        <div className="glass-card animate-fade-up" style={{ 
+          padding: '24px', 
+          marginBottom: '20px', 
+          background: 'linear-gradient(135deg, rgba(232, 184, 75, 0.08) 0%, rgba(30, 45, 66, 0.4) 100%)',
+          border: '1px solid rgba(232, 184, 75, 0.2)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <div>
+              <div style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>HEDEF YOLCULUĞU</div>
+              <h3 style={{ fontSize: '18px', fontWeight: 900, color: 'var(--text)' }}>{targetName}</h3>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text)' }}>%{progressPct.toFixed(1).replace('.', ',')}</div>
+              <div style={{ fontSize: '10px', color: 'var(--text3)' }}>{targetPuan.toFixed(2)} Hedef Puan</div>
+            </div>
+          </div>
+          
+          <div style={{ height: '10px', width: '100%', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
+            <div style={{ 
+              height: '100%', 
+              width: `${progressPct}%`, 
+              background: 'var(--accent)', 
+              boxShadow: '0 0 15px var(--accent-glow)',
+              transition: 'width 1s cubic-bezier(0.34, 1.56, 0.64, 1)'
+            }} />
+          </div>
+          
+          <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <p style={{ fontSize: '12px', color: 'var(--text3)' }}>
+              Şu anki ortalaman: <b style={{ color: 'var(--text2)' }}>{avgScore.toFixed(2).replace('.', ',')}</b>
+            </p>
+            {remainingPuan > 0 ? (
+              <p style={{ fontSize: '12px', color: 'var(--accent)' }}>
+                Hedefe <b style={{ fontSize: '14px' }}>{remainingPuan.toFixed(2).replace('.', ',')}</b> puan kaldı
+              </p>
+            ) : (
+              <p style={{ fontSize: '12px', color: 'var(--green)', fontWeight: 800 }}>
+                HEDEFE ULAŞILDI! 🏆
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {!exams.length ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', textAlign: 'center' }}>
