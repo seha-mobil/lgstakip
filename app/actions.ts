@@ -204,8 +204,7 @@ export async function importExcelData(parsedRows: any[]) {
           examResultId: examResult.id,
           subjectKey: sub.key.toLowerCase(),
           dogru: d,
-          yanlis: y,
-          bos: 0
+          yanlis: y
         }
       });
     }
