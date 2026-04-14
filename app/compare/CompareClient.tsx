@@ -98,13 +98,13 @@ export default function CompareClient({ students }: { students: any[] }) {
                   <span style={{ fontSize: '14px', fontWeight: 700 }}>{item.name}</span>
                   {isBest && <span style={{ fontSize: '9px', background: 'rgba(61,214,140,0.15)', color: 'var(--green)', padding: '2px 7px', borderRadius: '20px', fontWeight: 800, fontFamily: 'var(--mono)' }}>LİDER</span>}
                 </div>
-                <div style={{ textAlign: 'right' }}>
+                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                   <div style={{ fontWeight: 800, fontFamily: 'var(--mono)', color: item.color, fontSize: '15px' }}>
                     {hasData ? item.avgNet : '--'} <span style={{ fontSize: '10px', opacity: 0.7, fontWeight: 500 }}>net</span>
                   </div>
                   {hasData && (
-                    <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text2)', fontFamily: 'var(--mono)' }}>
-                      {item.avgLgs} <span style={{ fontSize: '10px', opacity: 0.7, fontWeight: 500 }}>puan</span>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--mono)', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '6px', marginTop: '2px' }}>
+                      {item.avgLgs} <span style={{ fontSize: '9px', opacity: 0.7, fontWeight: 500 }}>puan</span>
                     </div>
                   )}
                   <div style={{ fontSize: '10px', color: 'var(--text3)', marginTop: '2px' }}>
