@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 interface CountdownCardProps {
   targetDate: string;
@@ -41,6 +41,19 @@ export default function CountdownCard({
     return () => clearInterval(timer);
   }, [targetDate]);
 
+  // Dynamic pulse duration calculation (fewer days = faster heartbeat)
+  const pulseDuration = useMemo(() => {
+    if (!timeLeft) return 2;
+    // Map days to duration: 0-7 days = 0.6s, 30 days = 1s, 100+ days = 2.5s, 300+ days = 4s
+    // Formula: lower cap 0.6s, upper cap 4s
+    const d = timeLeft.d;
+    if (d < 7) return 0.6;
+    if (d < 30) return 0.9;
+    if (d < 100) return 1.5;
+    if (d < 300) return 2.5;
+    return 4.0;
+  }, [timeLeft?.d]);
+
   if (!timeLeft) return null;
 
   return (
@@ -74,7 +87,7 @@ export default function CountdownCard({
           color: ${color};
           font-family: var(--mono);
           line-height: 1;
-          animation: heartbeat-glow 1s ease-in-out infinite;
+          animation: heartbeat-glow ${pulseDuration}s ease-in-out infinite;
         }
       `}</style>
       
@@ -87,7 +100,7 @@ export default function CountdownCard({
         animation: 'scan-anim 4s linear infinite'
       }}></div>
 
-      {/* Increased Title Font Size */}
+      {/* Title */}
       <div style={{ 
         fontSize: '11px', 
         fontWeight: 900, 
@@ -105,7 +118,6 @@ export default function CountdownCard({
         <div className="glow-heartbeat" style={{ fontSize: '42px', fontWeight: 900 }}>
           {timeLeft.d}
         </div>
-        {/* Contrasting Label Color */}
         <div style={{ fontSize: '9px', fontWeight: 800, color: labelColor, marginTop: '-2px' }}>GÜN KALDI</div>
       </div>
 
