@@ -12,6 +12,7 @@ export default function ExamsClient({ initialExams, students }: { initialExams: 
   
   const [newName, setNewName] = useState('');
   const [newDate, setNewDate] = useState(new Date().toISOString().split('T')[0]);
+  const [aiMode, setAiMode] = useState<'manual'|'ai'>('manual');
   const [loading, setLoading] = useState(false);
   
   const [showPaste, setShowPaste] = useState(false);
@@ -131,25 +132,43 @@ export default function ExamsClient({ initialExams, students }: { initialExams: 
         >
           <i className="fas fa-user-gear"></i> Öğrenci Yönetimi
         </button>
+        <button 
+          onClick={() => setActiveTab('lab')}
+          className={`btn ${activeTab === 'lab' ? 'btn-primary' : 'btn-ghost'}`}
+          style={{ padding: '8px 16px', fontSize: '13px' }}
+        >
+          <i className="fas fa-flask"></i> AI Laboratuvarı
+        </button>
       </div>
 
       {activeTab === 'exams' && (
         <>
           <div className="glass-card" style={{ padding: '16px 24px', marginBottom: '24px' }}>
             <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>Yeni Deneme Ekle</h3>
-            <form onSubmit={handleCreate} className="flex-mobile-col" style={{ gap: '12px', alignItems: 'flex-end' }}>
-              <div style={{ flex: '1 1 auto', width: '100%' }}>
-                <label className="input-label">Deneme Adı</label>
-                <input type="text" className="input" placeholder="Örn: Özdebir TG-2" value={newName} onChange={e => setNewName(e.target.value)} required disabled={loading} />
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', background: 'rgba(255,255,255,0.03)', padding: '4px', borderRadius: '12px', width: 'fit-content', border: '1px solid var(--border)' }}>
+              <button type="button" onClick={() => setAiMode('manual')} style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', border: 'none', background: aiMode === 'manual' ? 'var(--accent)' : 'transparent', color: aiMode === 'manual' ? '#000' : 'var(--text3)' }}>Manuel</button>
+              <button type="button" onClick={() => setAiMode('ai')} style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', border: 'none', background: aiMode === 'ai' ? 'var(--accent)' : 'transparent', color: aiMode === 'ai' ? '#000' : 'var(--text3)' }}>Yapay Zeka</button>
+            </div>
+
+            {aiMode === 'ai' ? (
+              <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid var(--accent-glow)' }}>
+                <VisionScanner />
               </div>
-              <div style={{ flex: '0 0 auto', width: '100%' }}>
-                <label className="input-label">Tarih</label>
-                <input type="date" className="input" value={newDate} onChange={e => setNewDate(e.target.value)} required disabled={loading} />
-              </div>
-              <button type="submit" className="btn btn-primary" disabled={loading} style={{ height: '42px', padding: '0 20px', width: '100%', justifyContent: 'center' }}>
-                <i className="fas fa-plus"></i> Ekle
-              </button>
-            </form>
+            ) : (
+              <form onSubmit={handleCreate} className="flex-mobile-col" style={{ gap: '12px', alignItems: 'flex-end' }}>
+                <div style={{ flex: '1 1 auto', width: '100%' }}>
+                  <label className="input-label">Deneme Adı</label>
+                  <input type="text" className="input" placeholder="Örn: Özdebir TG-2" value={newName} onChange={e => setNewName(e.target.value)} required disabled={loading} />
+                </div>
+                <div style={{ flex: '0 0 auto', width: '100%' }}>
+                  <label className="input-label">Tarih</label>
+                  <input type="date" className="input" value={newDate} onChange={e => setNewDate(e.target.value)} required disabled={loading} />
+                </div>
+                <button type="submit" className="btn btn-primary" disabled={loading} style={{ height: '42px', padding: '0 20px', width: '100%', justifyContent: 'center' }}>
+                  <i className="fas fa-plus"></i> Ekle
+                </button>
+              </form>
+            )}
             
             <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
@@ -297,6 +316,15 @@ export default function ExamsClient({ initialExams, students }: { initialExams: 
           ))}
           {students.length === 0 && <div style={{ color: 'var(--text3)', fontSize: '13px', textAlign: 'center', padding: '20px' }}>Kayıtlı öğrenci bulunamadı.</div>}
         </div>
+      </div>
+    )}
+    {activeTab === 'lab' && (
+      <div className="glass-card animate-fade-up" style={{ padding: '30px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '8px' }}>Yapay Zeka Laboratuvarı</h3>
+          <p style={{ fontSize: '13px', color: 'var(--text3)' }}>Burada yapay zeka tarama motorunu test edebilir, optik form okumalarını deneyebilirsiniz.</p>
+        </div>
+        <VisionScanner />
       </div>
     )}
   </>
