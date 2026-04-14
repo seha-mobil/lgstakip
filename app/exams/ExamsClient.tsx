@@ -115,7 +115,7 @@ export default function ExamsClient({ initialExams }: { initialExams: any[] }) {
         <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
             <div>
-              <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '4px' }}>Excel'den Tablo Kopyala-Yapıştır</h4>
+              <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '4px' }}>{"Excel'den"} Tablo Kopyala-Yapıştır</h4>
               <p style={{ fontSize: '12px', color: 'var(--text3)' }}>Excelinizdeki sütunları farenizle seçip Kopyalayın (Ctrl+C). Aşağıya Yapıştırarak (Ctrl+V) toplu kayıt edebilirsiniz.</p>
             </div>
             <button 
