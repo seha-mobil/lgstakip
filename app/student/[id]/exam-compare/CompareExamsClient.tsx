@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ComparisonRadarChart } from '@/components/ClientCharts';
 
 const SUBJECTS = [
   { key: 'turkce', name: 'Türkçe' },
@@ -12,7 +13,7 @@ const SUBJECTS = [
 ];
 
 export default function CompareExamsClient({ exams, studentColor }: { exams: any[], studentColor: string }) {
-  const [exam1Id, setExam1Id] = useState(exams[exams.length - 2].id);
+  const [exam1Id, setExam1Id] = useState(exams[Math.max(0, exams.length - 2)].id);
   const [exam2Id, setExam2Id] = useState(exams[exams.length - 1].id);
 
   const e1 = exams.find(e => e.id === exam1Id);
@@ -39,7 +40,14 @@ export default function CompareExamsClient({ exams, studentColor }: { exams: any
         </div>
       </div>
 
-      <div className="glass-card animate-fade-up" style={{ padding: '24px', animationDelay: '0.1s' }}>
+      <div className="glass-card animate-fade-up" style={{ padding: '24px', marginBottom: '20px', animationDelay: '0.1s' }}>
+          <div className="sec-title">Görsel Karşılaştırma (Başarı Yüzdesi)</div>
+          <div style={{ position: 'relative', height: '300px' }}>
+            <ComparisonRadarChart exam1={e1} exam2={e2} color={studentColor} />
+          </div>
+      </div>
+
+      <div className="glass-card animate-fade-up" style={{ padding: '24px', animationDelay: '0.2s' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '13px' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text3)' }}>

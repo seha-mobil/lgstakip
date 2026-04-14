@@ -157,3 +157,66 @@ export function NetRadarChart({ exams, color }: { exams: any[], color: string })
   return <Radar options={options as any} data={data} />;
 }
 
+export function ComparisonRadarChart({ exam1, exam2, color }: { exam1: any, exam2: any, color: string }) {
+  if (!exam1 || !exam2) return null;
+  
+  const subjectsKeys = ['turkce', 'inkilap', 'dinkultur', 'ingilizce', 'matematik', 'fen'];
+  const labels = ['Türkçe', 'İnkılap', 'Din', 'İngilizce', 'Matematik', 'Fen'];
+  const maxQ = [20, 10, 10, 10, 20, 20];
+
+  const getDataForExam = (exam: any) => {
+    return subjectsKeys.map((key, i) => {
+      const sub = exam?.subjects?.find((s:any) => s.subjectKey.toLowerCase() === key.toLowerCase());
+      const net = sub ? Math.max(0, sub.dogru - (sub.yanlis / 4)) : 0;
+      return (net / maxQ[i]) * 100;
+    });
+  };
+
+  const data = {
+    labels,
+    datasets: [
+      {
+        label: '1. Deneme (%)',
+        data: getDataForExam(exam1),
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderColor: 'rgba(255, 255, 255, 0.5)',
+        pointBackgroundColor: '#fff',
+        borderWidth: 2,
+        fill: true,
+      },
+      {
+        label: '2. Deneme (%)',
+        data: getDataForExam(exam2),
+        backgroundColor: color + '44',
+        borderColor: color,
+        pointBackgroundColor: color,
+        borderWidth: 2,
+        fill: true,
+      }
+    ]
+  };
+
+  const options = {
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      r: {
+        min: 0, max: 100, beginAtZero: true,
+        angleLines: { color: '#1e2d42' },
+        grid: { color: '#111827' },
+        pointLabels: { color: '#617496', font: { size: 10, weight: 'bold' } },
+        ticks: { display: false }
+      }
+    },
+    plugins: {
+      legend: { 
+        display: true, 
+        position: 'top',
+        labels: { color: '#8899bb', font: { size: 10 }, usePointStyle: true, padding: 15 } 
+      },
+      tooltip: { ...chartTip }
+    }
+  };
+
+  return <Radar options={options as any} data={data} />;
+}
+
