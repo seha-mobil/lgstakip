@@ -7,12 +7,13 @@ const topSchools = [
   { name: 'İstanbul Erkek Lisesi', puan: 500 },
   { name: 'Galatasaray Lisesi', puan: 500 },
   { name: 'Kabataş Erkek Lisesi', puan: 500 },
-  { name: 'Ankara Fen Lisesi', puan: 495.20 },
-  { name: 'İzmir Fen Lisesi', puan: 494.10 },
-  { name: 'Atatürk Fen Lisesi (İST)', puan: 491.50 },
+  { name: 'Hüseyin Avni Sözen AL', puan: 490.50 },
+  { name: 'Atatürk Fen Lisesi', puan: 491.50 },
   { name: 'Cağaloğlu Anadolu Lisesi', puan: 488.40 },
+  { name: 'Burak Bora Anadolu Lisesi', puan: 486.20 },
   { name: 'Beşiktaş Sakıp Sabancı AL', puan: 486.20 },
   { name: 'Kadıköy Anadolu Lisesi', puan: 485.50 },
+  { name: 'Validebağ Fen Lisesi', puan: 477.21 },
   { name: 'Haydarpaşa Lisesi', puan: 484.80 },
 ];
 

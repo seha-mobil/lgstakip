@@ -33,7 +33,13 @@ export default async function StudentDetail({ params }: { params: { id: string }
   
   const targetName = student.targetLiseName;
   const targetPuan = student.targetLisePuan;
-  const progressPct = targetPuan ? Math.min(100, (avgScore / targetPuan) * 100) : 0;
+  
+  // Progress logic: 400 is base (0%), 500 is target (100%).
+  // So 450 is 50%.
+  const basePuan = 400;
+  const progressPct = targetPuan && targetPuan > basePuan 
+    ? Math.max(0, Math.min(100, ((avgScore - basePuan) / (targetPuan - basePuan)) * 100)) 
+    : 0;
   const remainingPuan = targetPuan ? Math.max(0, targetPuan - avgScore) : 0;
 
   // Calculate personal subject averages
