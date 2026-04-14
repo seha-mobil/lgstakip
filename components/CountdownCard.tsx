@@ -41,17 +41,25 @@ export default function CountdownCard({
     return () => clearInterval(timer);
   }, [targetDate]);
 
-  // Dynamic pulse duration calculation (fewer days = faster heartbeat)
+  // Dramatically varied pulse duration (Logarithmic-like scaling for higher impact)
   const pulseDuration = useMemo(() => {
-    if (!timeLeft) return 2;
-    // Map days to duration: 0-7 days = 0.6s, 30 days = 1s, 100+ days = 2.5s, 300+ days = 4s
-    // Formula: lower cap 0.6s, upper cap 4s
+    if (!timeLeft) return 3;
     const d = timeLeft.d;
-    if (d < 7) return 0.6;
-    if (d < 30) return 0.9;
-    if (d < 100) return 1.5;
-    if (d < 300) return 2.5;
-    return 4.0;
+    
+    // Scale:
+    // < 7 days: 0.4s (Panic)
+    // < 30 days: 0.7s (Urgent)
+    // < 100 days (LGS 2026): 1.1s (Fast Heartbeat)
+    // < 200 days: 2.5s (Noticeable)
+    // < 400 days: 5.0s (Very Calm)
+    // > 400 days (LGS 2027): 8.0s (Almost Still)
+    
+    if (d < 7) return 0.4;
+    if (d < 30) return 0.7;
+    if (d < 100) return 1.1; 
+    if (d < 200) return 2.5;
+    if (d < 400) return 5.0;
+    return 8.0; 
   }, [timeLeft?.d]);
 
   if (!timeLeft) return null;
