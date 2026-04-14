@@ -1,4 +1,7 @@
 import { getStudents } from '@/app/actions';
+import CompareClient from './CompareClient';
+
+export const dynamic = 'force-dynamic';
 
 export default async function ComparePage() {
   const allStudents = await getStudents();
@@ -19,39 +22,10 @@ export default async function ComparePage() {
     );
   }
 
-  // Calculate averages per student
-  const stats = studentsWithExams.map(s => {
-    const avgNet = s.examResults.reduce((a, e) => a + e.toplamNet, 0) / s.examResults.length;
-    const avgLgs = s.examResults.reduce((a, e) => a + e.lgsPuani, 0) / s.examResults.length;
-    return { ...s, avgNet: Math.round(avgNet * 100) / 100, avgLgs: Math.round(avgLgs * 100) / 100 };
-  }).sort((a,b) => b.avgNet - a.avgNet);
-
   return (
     <div className="page animate-fade-up">
       <h2 style={{ fontSize: '26px', fontWeight: 900, marginBottom: '24px' }}>Karşılaştırma Sıralaması</h2>
-      
-      <div className="glass-card" style={{ padding: '24px' }}>
-        <div className="sec-title">Toplam Ortalama Net</div>
-        {stats.map((item, i) => {
-          const p = (item.avgNet / 90) * 100;
-          const isBest = i === 0;
-          return (
-            <div key={item.id} style={{ marginBottom: '16px', animationDelay: (i * 0.05) + "s" }} className="animate-fade-up">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ background: item.color, width: '10px', height: '10px', borderRadius: '50%' }}></div>
-                  <span style={{ fontSize: '13px', fontWeight: 700 }}>{item.name}</span>
-                  {isBest && <span style={{ fontSize: '9px', background: 'rgba(61,214,140,0.15)', color: 'var(--green)', padding: '2px 7px', borderRadius: '20px', fontWeight: 700, fontFamily: 'var(--mono)' }}>EN İYİ</span>}
-                </div>
-                <span style={{ fontWeight: 800, fontFamily: 'var(--mono)', color: item.color }}>{item.avgNet}</span>
-              </div>
-              <div className="prog-track">
-                <div className="prog-fill" style={{ width: Math.min(100, p) + '%', background: item.color + (isBest ? 'cc' : '77') }}></div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <CompareClient students={studentsWithExams} />
     </div>
   );
 }
