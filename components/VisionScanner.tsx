@@ -5,7 +5,7 @@ import { scanImageAction } from '@/app/actions/vision';
 import { saveExamResult } from '@/app/actions';
 
 interface VisionScannerProps {
-  studentId: string;
+  studentId?: string;
   onSuccess?: () => void;
 }
 
@@ -240,22 +240,33 @@ export default function VisionScanner({ studentId, onSuccess }: VisionScannerPro
                   ))}
                 </div>
 
-                <button 
-                  onClick={handleSave}
-                  disabled={saving}
-                  style={{ 
-                    width: '100%', marginTop: '20px', padding: '14px', borderRadius: '12px', 
-                    background: 'var(--accent)', color: '#000', border: 'none',
-                    fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-                    boxShadow: '0 8px 20px rgba(0,0,0,0.2)', transition: 'all 0.2s',
-                    opacity: saving ? 0.7 : 1
+                {studentId ? (
+                  <button 
+                    onClick={handleSave}
+                    disabled={saving}
+                    style={{ 
+                      width: '100%', marginTop: '20px', padding: '14px', borderRadius: '12px', 
+                      background: 'var(--accent)', color: '#000', border: 'none',
+                      fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                      boxShadow: '0 8px 20px rgba(0,0,0,0.2)', transition: 'all 0.2s',
+                      opacity: saving ? 0.7 : 1
+                    }}>
+                    {saving ? (
+                      <div className="animate-spin" style={{ width: '18px', height: '18px', border: '2px solid #000', borderTopColor: 'transparent', borderRadius: '50%' }}></div>
+                    ) : (
+                      <><i className="fas fa-check-double"></i> Öğrenci Kaydına Aktar</>
+                    )}
+                  </button>
+                ) : (
+                  <div style={{ 
+                    marginTop: '20px', padding: '14px', borderRadius: '12px', 
+                    background: 'rgba(255,255,255,0.03)', border: '1px dashed var(--border)',
+                    color: 'var(--text3)', fontSize: '12px', textAlign: 'center'
                   }}>
-                  {saving ? (
-                    <div className="animate-spin" style={{ width: '18px', height: '18px', border: '2px solid #000', borderTopColor: 'transparent', borderRadius: '50%' }}></div>
-                  ) : (
-                    <><i className="fas fa-check-double"></i> Öğrenci Kaydına Aktar</>
-                  )}
-                </button>
+                    <i className="fas fa-info-circle" style={{ marginRight: '6px' }}></i>
+                    Bu bir laboratuvar önizlemesidir. Kaydetmek için öğrenci sayfası üzerinden giriş yapın.
+                  </div>
+                )}
               </div>
             )}
           </div>
