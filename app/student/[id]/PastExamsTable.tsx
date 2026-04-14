@@ -93,7 +93,7 @@ export default function PastExamsTable({
                 </td>
                 {['turkce', 'inkilap', 'dinkultur', 'ingilizce', 'matematik', 'fen'].map(key => {
                   const sub = ex.subjects?.find((s:any) => s.subjectKey === key);
-                  const net = sub ? Math.max(0, sub.dogru - (sub.yanlis / 4)) : 0;
+                  const net = sub ? Math.max(0, sub.dogru - (sub.yanlis / 3)) : 0;
                   return <td key={key} style={{ padding: '12px 8px', textAlign: 'center', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text2)' }}>{net}</td>;
                 })}
                 <td style={{ padding: '12px 8px', fontFamily: 'var(--mono)' }}>{ex.toplamNet}</td>
@@ -158,7 +158,7 @@ export default function PastExamsTable({
                         const ex = exams.find(e => e.id === selectedExamId);
                         const nets: Record<string, number> = {};
                         ex?.subjects.forEach((s: any) => {
-                            nets[s.subjectKey] = Math.max(0, s.dogru - (s.yanlis / 4));
+                            nets[s.subjectKey] = Math.max(0, s.dogru - (s.yanlis / 3));
                         });
                         return nets;
                     })()

@@ -109,6 +109,12 @@ export async function saveExamResult(studentId: string, data: any) {
       where: { id: trialExamId },
       data: { date: examDate }
     });
+
+    // DUPLICATE PREVENTION (MERGE LOGIC): 
+    // If student already has a result for this trial exam, delete the old one first
+    await prisma.examResult.deleteMany({
+      where: { studentId: studentId, trialExamId: trialExamId }
+    });
   }
 
   const result = await prisma.examResult.create({
@@ -131,6 +137,7 @@ export async function saveExamResult(studentId: string, data: any) {
   });
 
   revalidatePath(`/student/${studentId}`);
+  revalidatePath('/');
   redirect(`/student/${studentId}`);
 }
 
@@ -284,7 +291,7 @@ export async function getExamAverages() {
   allResults.forEach(res => {
     if (!trialGroups[res.trialExamId]) trialGroups[res.trialExamId] = {};
     res.subjects.forEach(sub => {
-      const net = Math.max(0, sub.dogru - (sub.yanlis / 4));
+      const net = Math.max(0, sub.dogru - (sub.yanlis / 3));
       if (!trialGroups[res.trialExamId][sub.subjectKey]) {
         trialGroups[res.trialExamId][sub.subjectKey] = { totalNet: 0, count: 0 };
       }
@@ -322,7 +329,7 @@ export async function updateExamResult(studentId: string, examResultId: string, 
   let totalNet = 0;
 
   for (const sub of data.subjects) {
-    const net = Math.max(0, sub.dogru - (sub.yanlis / 4));
+    const net = Math.max(0, sub.dogru - (sub.yanlis / 3));
     weightedSum += net * (SUBJECT_COEFFS[sub.key] || 0);
     totalNet += net;
   }

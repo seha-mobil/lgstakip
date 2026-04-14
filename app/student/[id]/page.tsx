@@ -36,7 +36,7 @@ export default async function StudentDetail({ params }: { params: { id: string }
   exams.forEach(ex => {
     ex.subjects.forEach(sub => {
       if (!totals[sub.subjectKey]) totals[sub.subjectKey] = { sum: 0, count: 0 };
-      totals[sub.subjectKey].sum += Math.max(0, sub.dogru - (sub.yanlis / 4));
+      totals[sub.subjectKey].sum += Math.max(0, sub.dogru - (sub.yanlis / 3));
       totals[sub.subjectKey].count += 1;
     });
   });
