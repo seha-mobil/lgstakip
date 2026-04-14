@@ -4,23 +4,23 @@ import React, { useState } from 'react';
 import { updateStudent } from '@/app/actions';
 
 const topSchools = [
-  { name: 'İstanbul Erkek Lisesi', puan: 500 },
+  { name: 'İstanbul Erkek Lisesi', puan: 494.5 },
   { name: 'Galatasaray Lisesi', puan: 500 },
-  { name: 'Kabataş Erkek Lisesi', puan: 500 },
-  { name: 'Hüseyin Avni Sözen AL', puan: 490.50 },
-  { name: 'Atatürk Fen Lisesi', puan: 491.50 },
-  { name: 'Cağaloğlu Anadolu Lisesi', puan: 488.40 },
-  { name: 'Ş. İlhan Varank Fen Lisesi', puan: 486.20 },
-  { name: 'Kartal Anadolu Lisesi', puan: 485.40 },
-  { name: 'Burak Bora Anadolu Lisesi', puan: 486.20 },
-  { name: 'Beşiktaş Sakıp Sabancı AL', puan: 486.20 },
-  { name: 'Kadıköy Anadolu Lisesi', puan: 485.50 },
-  { name: 'İstanbul Anadolu Lisesi', puan: 483.50 },
-  { name: 'Haydarpaşa Lisesi', puan: 484.80 },
-  { name: 'Hacı Sabancı Anadolu Lisesi', puan: 481.30 },
-  { name: 'Validebağ Fen Lisesi', puan: 477.21 },
-  { name: 'Kartal Köy Hizmetleri AL', puan: 475.20 },
-  { name: 'Y.İ. Alanyalı Fen Lisesi', puan: 473.10 },
+  { name: 'Kabataş Erkek Lisesi', puan: 494.5 },
+  { name: 'Atatürk Fen Lisesi', puan: 491.5 },
+  { name: 'Cağaloğlu Anadolu Lisesi', puan: 488.4 },
+  { name: 'Hüseyin Avni Sözen AL', puan: 486.2 },
+  { name: 'Kadıköy Anadolu Lisesi', puan: 485.5 },
+  { name: 'Burak Bora Anadolu Lisesi', puan: 481.5 },
+  { name: 'Beşiktaş Sakıp Sabancı AL', puan: 480.2 },
+  { name: 'Ş. İlhan Varank Fen Lisesi', puan: 479.2 },
+  { name: 'Haydarpaşa Lisesi', puan: 478.8 },
+  { name: 'Kartal Anadolu Lisesi', puan: 475.4 },
+  { name: 'Y.İ. Alanyalı Fen Lisesi', puan: 465.1 },
+  { name: 'İstanbul Anadolu Lisesi', puan: 465.3 },
+  { name: 'Validebağ Fen Lisesi', puan: 468.1 },
+  { name: 'Kartal Köy Hizmetleri AL', puan: 458.5 },
+  { name: 'Hacı Sabancı Anadolu Lisesi', puan: 456.2 },
 ];
 
 export default function LiseTargetPicker({ studentId, currentName, currentPuan }: { studentId: string, currentName?: string | null, currentPuan?: number | null }) {
@@ -122,6 +122,20 @@ export default function LiseTargetPicker({ studentId, currentName, currentPuan }
                 >
                   Kaydet
                 </button>
+                {currentName && (
+                  <button 
+                    className="btn btn-ghost" 
+                    style={{ width: '100%', height: '32px', fontSize: '11px', justifyContent: 'center', color: 'var(--red)', borderColor: 'rgba(240, 90, 90, 0.2)' }}
+                    onClick={async () => {
+                      if (confirm('Hedefi kaldırmak istediğinize emin misiniz?')) {
+                        await updateStudent(studentId, { targetLiseName: null, targetLisePuan: null });
+                        setIsOpen(false);
+                      }
+                    }}
+                  >
+                    <i className="fas fa-trash-alt"></i> Hedefi Kaldır
+                  </button>
+                )}
               </div>
             </div>
           </div>

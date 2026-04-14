@@ -7,8 +7,10 @@ import { deleteExamResult, getExamAverages } from '@/app/actions';
 import PastExamsTable from './PastExamsTable';
 import SubjectStatsTable from '@/components/SubjectStatsTable';
 import LiseTargetPicker from '@/components/LiseTargetPicker';
+import RemoveTargetButton from '@/components/RemoveTargetButton';
 
 export default async function StudentDetail({ params }: { params: { id: string } }) {
+  // ... existing code ...
   // Auth check
   const cookieStore = cookies();
   const auth = cookieStore.get(`student_auth_${params.id}`);
@@ -102,14 +104,19 @@ export default async function StudentDetail({ params }: { params: { id: string }
           background: 'linear-gradient(135deg, rgba(232, 184, 75, 0.08) 0%, rgba(30, 45, 66, 0.4) 100%)',
           border: '1px solid rgba(232, 184, 75, 0.2)'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-            <div>
-              <div style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>HEDEF YOLCULUĞU</div>
-              <h3 style={{ fontSize: '18px', fontWeight: 900, color: 'var(--text)' }}>{targetName}</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+              <div>
+                <div style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px' }}>HEDEF YOLCULUĞU</div>
+                <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text)', marginTop: '2px' }}>{targetName}</h3>
+              </div>
+              <div style={{ marginTop: '18px' }}>
+                <RemoveTargetButton studentId={student.id} />
+              </div>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text)' }}>%{progressPct.toFixed(1).replace('.', ',')}</div>
-              <div style={{ fontSize: '10px', color: 'var(--text3)' }}>{targetPuan.toFixed(2)} Hedef Puan</div>
+              <div style={{ fontSize: '22px', fontWeight: 900, color: 'var(--text)' }}>%{progressPct.toFixed(1).replace('.', ',')}</div>
+              <div style={{ fontSize: '10px', color: 'var(--text3)' }}>{targetPuan.toFixed(1)} Hedef Puan</div>
             </div>
           </div>
           
