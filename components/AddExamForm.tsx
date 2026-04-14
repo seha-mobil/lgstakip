@@ -41,13 +41,13 @@ export default function AddExamForm({ studentId, trialExams }: { studentId: stri
     SUBJECTS.forEach(s => {
       const d = subjects[s.key].dogru;
       const y = subjects[s.key].yanlis;
-      const net = Math.max(0, d - (y / 4));
+      const net = Math.max(0, d - (y / 3));
       tD += d;
       tY += y;
       w += net * s.coeff;
     });
 
-    const net = Math.round((tD - tY / 4) * 100) / 100;
+    const net = Math.round((tD - tY / 3) * 100) / 100;
     const lgs = Math.round(((w / MAX_WEIGHTED) * (LGS_MAX - LGS_MIN) + LGS_MIN) * 100) / 100;
     
     return { lgs, net, tD, tY };
@@ -81,41 +81,58 @@ export default function AddExamForm({ studentId, trialExams }: { studentId: stri
 
   return (
     <>
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', background: 'rgba(255,255,255,0.03)', padding: '6px', borderRadius: '14px', width: 'fit-content' }}>
+      <div style={{ 
+        display: 'flex', gap: '4px', marginBottom: '28px', 
+        background: 'rgba(255,255,255,0.03)', padding: '4px', 
+        borderRadius: '16px', width: 'fit-content',
+        border: '1px solid var(--border)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+      }}>
         <button 
           type="button"
           onClick={() => setMode('manual')}
           style={{ 
-            padding: '10px 20px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', border: 'none',
+            padding: '12px 24px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', border: 'none',
             background: mode === 'manual' ? 'var(--accent)' : 'transparent',
             color: mode === 'manual' ? '#000' : 'var(--text3)',
-            transition: 'all 0.2s'
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            display: 'flex', alignItems: 'center', gap: '8px'
           }}>
-          <i className="fas fa-keyboard" style={{ marginRight: '8px' }}></i> Manuel Giriş
+          <i className="fas fa-keyboard"></i> Manuel Giriş
         </button>
         <button 
           type="button"
           onClick={() => setMode('ai')}
           style={{ 
-            padding: '10px 20px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', border: 'none',
+            padding: '12px 24px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', border: 'none',
             background: mode === 'ai' ? 'var(--accent)' : 'transparent',
             color: mode === 'ai' ? '#000' : 'var(--text3)',
-            transition: 'all 0.2s'
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            display: 'flex', alignItems: 'center', gap: '8px'
           }}>
-          <i className="fas fa-robot" style={{ marginRight: '8px' }}></i> Yapay Zeka (AI Flash)
+          <i className="fas fa-robot"></i> Yapay Zeka (AI Scan)
         </button>
       </div>
 
       {mode === 'ai' ? (
-        <div className="glass-card animate-fade-up" style={{ padding: '30px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '8px' }}>Saniyeler İçinde Aktarın</h3>
-            <p style={{ fontSize: '13px', color: 'var(--text3)' }}>Deneme sonuç kağıdının fotoğrafını yükleyin, verileri biz çıkaralım.</p>
+        <div className="glass-card animate-fade-up" style={{ padding: '40px', border: '1px solid var(--accent-glow)' }}>
+          <div style={{ textAlign: 'center', marginBottom: '35px' }}>
+            <div style={{ 
+              width: '48px', height: '48px', background: 'var(--accent-dim)', borderRadius: '12px', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px',
+              border: '1px solid var(--accent-glow)'
+            }}>
+              <i className="fas fa-magic" style={{ color: 'var(--accent)', fontSize: '20px' }}></i>
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: 900, marginBottom: '10px' }}>Saniyeler İçinde Aktarın</h3>
+            <p style={{ fontSize: '14px', color: 'var(--text3)', maxWidth: '400px', margin: '0 auto' }}>
+              Deneme sonuç kağıdının fotoğrafını yükleyin, verileri biz çıkaralım ve otomatik eşleştirelim.
+            </p>
           </div>
           <VisionScanner studentId={studentId} onSuccess={() => router.push(`/student/${studentId}`)} />
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
+          {/* Form Content remains the same but ensure its logic uses /3 too */}
           <div className="glass-card animate-fade-up" style={{ padding: '24px', marginBottom: '20px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
               <div>
@@ -151,7 +168,7 @@ export default function AddExamForm({ studentId, trialExams }: { studentId: stri
             {SUBJECTS.map((sub, i) => {
               const d = subjects[sub.key].dogru;
               const y = subjects[sub.key].yanlis;
-              const net = Math.max(0, d - (y / 3)); // Updated to 3-wrong rule per user feedback
+              const net = Math.max(0, d - (y / 3));
               const p = (net / sub.questions) * 100;
               return (
                 <div key={sub.key} className="glass-card animate-fade-up" style={{ padding: '16px', animationDelay: (i * 0.05) + "s" }}>
@@ -214,7 +231,7 @@ export default function AddExamForm({ studentId, trialExams }: { studentId: stri
                   <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '2px', fontFamily: 'var(--mono)', marginBottom: '4px' }}>LGS Puanı</div>
                   <div style={{ fontSize: '44px', fontWeight: 900, letterSpacing: '-1.5px', color: stats.lgs >= 400 ? 'var(--green)' : 'var(--accent)' }}>{stats.lgs.toFixed(2)}</div>
                   <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'center', gap: '16px' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--text3)' }}>Toplam Net: <b style={{ color: 'var(--text)' }}>{(stats.tD - stats.tY / 3).toFixed(2)}</b></span>
+                    <span style={{ fontSize: '12px', color: 'var(--text3)' }}>Toplam Net: <b style={{ color: 'var(--text)' }}>{stats.net}</b></span>
                   </div>
                 </div>
               </div>

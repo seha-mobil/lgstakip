@@ -107,6 +107,16 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
           }}>
             <i className="fas fa-chart-bar" style={{ width: '16px', textAlign: 'center' }}></i> Karşılaştırma
           </Link>
+          <Link href="/lab" style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '10px 12px', borderRadius: '8px',
+            background: pathname === '/lab' ? 'var(--accent-dim)' : 'transparent',
+            color: pathname === '/lab' ? 'var(--accent)' : 'var(--text3)',
+            border: pathname === '/lab' ? '1px solid var(--accent-glow)' : '1px solid transparent',
+            fontSize: '13px', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s'
+          }}>
+            <i className="fas fa-flask" style={{ width: '16px', textAlign: 'center' }}></i> Laboratuvar
+          </Link>
         </nav>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -155,15 +165,6 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
           }}>
             <i className="fas fa-plus" style={{ fontSize: '10px' }}></i> Yeni Öğrenci
           </button>
-
-          <Link href="/lab" style={{
-            margin: '4px 8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
-            padding: '10px', borderRadius: '9px', background: pathname === '/lab' ? 'var(--accent-glow)' : 'rgba(255,255,255,0.03)', 
-            border: '1px solid var(--border)', textDecoration: 'none',
-            color: pathname === '/lab' ? 'var(--text)' : 'var(--text3)', fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font)', cursor: 'pointer'
-          }}>
-            <i className="fas fa-flask" style={{ color: 'var(--accent)' }}></i> Laboratuvar
-          </Link>
 
           <div style={{ padding: '0 16px 20px' }}>
             <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px', fontFamily: 'var(--mono)' }}>Görünüm Seç</div>
