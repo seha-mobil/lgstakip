@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { updateTrialExam, deleteTrialExam, createStandaloneTrialExam, importExcelData } from '@/app/actions';
 
 export default function ExamsClient({ initialExams, students }: { initialExams: any[], students: any[] }) {
-  const [activeTab, setActiveTab] = useState<'exams'|'students'>('exams');
+  const [activeTab, setActiveTab] = useState<'exams'|'students'|'lab'>('exams');
   const [exams, setExams] = useState(initialExams);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
