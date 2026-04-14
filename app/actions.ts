@@ -166,6 +166,41 @@ export async function deleteTrialExam(id: string) {
   revalidatePath('/exams');
 }
 
+export async function mergeTrialExams(sourceId: string, targetId: string) {
+  if (sourceId === targetId) throw new Error("Aynı sınavı kendisiyle birleştiremezsiniz.");
+
+  await prisma.$transaction(async (tx) => {
+    // 1. Kaynak sınavdaki öğrencileri bul
+    const sourceResults = await tx.examResult.findMany({
+      where: { trialExamId: sourceId }
+    });
+
+    for (const res of sourceResults) {
+      // 2. Bu öğrencinin HEDEF sınavda zaten bir sonucu var mı?
+      const existingInTarget = await tx.examResult.findFirst({
+        where: { studentId: res.studentId, trialExamId: targetId }
+      });
+
+      if (existingInTarget) {
+        // Çakışma var: Kaynak sonucu sil (Hedef tercih edilir)
+        await tx.examResult.delete({ where: { id: res.id } });
+      } else {
+        // Çakışma yok: Sonucu hedef sınava aktar
+        await tx.examResult.update({
+          where: { id: res.id },
+          data: { trialExamId: targetId }
+        });
+      }
+    }
+
+    // 3. Kaynak sınavı sil
+    await tx.trialExam.delete({ where: { id: sourceId } });
+  });
+
+  revalidatePath('/');
+  revalidatePath('/exams');
+}
+
 export async function createStandaloneTrialExam(name: string, date: string) {
   const exam = await prisma.trialExam.create({
     data: {

@@ -1,13 +1,15 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { updateTrialExam, deleteTrialExam, createStandaloneTrialExam, importExcelData } from '@/app/actions';
+import { updateTrialExam, deleteTrialExam, createStandaloneTrialExam, importExcelData, mergeTrialExams } from '@/app/actions';
 import VisionScanner from '@/components/VisionScanner';
 
 export default function ExamsClient({ initialExams, students }: { initialExams: any[], students: any[] }) {
   const [activeTab, setActiveTab] = useState<'exams'|'students'|'lab'>('exams');
   const [exams, setExams] = useState(initialExams);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [mergingId, setMergingId] = useState<string | null>(null);
+  const [targetExamId, setTargetExamId] = useState('');
   const [editName, setEditName] = useState('');
   const [editDate, setEditDate] = useState('');
   
@@ -18,6 +20,24 @@ export default function ExamsClient({ initialExams, students }: { initialExams: 
   
   const [showPaste, setShowPaste] = useState(false);
   const [pasteText, setPasteText] = useState('');
+
+  const handleMerge = async (sourceId: string) => {
+    if (!targetExamId) return;
+    const sourceExam = exams.find(e => e.id === sourceId);
+    const targetExam = exams.find(e => e.id === targetExamId);
+    
+    if (!confirm(`'${sourceExam.name}' denemesindeki tüm sonuçları '${targetExam.name}' denemesine aktarmak istediğinize emin misiniz? Kaynak deneme silinecektir.`)) return;
+
+    setLoading(true);
+    try {
+      await mergeTrialExams(sourceId, targetExamId);
+      alert('Denemeler başarıyla birleştirildi.');
+      window.location.reload(); 
+    } catch (err: any) {
+      alert('Hata: ' + err.message);
+    }
+    setLoading(false);
+  };
 
   const handleUpdatePassword = async (studentId: string, currentName: string, currentPass: string) => {
     const newPass = prompt(`${currentName} için yeni şifre girin (Mevcut: ${currentPass}):`);
@@ -258,12 +278,39 @@ export default function ExamsClient({ initialExams, students }: { initialExams: 
                           </span>
                         </td>
                         <td style={{ padding: '12px 16px', textAlign: 'right', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                          <button onClick={() => startEdit(ex)} className="btn btn-ghost" style={{ padding: '6px', height: '32px', width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <i className="fas fa-edit"></i>
-                          </button>
-                          <button onClick={() => handleDelete(ex.id, ex._count.examResults)} disabled={loading} className="delete-btn" style={{ background: 'transparent', border: 'none', color: 'var(--red)', cursor: 'pointer', padding: '6px', borderRadius: '4px', height: '32px', width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
-                            <i className="fas fa-trash"></i>
-                          </button>
+                          {mergingId === ex.id ? (
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <select 
+                                className="input" 
+                                style={{ padding: '4px 8px', fontSize: '11px', height: '32px', width: '160px' }}
+                                value={targetExamId}
+                                onChange={e => setTargetExamId(e.target.value)}
+                              >
+                                <option value="">Hedef Sınav Seç...</option>
+                                {exams.filter(e => e.id !== ex.id).map(e => (
+                                  <option key={e.id} value={e.id}>{e.name} ({ex.date ? new Date(ex.date).toLocaleDateString('tr-TR') : '-'})</option>
+                                ))}
+                              </select>
+                              <button onClick={() => handleMerge(ex.id)} disabled={!targetExamId || loading} className="btn btn-primary" style={{ padding: '6px 10px', fontSize: '11px' }}>
+                                Aktar
+                              </button>
+                              <button onClick={() => setMergingId(null)} className="btn btn-ghost" style={{ padding: '6px 10px', fontSize: '11px' }}>
+                                İptal
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <button onClick={() => setMergingId(ex.id)} className="btn btn-ghost" title="Başka sınavla birleştir" style={{ padding: '6px', height: '32px', width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
+                                <i className="fas fa-code-merge"></i>
+                              </button>
+                              <button onClick={() => startEdit(ex)} className="btn btn-ghost" style={{ padding: '6px', height: '32px', width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <i className="fas fa-edit"></i>
+                              </button>
+                              <button onClick={() => handleDelete(ex.id, ex._count.examResults)} disabled={loading} className="delete-btn" style={{ background: 'transparent', border: 'none', color: 'var(--red)', cursor: 'pointer', padding: '6px', borderRadius: '4px', height: '32px', width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
+                                <i className="fas fa-trash"></i>
+                              </button>
+                            </>
+                          )}
                         </td>
                       </>
                     )}
