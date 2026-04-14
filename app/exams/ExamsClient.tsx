@@ -258,7 +258,21 @@ export default function ExamsClient({ initialExams, students }: { initialExams: 
 
     {activeTab === 'students' && (
       <div className="glass-card animate-fade-up" style={{ padding: '24px' }}>
-        <h3 style={{ fontSize: '16px', fontWeight: 800, marginBottom: '20px' }}>Öğrenci Yönetimi</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 800 }}>Öğrenci Yönetimi</h3>
+          <button 
+            onClick={async () => {
+              const { syncDatabaseSchema } = await import('@/app/actions');
+              const res = await syncDatabaseSchema();
+              if (res.success) alert('Veritabanı başarıyla güncellendi!');
+              else alert('Hata: ' + res.error);
+            }} 
+            className="btn btn-ghost" 
+            style={{ fontSize: '11px', color: 'var(--accent)' }}
+          >
+            <i className="fas fa-database"></i> Veritabanını Güncelle
+          </button>
+        </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {students.map(s => (
             <div key={s.id} className="glass-card" style={{ padding: '14px 20px', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', gap: '15px' }}>
