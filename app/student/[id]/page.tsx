@@ -138,7 +138,7 @@ export default async function StudentDetail({ params }: { params: { id: string }
                         </td>
                         <td style={{ padding: '12px 8px', textAlign: 'right' }}>
                           <form action={deleteExamResult.bind(null, student.id, ex.id)} style={{ display: 'inline-block' }}>
-                            <button type="submit" style={{ background: 'transparent', border: 'none', color: 'var(--red)', cursor: 'pointer', padding: '6px', borderRadius: '4px', opacity: 0.7, transition: 'all 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity = '1'} onMouseOut={e => e.currentTarget.style.opacity = '0.7'}>
+                            <button type="submit" className="delete-btn" style={{ background: 'transparent', border: 'none', color: 'var(--red)', cursor: 'pointer', padding: '6px', borderRadius: '4px', transition: 'all 0.2s' }}>
                               <i className="fas fa-trash"></i>
                             </button>
                           </form>
