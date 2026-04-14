@@ -77,6 +77,22 @@
   --border-focus: rgba(71, 85, 105, 0.4);
 }
 
+[data-theme="black"] {
+  --bg-color: #000000;
+  --bg-gradient: radial-gradient(circle at 50% -20%, #1a1a1a, #000000 80%);
+  --text: #ffffff;
+  --text2: #a1a1aa;
+  --text3: #71717a;
+  --border: rgba(255, 255, 255, 0.08);
+  --sidebar-bg: rgba(0, 0, 0, 0.9);
+  --card-bg: rgba(15, 15, 15, 0.7);
+  --card-hover: rgba(25, 25, 25, 0.9);
+  --accent: #ffffff;
+  --accent-glow: rgba(255, 255, 255, 0.2);
+  --accent-dim: rgba(255, 255, 255, 0.1);
+  --border-focus: rgba(255, 255, 255, 0.4);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;

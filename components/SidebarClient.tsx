@@ -160,11 +160,12 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
             <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px', fontFamily: 'var(--mono)' }}>Görünüm Seç</div>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {[
-                { id: 'gold', color1: '#0a0f1d', color2: '#e8b84b', name: 'Midnight Gold' },
+                { id: 'gold', color1: '#0a0f1d', color2: '#1a2d42', name: 'Midnight' },
                 { id: 'emerald', color1: '#041a1a', color2: '#10b981', name: 'Emerald' },
                 { id: 'indigo', color1: '#08081a', color2: '#6366f1', name: 'Indigo' },
                 { id: 'rose', color1: '#1a080c', color2: '#f43f5e', name: 'Rose' },
-                { id: 'platinum', color1: '#f8fafc', color2: '#64748b', name: 'Platinum' }
+                { id: 'platinum', color1: '#f8fafc', color2: '#64748b', name: 'Platinum' },
+                { id: 'black', color1: '#000000', color2: '#ffffff', name: 'Black' }
               ].map(t => (
                 <button 
                   key={t.id} 
