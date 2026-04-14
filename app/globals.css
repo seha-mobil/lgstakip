@@ -211,13 +211,13 @@ body {
   backdrop-filter: blur(20px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 50;
-  overflow: visible;
+  /* Prevent content from spilling out if it ever gets squished */
+  overflow: hidden;
 }
 
 .sidebar.collapsed {
-  width: 0px;
-  min-width: 0px;
-  transform: translateX(-100%);
+  /* Instead of squishing the width to 0 (which wraps text), slide it completely left */
+  margin-left: -270px;
 }
 
 .mobile-overlay {
@@ -239,6 +239,8 @@ body {
     left: 0;
   }
   .sidebar.collapsed {
+    /* Reset margin on mobile and use transform for hardware acceleration overlay slide */
+    margin-left: 0;
     transform: translateX(-100%);
   }
   .mobile-overlay {
