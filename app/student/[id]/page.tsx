@@ -107,16 +107,16 @@ export default async function StudentDetail({ params }: { params: { id: string }
           </div>
 
           <div className="glass-card animate-fade-up" style={{ padding: '24px', marginBottom: '20px', animationDelay: '0.18s' }}>
-            <div className="sec-title">Total Başarı İstatistikleri</div>
-            <div style={{ fontSize: '12px', color: 'var(--text3)', marginBottom: '16px', marginTop: '-10px' }}>Tüm denemelerin toplam ders bazlı dağılımı</div>
-            <SubjectStatsTable exams={exams} />
-          </div>
-
-          <div className="glass-card animate-fade-up" style={{ padding: '24px', marginBottom: '20px', animationDelay: '0.21s' }}>
             <div className="sec-title">Puan İlerlemesi</div>
             <div style={{ position: 'relative', height: '250px' }}>
               <ProgressChart exams={exams} color={student.color} />
             </div>
+          </div>
+
+          <div className="glass-card animate-fade-up" style={{ padding: '24px', marginBottom: '20px', animationDelay: '0.21s' }}>
+            <div className="sec-title">Total Başarı İstatistikleri</div>
+            <div style={{ fontSize: '12px', color: 'var(--text3)', marginBottom: '16px', marginTop: '-10px' }}>Tüm denemelerin toplam ders bazlı dağılımı</div>
+            <SubjectStatsTable exams={exams} />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '24px' }}>
