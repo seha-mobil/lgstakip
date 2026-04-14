@@ -50,8 +50,9 @@ export default function PastExamsTable({
     if (isMobile) {
         setPopupPos({ top: 0, left: 0 });
     } else {
+        // Position relative to viewport (fixed)
         setPopupPos({ 
-            top: rect.top + window.scrollY - 10, 
+            top: rect.top, 
             left: rect.left + rect.width + 15 
         });
     }
@@ -138,7 +139,7 @@ export default function PastExamsTable({
           <div style={{ position: 'fixed', inset: 0, zIndex: 10000 }} onClick={() => setSelectedExamId(null)}></div>
           <div style={
             popupPos.top !== 0 ? {
-                position: 'absolute',
+                position: 'fixed',
                 top: popupPos.top,
                 left: popupPos.left,
                 width: '400px',
