@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { deleteExamResult, updateExamResult } from '@/app/actions';
 import { SubjectComparisonMiniChart } from '@/components/ClientCharts';
 
@@ -20,6 +21,11 @@ export default function PastExamsTable({
   const [loading, setLoading] = useState(false);
   const [editData, setEditData] = useState<any>(null);
   const [popupPos, setPopupPos] = useState({ top: 0, left: 0 });
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const openEdit = (ex: any) => {
     const subjects = ['turkce', 'inkilap', 'dinkultur', 'ingilizce', 'matematik', 'fen'].map(key => {
@@ -122,8 +128,8 @@ export default function PastExamsTable({
         </tbody>
       </table>
 
-      {/* Analysis Modal (Screen Dominating) */}
-      {selectedExamId && (
+      {/* Analysis Modal (Screen Dominating) - Rendered via Portal to escape parent transforms */}
+      {mounted && selectedExamId && createPortal(
         <>
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)', zIndex: 10000 }} onClick={() => setSelectedExamId(null)}></div>
           <div style={{
@@ -169,7 +175,8 @@ export default function PastExamsTable({
                 Bu grafik, mevcut sınavdaki netlerinizi **tüm sınavlarınızın ortalaması** ile karşılaştırır.
               </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
 
       {/* Edit Modal */}
