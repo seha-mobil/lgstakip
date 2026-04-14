@@ -56,6 +56,12 @@ export async function saveExamResult(studentId: string, data: any) {
       }
     });
     trialExamId = exam.id;
+  } else {
+    // Update the existing trial exam's date so it syncs for future selections
+    await prisma.trialExam.update({
+      where: { id: trialExamId },
+      data: { date: examDate }
+    });
   }
 
   const result = await prisma.examResult.create({

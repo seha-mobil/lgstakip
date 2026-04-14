@@ -19,7 +19,10 @@ const LGS_MAX = 500;
 export default function AddExamForm({ studentId, trialExams }: { studentId: string, trialExams: any[] }) {
   const [trialExamId, setTrialExamId] = useState(trialExams[0]?.id || 'NEW');
   const [newTrialName, setNewTrialName] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(() => {
+    if (trialExams[0]?.date) return new Date(trialExams[0].date).toISOString().split('T')[0];
+    return new Date().toISOString().split('T')[0];
+  });
   const [ogrenciSayisi, setOgrenciSayisi] = useState(0);
   const [basariSirasi, setBasariSirasi] = useState(0);
   
