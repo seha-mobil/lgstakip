@@ -3,19 +3,53 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 
 const COLORS = ['#e8b84b','#4d8ef0','#3dd68c','#f05a5a','#a78bfa','#ec4899','#2dd4bf','#f97316','#6366f1','#84cc16'];
 
-export async function addStudent(name: string) {
+export async function addStudent(name: string, password?: string) {
   const count = await prisma.student.count();
   const color = COLORS[count % COLORS.length];
-  await prisma.student.create({ data: { name, color } });
+  await prisma.student.create({ 
+    data: { 
+      name, 
+      color,
+      password: password || '123456'
+    } 
+  });
   revalidatePath('/');
+  revalidatePath('/exams');
+}
+
+export async function updateStudent(id: string, data: any) {
+  await prisma.student.update({
+    where: { id },
+    data
+  });
+  revalidatePath('/');
+  revalidatePath('/exams');
+  revalidatePath(`/student/${id}`);
 }
 
 export async function removeStudent(id: string) {
   await prisma.student.delete({ where: { id } });
   revalidatePath('/');
+  revalidatePath('/exams');
+}
+
+export async function loginStudent(studentId: string, password: string) {
+  const student = await prisma.student.findUnique({
+    where: { id: studentId }
+  });
+
+  if (student && student.password === password) {
+    cookies().set(`student_auth_${studentId}`, 'true', {
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      path: '/'
+    });
+    return { success: true };
+  }
+  return { success: false, error: 'Hatalı şifre!' };
 }
 
 export async function getStudents() {

@@ -1,9 +1,16 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { ProgressChart, SubjectBarChart, NetRadarChart } from '@/components/ClientCharts';
 import { deleteExamResult } from '@/app/actions';
 
 export default async function StudentDetail({ params }: { params: { id: string } }) {
+  // Auth check
+  const cookieStore = cookies();
+  const auth = cookieStore.get(`student_auth_${params.id}`);
+  if (!auth) redirect(`/student/${params.id}/login`);
+
   const student = await prisma.student.findUnique({
     where: { id: params.id },
     include: {

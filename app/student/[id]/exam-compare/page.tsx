@@ -1,9 +1,15 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import CompareExamsClient from './CompareExamsClient';
 
 export default async function StudentExamCompare({ params }: { params: { id: string } }) {
+  // Auth check
+  const cookieStore = cookies();
+  const auth = cookieStore.get(`student_auth_${params.id}`);
+  if (!auth) redirect(`/student/${params.id}/login`);
+
   const student = await prisma.student.findUnique({
     where: { id: params.id },
     include: {
