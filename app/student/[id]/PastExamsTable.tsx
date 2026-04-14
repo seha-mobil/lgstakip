@@ -94,14 +94,15 @@ export default function PastExamsTable({
                 {['turkce', 'inkilap', 'dinkultur', 'ingilizce', 'matematik', 'fen'].map(key => {
                   const sub = ex.subjects?.find((s:any) => s.subjectKey === key);
                   const net = sub ? Math.max(0, sub.dogru - (sub.yanlis / 3)) : 0;
-                  return <td key={key} style={{ padding: '12px 8px', textAlign: 'center', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text2)' }}>{net}</td>;
+                  const formattedNet = net % 1 === 0 ? net : net.toFixed(2).replace('.', ',');
+                  return <td key={key} style={{ padding: '12px 8px', textAlign: 'center', fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text2)' }}>{formattedNet}</td>;
                 })}
-                <td style={{ padding: '12px 8px', fontFamily: 'var(--mono)' }}>{ex.toplamNet}</td>
-                <td style={{ padding: '12px 8px', fontWeight: 700, color: ex.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>{ex.lgsPuani.toFixed(2)}</td>
+                <td style={{ padding: '12px 8px', fontFamily: 'var(--mono)' }}>{String(ex.toplamNet).replace('.', ',')}</td>
+                <td style={{ padding: '12px 8px', fontWeight: 700, color: ex.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>{ex.lgsPuani.toFixed(2).replace('.', ',')}</td>
                 <td style={{ padding: '12px 8px', fontSize: '12px' }}>
                   {prevLgs ? (
                     <span style={{ color: diff > 0 ? 'var(--green)' : diff < 0 ? 'var(--red)' : 'var(--text3)' }}>
-                      {diff > 0 ? '+' : ''}{diff.toFixed(2)}
+                      {diff > 0 ? '+' : ''}{diff.toFixed(2).replace('.', ',')}
                     </span>
                   ) : '-'}
                 </td>

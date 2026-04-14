@@ -199,7 +199,7 @@ export default function AddExamForm({ studentId, trialExams }: { studentId: stri
                     </div>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text3)' }}>
-                    <span>Net: <b style={{ color: 'var(--text)', fontFamily: 'var(--mono)' }}>{net.toFixed(2)}</b></span>
+                    <span>Net: <b style={{ color: 'var(--text)', fontFamily: 'var(--mono)' }}>{(net % 1 === 0 ? net : net.toFixed(2)).toString().replace('.', ',')}</b></span>
                   </div>
                   <div className="prog-track">
                     <div className="prog-fill" style={{ width: p + "%", background: p >= 75 ? 'var(--green)' : p >= 50 ? 'var(--accent)' : 'var(--red)' }}></div>
@@ -229,7 +229,7 @@ export default function AddExamForm({ studentId, trialExams }: { studentId: stri
                 <div className="sec-title">Hesaplanan Sonuç</div>
                 <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
                   <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '2px', fontFamily: 'var(--mono)', marginBottom: '4px' }}>LGS Puanı</div>
-                  <div style={{ fontSize: '44px', fontWeight: 900, letterSpacing: '-1.5px', color: stats.lgs >= 400 ? 'var(--green)' : 'var(--accent)' }}>{stats.lgs.toFixed(2)}</div>
+                  <div style={{ fontSize: '44px', fontWeight: 900, letterSpacing: '-1.5px', color: stats.lgs >= 400 ? 'var(--green)' : 'var(--accent)' }}>{stats.lgs.toFixed(2).replace('.', ',')}</div>
                   <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '12px', color: 'var(--text3)' }}>Toplam Net: <b style={{ color: 'var(--text)' }}>{stats.net}</b></span>
                   </div>

@@ -93,15 +93,15 @@ export default async function StudentDetail({ params }: { params: { id: string }
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '20px' }}>
             <div className="glass-card animate-fade-up" style={{ padding: '20px' }}>
               <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text3)' }}>Son Deneme ({lastExam!.trialExam.name})</div>
-              <div style={{ fontSize: '26px', fontWeight: 900, color: lastExam!.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>{lastExam!.lgsPuani.toFixed(2)}</div>
+              <div style={{ fontSize: '26px', fontWeight: 900, color: lastExam!.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>{lastExam!.lgsPuani.toFixed(2).replace('.', ',')}</div>
             </div>
             <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: '0.07s' }}>
               <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text3)' }}>Ortalama Puan</div>
-              <div style={{ fontSize: '26px', fontWeight: 900, color: 'var(--text)' }}>{avgScore.toFixed(2)}</div>
+              <div style={{ fontSize: '26px', fontWeight: 900, color: 'var(--text)' }}>{avgScore.toFixed(2).replace('.', ',')}</div>
             </div>
             <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: '0.14s' }}>
               <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text3)' }}>En Yüksek ({bestExam!.trialExam.name})</div>
-              <div style={{ fontSize: '26px', fontWeight: 900, color: bestExam!.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>{bestExam!.lgsPuani.toFixed(2)}</div>
+              <div style={{ fontSize: '26px', fontWeight: 900, color: bestExam!.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>{bestExam!.lgsPuani.toFixed(2).replace('.', ',')}</div>
             </div>
           </div>
 
