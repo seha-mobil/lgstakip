@@ -54,7 +54,7 @@ export default function PerformanceAnalyzer({ student }: PerformanceAnalyzerProp
               background: `${colors.border}20`,
               display: 'flex',
               alignItems: 'center',
-              justifyChild: 'center',
+              justifyContent: 'center',
               flexShrink: 0
             }}>
               <i 
