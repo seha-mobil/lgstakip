@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 
 // VisionScanner bileşenini sunucu tarafında render edilmekten koruyoruz (SSR: false)
 // Bu, tarayıcı API'larına bağımlı bileşenlerin build sırasında hata vermesini engeller.
-const VisionScanner = dynamic(() => import('@/components/VisionScanner'), { 
+const VisionScanner = nextDynamic(() => import('@/components/VisionScanner'), { 
   ssr: false,
   loading: () => (
     <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '20px' }}>
