@@ -1,16 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { deleteExamResult, updateExamResult } from '@/app/actions';
-import { SubjectComparisonMiniChart } from '@/components/ClientCharts';
+import ExamAnalysisModal from '@/components/ExamAnalysisModal';
 
 export default function PastExamsTable({ 
+  student,
   exams, 
   studentId, 
   studentColor,
   personalAverages 
 }: { 
+  student: any,
   exams: any[], 
   studentId: string, 
   studentColor: string,
@@ -52,6 +53,11 @@ export default function PastExamsTable({
     setSelectedExamId(examId);
   };
 
+  // Find the selected exam and its previous exam for the modal
+  const selectedExam = exams.find(e => e.id === selectedExamId);
+  const currentIndexInOriginal = selectedExam ? exams.findIndex(e => e.id === selectedExamId) : -1;
+  const prevExam = (currentIndexInOriginal > 0) ? exams[currentIndexInOriginal - 1] : null;
+
   return (
     <div style={{ overflowX: 'auto' }}>
       <style>{`
@@ -76,8 +82,8 @@ export default function PastExamsTable({
         </thead>
         <tbody>
           {[...exams].reverse().map((ex) => {
-            const currentIndexInOriginal = exams.findIndex(e => e.id === ex.id);
-            const prevLgs = currentIndexInOriginal > 0 ? exams[currentIndexInOriginal - 1].lgsPuani : null;
+            const currentIdx = exams.findIndex(e => e.id === ex.id);
+            const prevLgs = currentIdx > 0 ? exams[currentIdx - 1].lgsPuani : null;
             const diff = prevLgs ? ex.lgsPuani - prevLgs : 0;
             
             return (
@@ -122,60 +128,19 @@ export default function PastExamsTable({
         </tbody>
       </table>
 
-      {mounted && selectedExamId && createPortal(
-        <div 
-          style={{ 
-              position: 'fixed', inset: 0, 
-              background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)', zIndex: 10000,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
-          }} 
-          onClick={() => setSelectedExamId(null)}
-        >
-          <div style={{
-                  width: '100%', maxWidth: '1000px', height: 'auto', maxHeight: '90vh', zIndex: 10001,
-                  boxShadow: '0 40px 100px rgba(0,0,0,1)',
-                  border: '1px solid var(--accent)',
-                  padding: '40px',
-                  overflowY: 'auto',
-                  position: 'relative'
-              }} className="glass-card animate-fade-up" onClick={(e) => e.stopPropagation()}>
-
-              <button 
-                  onClick={() => setSelectedExamId(null)}
-                  style={{ position: 'absolute', top: '25px', right: '25px', background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '32px', zIndex: 10 }}
-              >
-                  <i className="fas fa-times"></i>
-              </button>
-              
-              <div style={{ marginBottom: '32px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '2px' }}>Deneme Analizi & Karşılaştırma</div>
-                <div style={{ fontSize: '28px', fontWeight: 900, marginTop: '4px' }}>{exams.find(e => e.id === selectedExamId)?.trialExam.name}</div>
-              </div>
-              
-              <div style={{ height: '450px', width: '100%', marginBottom: '10px' }}>
-                <SubjectComparisonMiniChart 
-                  studentNets={
-                    (() => {
-                        const ex = exams.find(e => e.id === selectedExamId);
-                        const nets: Record<string, number> = {};
-                        ex?.subjects.forEach((s: any) => {
-                            nets[s.subjectKey] = Math.max(0, s.dogru - (s.yanlis / 3));
-                        });
-                        return nets;
-                    })()
-                  }
-                  avgNets={personalAverages}
-                  color={studentColor}
-                />
-              </div>
-
-              <div style={{ marginTop: '20px', padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', fontSize: '14px', color: 'var(--text2)', textAlign: 'center' }}>
-                <i className="fas fa-info-circle" style={{ marginRight: '8px', color: 'var(--accent)' }}></i>
-                Bu grafik, mevcut sınavdaki netlerinizi **tüm sınavlarınızın ortalaması** ile karşılaştırır.
-              </div>
-          </div>
-        </div>,
-        document.body
+      {/* NEW SMART REPORT CARD MODAL */}
+      {mounted && selectedExam && (
+        <ExamAnalysisModal 
+            isOpen={!!selectedExam}
+            onClose={() => setSelectedExamId(null)}
+            student={student}
+            exam={selectedExam}
+            prevExam={prevExam}
+            targetPuan={student.targetLisePuan}
+            studentColor={studentColor}
+            isAverage={false}
+            mode="notes"
+        />
       )}
 
       {selectedEditExamId && editData && (

@@ -8,6 +8,7 @@ import PastExamsTable from './PastExamsTable';
 import SubjectStatsTable from '@/components/SubjectStatsTable';
 import LiseTargetPicker from '@/components/LiseTargetPicker';
 import RemoveTargetButton from '@/components/RemoveTargetButton';
+import AnalysisHoverCard from '@/components/AnalysisHoverCard';
 
 export default async function StudentDetail({ params }: { params: { id: string } }) {
   // ... existing code ...
@@ -31,6 +32,7 @@ export default async function StudentDetail({ params }: { params: { id: string }
   const exams = student.examResults;
   const bestExam = exams.length ? [...exams].sort((a,b) => b.lgsPuani - a.lgsPuani)[0] : null;
   const lastExam = exams.length ? exams[exams.length - 1] : null;
+  const prevExam = exams.length > 1 ? exams[exams.length - 2] : null;
   const avgScore = exams.length ? exams.reduce((acc, ex) => acc + ex.lgsPuani, 0) / exams.length : 0;
   
   const targetName = student.targetLiseName;
@@ -161,14 +163,28 @@ export default async function StudentDetail({ params }: { params: { id: string }
       ) : (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '20px' }}>
-            <div className="glass-card animate-fade-up" style={{ padding: '20px' }}>
-              <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text3)' }}>Son Deneme ({lastExam!.trialExam.name})</div>
-              <div style={{ fontSize: '26px', fontWeight: 900, color: lastExam!.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>{lastExam!.lgsPuani.toFixed(2).replace('.', ',')}</div>
-            </div>
-            <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: '0.07s' }}>
-              <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text3)' }}>Ortalama Puan</div>
-              <div style={{ fontSize: '26px', fontWeight: 900, color: 'var(--text)' }}>{avgScore.toFixed(2).replace('.', ',')}</div>
-            </div>
+            <AnalysisHoverCard 
+              student={student}
+              lastExam={lastExam} 
+              prevExam={prevExam} 
+              targetPuan={student.targetLisePuan}
+              studentColor={student.color}
+            />
+            <AnalysisHoverCard 
+              student={student}
+              lastExam={{
+                trialExam: { name: 'Genel Ortalama' },
+                lgsPuani: avgScore,
+                subjects: Object.keys(personalAverages).map(key => ({
+                  subjectKey: key,
+                  dogru: personalAverages[key],
+                  yanlis: 0
+                }))
+              }}
+              targetPuan={student.targetLisePuan}
+              studentColor={student.color}
+              isAverage={true}
+            />
             <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: '0.14s' }}>
               <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text3)' }}>En Yüksek ({bestExam!.trialExam.name})</div>
               <div style={{ fontSize: '26px', fontWeight: 900, color: bestExam!.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>{bestExam!.lgsPuani.toFixed(2).replace('.', ',')}</div>
@@ -212,6 +228,7 @@ export default async function StudentDetail({ params }: { params: { id: string }
           <div className="glass-card animate-fade-up" style={{ padding: '24px', animationDelay: '0.49s' }}>
             <div className="sec-title">Geçmiş Denemeler (Yeniye Doğru)</div>
             <PastExamsTable 
+              student={student}
               exams={exams} 
               studentId={student.id} 
               studentColor={student.color} 

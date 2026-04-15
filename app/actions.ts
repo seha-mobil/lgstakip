@@ -46,6 +46,9 @@ export async function syncDatabaseSchema() {
     await prisma.$executeRawUnsafe(`ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "targetLiseName" TEXT;`);
     await prisma.$executeRawUnsafe(`ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "targetLisePuan" DOUBLE PRECISION;`);
     
+    // Add Notes column to ExamResult if missing
+    await prisma.$executeRawUnsafe(`ALTER TABLE "ExamResult" ADD COLUMN IF NOT EXISTS "notes" TEXT;`);
+    
     return { success: true };
   } catch (error: any) {
     console.error('Schema sync error:', error);
@@ -400,4 +403,13 @@ export async function updateExamResult(studentId: string, examResultId: string, 
   ]);
 
   revalidatePath(`/student/${studentId}`);
+}
+
+export async function updateExamNotes(examResultId: string, notes: string) {
+  await prisma.examResult.update({
+    where: { id: examResultId },
+    data: { notes }
+  });
+  // We don't necessarily need to revalidate path here if the UI handles the local state well,
+  // but it's safer for consistency.
 }

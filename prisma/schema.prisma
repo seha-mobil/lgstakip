@@ -36,6 +36,7 @@ model ExamResult {
   basariSirasi  Int             @default(0)
   lgsPuani      Float
   toplamNet     Float
+  notes         String?
   createdAt     DateTime        @default(now())
   
   student       Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)

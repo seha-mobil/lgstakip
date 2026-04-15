@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: lgstakip-db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: lgstakip
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d lgstakip"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: node:24-slim
+    container_name: lgstakip-app
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      POSTGRES_PRISMA_URL: postgres://user:password@db:5432/lgstakip
+      POSTGRES_URL_NON_POOLING: postgres://user:password@db:5432/lgstakip
+    ports:
+      - "3000:3000"
+    command: >
+      sh -c "apt-get update -y && apt-get install -y openssl ca-certificates &&
+             npm config set fetch-retry-maxtimeout 1200000 && 
+             npm ci --no-audit --no-fund && 
+             npx prisma db push && 
+             npm run dev"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
