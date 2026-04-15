@@ -14,7 +14,7 @@ const VisionScanner = dynamic(() => import('@/components/VisionScanner'), {
   )
 });
 
-export const dynamicConfig = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 
 export default function LabPage() {
   return (
