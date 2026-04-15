@@ -2,7 +2,7 @@ import { getStudents } from '@/app/actions';
 import SidebarClient from './SidebarClient';
 
 export default async function Sidebar() {
-  let students = [];
+  let students: any[] = [];
   try {
     students = await getStudents();
   } catch (error) {
