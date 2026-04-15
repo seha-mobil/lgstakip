@@ -3,6 +3,8 @@
 import React from 'react';
 import VisionScanner from '@/components/VisionScanner';
 
+export const dynamic = 'force-dynamic';
+
 export default function LabPage() {
   return (
     <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
