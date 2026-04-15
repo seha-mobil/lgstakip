@@ -1,9 +1,20 @@
 'use client';
 
 import React from 'react';
-import VisionScanner from '@/components/VisionScanner';
+import dynamic from 'next/dynamic';
 
-export const dynamic = 'force-dynamic';
+// VisionScanner bileşenini sunucu tarafında render edilmekten koruyoruz (SSR: false)
+// Bu, tarayıcı API'larına bağımlı bileşenlerin build sırasında hata vermesini engeller.
+const VisionScanner = dynamic(() => import('@/components/VisionScanner'), { 
+  ssr: false,
+  loading: () => (
+    <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '20px' }}>
+      <div className="animate-spin" style={{ width: '30px', height: '30px', border: '3px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%' }}></div>
+    </div>
+  )
+});
+
+export const dynamicConfig = 'force-dynamic';
 
 export default function LabPage() {
   return (
@@ -59,6 +70,11 @@ export default function LabPage() {
           <p style={{ fontSize: '14px', color: 'var(--text2)', lineHeight: '1.5' }}>Görselleriniz sadece işlem anında kullanılır ve asla kaydedilmez.</p>
         </div>
       </div>
+
+      <style>{`
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 }
