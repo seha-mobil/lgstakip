@@ -238,9 +238,9 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const globalAcc = totalSolved ? Math.round((totalCorrect / totalSolved) * 100) : 0;
   const todayGoals = state.agenda[todayKey] || [];
 
-  return (
-    <div className="page animate-fade-up">
-      {/* Header */}
+    <>
+      <div className="page animate-fade-up">
+        {/* Header */}
       <div className="flex-mobile-col" style={{ alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <Link href={`/student/${studentId}`} className="btn btn-ghost" style={{ width: '36px', height: '36px', padding: 0, justifyContent: 'center' }}><i className="fas fa-arrow-left"></i></Link>
@@ -387,8 +387,8 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
            </div>
         </div>
       )}
+      </div>
 
-      {/* Modals... (AddGoalModal, SolveModal, StudyModal remain mostly same) */}
       {isAddGoalModalOpen && (
         <div className="modal-overlay open" onClick={() => setAddGoalModalOpen(false)}>
           <div className="glass-card" style={{ padding: '24px', maxWidth: '440px', width: '100%' }} onClick={e => e.stopPropagation()}>
@@ -423,14 +423,42 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
         </div>
       )}
 
-      <style jsx>{`
+      <style jsx global>{`
         .hover-bg:hover { background: var(--accent-dim) !important; }
         .hover-bg-btn:hover { opacity: 1 !important; color: #f43f5e !important; background: transparent; }
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; opacity: 0; pointer-events: none; transition: all 0.3s ease; }
-        .modal-overlay.open { opacity: 1; pointer-events: auto; }
-        .modal-overlay .glass-card { transform: scale(0.9); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .modal-overlay.open .glass-card { transform: scale(1); }
+        
+        .modal-overlay {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          background: rgba(0, 0, 0, 0.6) !important;
+          backdrop-filter: blur(8px) !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          z-index: 9999 !important;
+          padding: 20px !important;
+          opacity: 0;
+          pointer-events: none;
+          transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.open {
+          opacity: 1 !important;
+          pointer-events: auto !important;
+        }
+
+        .modal-overlay .glass-card {
+          transform: scale(0.9);
+          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-overlay.open .glass-card {
+          transform: scale(1) !important;
+        }
       `}</style>
-    </div>
+    </>
   );
 }
