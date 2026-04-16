@@ -159,6 +159,23 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
     return critical.sort((a, b) => a.accuracy - b.accuracy);
   }, [state]);
 
+  // Weekly Goal Completion Logic
+  const weeklyCompletion = useMemo(() => {
+    if (!state || !state.agenda) return 0;
+    let total = 0;
+    let completed = 0;
+    const now = new Date();
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(now);
+        d.setDate(now.getDate() - i);
+        const key = d.toISOString().split('T')[0];
+        const dayGoals = state.agenda[key] || [];
+        total += dayGoals.length;
+        completed += dayGoals.filter((g: any) => g.done).length;
+    }
+    return total > 0 ? Math.round((completed / total) * 100) : 0;
+  }, [state]);
+
   // Helper to check if a unit is "Dusty" (>15 days no solve)
   const isUnitDusty = (sid: string, ui: number) => {
     if (!state) return false;
@@ -265,7 +282,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
           <div className="animate-fade-up">
             {/* Stats Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
-              {[{ label: 'Soru', val: totalSolved, icon: 'fa-check-double', color: 'var(--text)' }, { label: 'Net', val: totalNet, icon: 'fa-chart-line', color: 'var(--accent)' }, { label: 'Başarı', val: `%${globalAcc}`, icon: 'fa-percentage', color: '#10b981' }, { label: 'Seri', val: `${state.streak} Gün`, icon: 'fa-fire', color: '#f59e0b' }].map((s, idx) => (
+              {[{ label: 'Soru', val: totalSolved, icon: 'fa-check-double', color: 'var(--text)' }, { label: 'Net', val: totalNet, icon: 'fa-chart-line', color: 'var(--accent)' }, { label: 'Başarı', val: `%${globalAcc}`, icon: 'fa-percentage', color: '#10b981' }, { label: 'Hedef', val: `%${weeklyCompletion}`, icon: 'fa-bullseye', color: '#f59e0b' }].map((s, idx) => (
                 <div key={idx} className="glass-card" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px' }}>
                   <div style={{ width: '28px', height: '28px', flexShrink: 0, background: 'var(--card-bg)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, border: '1px solid var(--border)', fontSize: '0.8rem' }}><i className={`fas ${s.icon}`}></i></div>
                   <div style={{ overflow: 'hidden' }}><p style={{ fontSize: '0.55rem', color: 'var(--text3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px', whiteSpace: 'nowrap' }}>{s.label}</p><p style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text)', lineHeight: 1, whiteSpace: 'nowrap' }}>{s.val}</p></div>
