@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LGS Takip Premium v3</title>
+    <style>
+        :root {
+            --color-primary: #6366f1;
+            --color-primary-dark: #4f46e5;
+            --color-success: #10b981;
+            --color-danger: #ef4444;
+            --color-warning: #f59e0b;
+            --color-bg-app: #f8fafc;
+            --color-bg-card: #ffffff;
+            --color-text-main: #1e293b;
+            --color-text-sub: #64748b;
+            --color-border: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-sans); background-color: var(--color-bg-app); color: var(--color-text-main); line-height: 1.5; }
+        
+        .app { max-width: 1000px; margin: 0 auto; padding: 1.5rem; }
+
+        /* Header & Badge */
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+        .logo-group { display: flex; align-items: center; gap: 12px; }
+        .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; box-shadow: var(--shadow-md); }
+        .logo-text h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.025em; }
+        .logo-text p { font-size: 0.75rem; color: var(--color-text-sub); }
+        .premium-badge { background: linear-gradient(90deg, #eef2ff, #e0e7ff); color: var(--color-primary-dark); padding: 6px 14px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; border: 1px solid #c7d2fe; }
+
+        /* Stats & Countdown */
+        .countdown-card { background: var(--color-bg-card); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; box-shadow: var(--shadow-sm); border: 1px solid var(--color-border); }
+        .days-box { display: flex; align-items: baseline; gap: 8px; }
+        .days-val { font-size: 2.5rem; font-weight: 800; color: var(--color-primary); }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--color-bg-card); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .stat-label { font-size: 0.75rem; font-weight: 600; color: var(--color-text-sub); text-transform: uppercase; margin-bottom: 4px; }
+        .stat-value { font-size: 1.5rem; font-weight: 700; }
+
+        /* Main Layout */
+        .main-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+        @media (max-width: 768px) { .main-grid { grid-template-columns: 1fr; } }
+        
+        .card { background: var(--color-bg-card); border-radius: var(--radius-lg); padding: 1.5rem; border: 1px solid var(--color-border); box-shadow: var(--shadow-sm); }
+        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+        .card-title { font-size: 1rem; font-weight: 700; }
+
+        /* Subject List */
+        .subject-block { border-bottom: 1px solid var(--color-border); transition: background 0.2s; }
+        .subject-block:last-child { border-bottom: none; }
+        .subject-header { display: flex; align-items: center; gap: 12px; padding: 12px 8px; cursor: pointer; border-radius: 8px; }
+        .subject-header:hover { background: #f1f5f9; }
+        .subject-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .subject-name { flex: 1; font-size: 0.9rem; font-weight: 600; }
+        .progress-bar-bg { width: 60px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* Units Panel */
+        .units-panel { display: none; padding: 0 12px 12px 32px; animation: slideDown 0.3s ease-out; }
+        .units-panel.open { display: block; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .unit-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
+
+        /* Goals */
+        .goal-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8fafc; border-radius: 10px; margin-bottom: 8px; transition: all 0.2s; border: 1px solid transparent; }
+        .goal-item:hover { border-color: var(--color-primary); background: #fff; }
+        .goal-check { cursor: pointer; width: 18px; height: 18px; border: 2px solid var(--color-border); border-radius: 5px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .goal-check.checked { background: var(--color-primary); border-color: var(--color-primary); color: white; }
+        .goal-text { flex: 1; font-size: 0.85rem; transition: color 0.2s; }
+        .goal-text.done { text-decoration: line-through; color: var(--color-text-sub); }
+        .del-goal { color: var(--color-danger); opacity: 0; cursor: pointer; font-size: 1rem; transition: opacity 0.2s; padding: 4px; }
+        .goal-item:hover .del-goal { opacity: 1; }
+
+        /* Buttons & Modals */
+        .btn { border: none; border-radius: 8px; padding: 8px 16px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-primary { background: var(--color-primary); color: white; }
+        .btn-primary:hover { background: var(--color-primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+        .btn-ghost { background: transparent; border: 1px solid var(--color-border); color: var(--color-text-main); }
+        .btn-ghost:hover { background: #f1f5f9; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-overlay.open { display: flex; }
+        .modal-box { background: #fff; width: 90%; max-width: 400px; padding: 2rem; border-radius: var(--radius-lg); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--color-text-sub); margin-bottom: 6px; text-transform: uppercase; }
+        .form-input { width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: 8px; font-family: inherit; font-size: 0.9rem; }
+        .form-input:focus { outline: none; border-color: var(--color-primary); ring: 2px var(--color-primary); }
+
+        .acc-pill { font-size: 0.7rem; padding: 2px 8px; border-radius: 99px; font-weight: 700; }
+        .acc-high { background: #dcfce7; color: #166534; }
+        .acc-mid { background: #fef3c7; color: #92400e; }
+        .acc-low { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <header class="header">
+        <div class="logo-group">
+            <div class="logo-icon">LGS</div>
+            <div class="logo-text">
+                <h1>LGS Takip Pro</h1>
+                <p>Kişisel Başarı Paneli</p>
+            </div>
+        </div>
+        <div class="premium-badge">2026 Sınav Dönemi</div>
+    </header>
+
+    <div class="countdown-card">
+        <div>
+            <p style="font-size: 0.85rem; color: var(--color-text-sub); font-weight: 600;">Sınava Kalan Süre</p>
+            <div class="days-box">
+                <span class="days-val" id="daysLeft">—</span>
+                <span style="font-weight: 600; color: var(--color-text-sub);">GÜN</span>
+            </div>
+        </div>
+        <div style="text-align: right;">
+            <p id="weekLeftLabel" style="font-size: 1.1rem; font-weight: 700; color: var(--color-text-main);">— Hafta</p>
+            <p style="font-size: 0.75rem; color: var(--color-text-sub);">Hedefine odaklan!</p>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <p class="stat-label">Toplam Soru</p>
+            <p class="stat-value" id="totalSolved">0</p>
+        </div>
+        <div class="stat-card">
+            <p class="stat-label">Genel Net</p>
+            <p class="stat-value" id="totalNet" style="color: var(--color-primary);">0</p>
+        </div>
+        <div class="stat-card">
+            <p class="stat-label">Başarı Oranı</p>
+            <p class="stat-value" id="globalAcc">—</p>
+        </div>
+        <div class="stat-card">
+            <p class="stat-label">Çalışma Serisi</p>
+            <p class="stat-value" id="streak" style="color: var(--color-warning);">0</p>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Ders ve Ünite Analizi</h3>
+            </div>
+            <div id="subjectList"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Günlük Hedefler</h3>
+                <span id="goalCount" style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary);">0/0</span>
+            </div>
+            <div id="goalsList"></div>
+            <button class="btn btn-ghost" style="width: 100%; margin-top: 1rem;" onclick="openModal('goalModal')">+ Yeni Hedef</button>
+        </div>
+    </div>
+
+    <div class="main-grid" style="grid-template-columns: 1fr 1.2fr;">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Son Deneme Netleri</h3>
+                <button class="btn btn-primary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="openModal('netModal')">+ Net Gir</button>
+            </div>
+            <div id="netLog"></div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Haftalık Aktivite</h3>
+            </div>
+            <div id="weekBars" style="display: flex; align-items: flex-end; gap: 8px; height: 100px; margin-top: 10px;"></div>
+            <div id="weekLabels" style="display: flex; gap: 8px; margin-top: 8px;"></div>
+        </div>
+    </div>
+</div>
+
+<div id="goalModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 style="margin-bottom: 1rem;">Hedef Ekle</h3>
+        <div class="form-group">
+            <label>Hedef Açıklaması</label>
+            <input type="text" id="goalInput" class="form-input" placeholder="Örn: 40 Matematik sorusu çöz">
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-ghost" style="flex: 1;" onclick="closeModal('goalModal')">Vazgeç</button>
+            <button class="btn btn-primary" style="flex: 1;" onclick="addGoal()">Ekle</button>
+        </div>
+    </div>
+</div>
+
+<div id="netModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 style="margin-bottom: 1rem;">Deneme Sonucu</h3>
+        <div class="form-group">
+            <label>Ders Seçin</label>
+            <select id="netSubject" class="form-input">
+                <option value="Matematik">Matematik</option>
+                <option value="Türkçe">Türkçe</option>
+                <option value="Fen Bilimleri">Fen Bilimleri</option>
+                <option value="İngilizce">İngilizce</option>
+                <option value="İnkılap Tarihi">İnkılap Tarihi</option>
+                <option value="Din Kültürü">Din Kültürü</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Net Sayısı</label>
+            <input type="number" id="netValue" step="0.25" class="form-input" placeholder="Örn: 17.25">
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-ghost" style="flex: 1;" onclick="closeModal('netModal')">Vazgeç</button>
+            <button class="btn btn-primary" style="flex: 1;" onclick="addNet()">Kaydet</button>
+        </div>
+    </div>
+</div>
+
+<div id="solveModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 id="solveTitle" style="margin-bottom: 0.25rem;">Soru Girişi</h3>
+        <p id="solveSub" style="font-size: 0.8rem; color: var(--color-text-sub); margin-bottom: 1.5rem;"></p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+                <label>Doğru</label>
+                <input type="number" id="solveCorrect" class="form-input" value="0" min="0">
+            </div>
+            <div class="form-group">
+                <label>Yanlış</label>
+                <input type="number" id="solveWrong" class="form-input" value="0" min="0">
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-ghost" style="flex: 1;" onclick="closeModal('solveModal')">İptal</button>
+            <button class="btn btn-primary" style="flex: 1;" onclick="saveSolve()">Verileri İşle</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- CONFIG & DATA ---
+    const SUBJECT_DATA = [
+        {id:"mat",name:"Matematik",dot:"#6366f1",units:["Çarpanlar ve Katlar","Üslü İfadeler","Kareköklü İfadeler","Veri Analizi","Olasılık","Cebirsel İfadeler"]},
+        {id:"tur",name:"Türkçe",dot:"#10b981",units:["Sözcükte Anlam","Cümlede Anlam","Paragraf","Yazım Kuralları","Noktalama İşaretleri","Fiilimsiler"]},
+        {id:"fen",name:"Fen Bilimleri",dot:"#f59e0b",units:["Mevsimler ve İklim","DNA ve Genetik Kod","Basınç","Madde ve Endüstri"]},
+        {id:"ing",name:"İngilizce",dot:"#3b82f6",units:["Friendship","Teen Life","In the Kitchen","On the Phone"]},
+        {id:"ink",name:"İnkılap Tarihi",dot:"#ef4444",units:["Bir Kahraman Doğuyor","Milli Uyanış","Milli Bir Destan"]},
+        {id:"din",name:"Din Kültürü",dot:"#8b5cf6",units:["Kader İnancı","Zekat ve Sadaka","Din ve Hayat"]}
+    ];
+
+    const EXAM_DATE = new Date("2026-06-06"); // 2026 LGS Tahmini
+    const DAYS = ["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"];
+
+    let state = JSON.parse(localStorage.getItem("lgs_premium_v3")) || {
+        units: {},
+        goals: [],
+        weekly: { correct: [0,0,0,0,0,0,0], wrong: [0,0,0,0,0,0,0] },
+        nets: [],
+        streak: 0,
+        lastSolveDate: null,
+        openSubjects: {}
+    };
+
+    function save() { localStorage.setItem("lgs_premium_v3", JSON.stringify(state)); }
+
+    // --- LOGIC ---
+    function renderCountdown() {
+        const diff = EXAM_DATE - new Date();
+        const days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+        document.getElementById("daysLeft").textContent = days;
+        document.getElementById("weekLeftLabel").textContent = Math.floor(days/7) + " Hafta";
+    }
+
+    function renderStats() {
+        let tc = 0, tw = 0;
+        Object.values(state.units).forEach(u => { tc += u.correct; tw += u.wrong; });
+        const total = tc + tw;
+        document.getElementById("totalSolved").textContent = total;
+        document.getElementById("totalNet").textContent = total ? (tc - (tw/3)).toFixed(2) : "0";
+        document.getElementById("globalAcc").textContent = total ? Math.round((tc/total)*100) + "%" : "—";
+        document.getElementById("streak").textContent = state.streak;
+    }
+
+    function renderSubjects() {
+        const el = document.getElementById("subjectList");
+        el.innerHTML = SUBJECT_DATA.map(s => {
+            let sc = 0, sw = 0;
+            s.units.forEach((_, i) => {
+                const u = state.units[s.id+"_"+i] || {correct:0, wrong:0};
+                sc += u.correct; sw += u.wrong;
+            });
+            const total = sc + sw;
+            const pct = total ? Math.round((sc/total)*100) : 0;
+            const isOpen = state.openSubjects[s.id];
+
+            return `
+                <div class="subject-block">
+                    <div class="subject-header" onclick="toggleSubject('${s.id}')">
+                        <div class="subject-dot" style="background:${s.dot}"></div>
+                        <span class="subject-name">${s.name}</span>
+                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%; background:${s.dot}"></div></div>
+                        <span style="font-size:0.75rem; font-weight:700; min-width:30px; text-align:right">${pct}%</span>
+                    </div>
+                    <div class="units-panel ${isOpen?'open':''}">
+                        ${s.units.map((u, i) => {
+                            const ud = state.units[s.id+"_"+i] || {correct:0, wrong:0};
+                            const ut = ud.correct + ud.wrong;
+                            const upct = ut ? Math.round((ud.correct/ut)*100) : null;
+                            return `
+                                <div class="unit-row">
+                                    <span style="flex:1">${u}</span>
+                                    <span style="color:var(--color-success); font-weight:700; margin:0 8px">${ud.correct}D</span>
+                                    <span style="color:var(--color-danger); font-weight:700; margin:0 8px">${ud.wrong}Y</span>
+                                    <button class="btn btn-ghost" style="padding:2px 8px; font-size:0.7rem;" onclick="openSolve('${s.id}', ${i})">Giriş</button>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function toggleSubject(id) { state.openSubjects[id] = !state.openSubjects[id]; save(); renderSubjects(); }
+
+    let currentSolve = null;
+    function openSolve(sid, ui) {
+        currentSolve = {sid, ui};
+        const s = SUBJECT_DATA.find(x => x.id === sid);
+        document.getElementById("solveTitle").textContent = s.name;
+        document.getElementById("solveSub").textContent = s.units[ui];
+        openModal('solveModal');
+    }
+
+    function saveSolve() {
+        const c = parseInt(document.getElementById("solveCorrect").value) || 0;
+        const w = parseInt(document.getElementById("solveWrong").value) || 0;
+        if(c+w > 0) {
+            const key = currentSolve.sid + "_" + currentSolve.ui;
+            if(!state.units[key]) state.units[key] = {correct:0, wrong:0};
+            state.units[key].correct += c;
+            state.units[key].wrong += w;
+
+            // Streak Logic (Fix)
+            const today = new Date().toDateString();
+            if(state.lastSolveDate !== today) {
+                state.streak++;
+                state.lastSolveDate = today;
+            }
+
+            // Weekly Stats
+            const dayIdx = [6,0,1,2,3,4,5][new Date().getDay()];
+            state.weekly.correct[dayIdx] += c;
+            state.weekly.wrong[dayIdx] += w;
+        }
+        closeModal('solveModal');
+        save(); renderAll();
+    }
+
+    // Goals with Delete
+    function renderGoals() {
+        const el = document.getElementById("goalsList");
+        el.innerHTML = state.goals.map(g => `
+            <div class="goal-item">
+                <div class="goal-check ${g.done?'checked':''}" onclick="toggleGoal(${g.id})">${g.done?'✓':''}</div>
+                <span class="goal-text ${g.done?'done':''}">${g.text}</span>
+                <span class="del-goal" onclick="deleteGoal(${g.id})">×</span>
+            </div>
+        `).join('');
+        document.getElementById("goalCount").textContent = state.goals.filter(g=>g.done).length + "/" + state.goals.length;
+    }
+    function addGoal() {
+        const txt = document.getElementById("goalInput").value;
+        if(!txt) return;
+        state.goals.push({id: Date.now(), text: txt, done: false});
+        document.getElementById("goalInput").value = "";
+        closeModal('goalModal'); save(); renderGoals();
+    }
+    function toggleGoal(id) { 
+        state.goals = state.goals.map(g => g.id === id ? {...g, done: !g.done} : g); 
+        save(); renderGoals(); 
+    }
+    function deleteGoal(id) {
+        state.goals = state.goals.filter(g => g.id !== id);
+        save(); renderGoals();
+    }
+
+    // Nets with Dynamic Colors
+    function renderNets() {
+        const el = document.getElementById("netLog");
+        if(state.nets.length === 0) { el.innerHTML = "<p style='font-size:0.8rem; color:var(--color-text-sub);'>Henüz deneme girilmedi.</p>"; return; }
+        
+        el.innerHTML = state.nets.slice(0, 5).map(n => {
+            const subObj = SUBJECT_DATA.find(s => s.name === n.subject);
+            const color = subObj ? subObj.dot : "#64748b";
+            return `
+                <div style="display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f1f5f9;">
+                    <div style="width:8px; height:8px; border-radius:50%; background:${color}"></div>
+                    <span style="flex:1; font-size:0.85rem; font-weight:600;">${n.subject}</span>
+                    <span style="font-weight:700; color:var(--color-primary);">${n.val} Net</span>
+                </div>
+            `;
+        }).join('');
+    }
+    function addNet() {
+        const sub = document.getElementById("netSubject").value;
+        const val = parseFloat(document.getElementById("netValue").value);
+        if(!isNaN(val)) {
+            state.nets.unshift({subject: sub, val, date: new Date().toLocaleDateString()});
+            closeModal('netModal'); save(); renderNets(); renderStats();
+        }
+    }
+
+    function renderWeek() {
+        const max = Math.max(...state.weekly.correct.map((v, i) => v + state.weekly.wrong[i]), 10);
+        const el = document.getElementById("weekBars");
+        const todayIdx = [6,0,1,2,3,4,5][new Date().getDay()];
+        
+        el.innerHTML = state.weekly.correct.map((c, i) => {
+            const w = state.weekly.wrong[i];
+            const cH = (c / max) * 100;
+            const wH = (w / max) * 100;
+            return `
+                <div style="flex:1; display:flex; flex-direction:column-reverse; height:100%; gap:2px;">
+                    <div style="height:${wH}%; background:#fee2e2; border-radius:2px;"></div>
+                    <div style="height:${cH}%; background:${i===todayIdx?'var(--color-primary)':'#c7d2fe'}; border-radius:2px;"></div>
+                </div>
+            `;
+        }).join('');
+        document.getElementById("weekLabels").innerHTML = DAYS.map((d, i) => `
+            <div style="flex:1; text-align:center; font-size:0.65rem; font-weight:700; color:${i===todayIdx?'var(--color-primary)':'var(--color-text-sub)'}">${d}</div>
+        `).join('');
+    }
+
+    // UI Helpers
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    function renderAll() {
+        renderCountdown();
+        renderStats();
+        renderSubjects();
+        renderGoals();
+        renderNets();
+        renderWeek();
+    }
+
+    renderAll();
+    setInterval(renderCountdown, 60000);
+</script>
+</body>
+</html>
