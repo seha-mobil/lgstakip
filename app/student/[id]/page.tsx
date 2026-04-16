@@ -19,15 +19,39 @@ export default async function StudentDetail({ params }: { params: { id: string }
   const auth = cookieStore.get(`student_auth_${params.id}`);
   if (!auth) redirect(`/student/${params.id}/login`);
 
-  const student = await prisma.student.findUnique({
-    where: { id: params.id },
-    include: {
-      examResults: {
-        include: { trialExam: true, subjects: true },
-        orderBy: { date: 'asc' }
+  let student = null;
+  let dbError = false;
+
+  try {
+    student = await prisma.student.findUnique({
+      where: { id: params.id },
+      include: {
+        examResults: {
+          include: { trialExam: true, subjects: true },
+          orderBy: { date: 'asc' }
+        }
       }
-    }
-  });
+    });
+  } catch (error) {
+    console.error(`Database error for student ${params.id}:`, error);
+    dbError = true;
+  }
+
+  if (dbError) {
+    return (
+      <div className="page animate-fade-up">
+        <div style={{ padding: '60px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <h2 style={{ marginBottom: '16px' }}>Bağlantı Sorunu 📡</h2>
+          <p style={{ opacity: 0.7, maxWidth: '500px', margin: '0 auto 24px' }}>
+            Öğrenci verileri şu anda yüklenemiyor. Veritabanı bağlantısı kurulamadı.
+          </p>
+          <Link href="/" className="btn-primary" style={{ display: 'inline-block', padding: '12px 32px', textDecoration: 'none' }}>
+            Ana Sayfaya Dön
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (!student) return <div className="page">Öğrenci bulunamadı.</div>;
 

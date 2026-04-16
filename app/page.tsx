@@ -5,12 +5,40 @@ import CountdownCard from '@/components/CountdownCard';
 export const dynamic = 'force-dynamic';
 
 export default async function Dashboard() {
-  const students = await getStudents();
+  let students = [];
+  let dbError = false;
+
+  try {
+    students = await getStudents();
+  } catch (error) {
+    console.error('Database fetch error on Dashboard:', error);
+    dbError = true;
+  }
   
-  const totalExams = students.reduce((acc, s) => acc + s.examResults.length, 0);
-  const allScores = students.flatMap(s => s.examResults.map(e => e.lgsPuani));
-  const avgScore = allScores.length ? (allScores.reduce((a,b)=>a+b,0)/allScores.length).toFixed(1) : '—';
+  const totalExams = students.reduce((acc: any, s: any) => acc + s.examResults.length, 0);
+  const allScores = students.flatMap((s: any) => s.examResults.map((e: any) => e.lgsPuani));
+  const avgScore = allScores.length ? (allScores.reduce((a: any,b: any)=>a+b,0)/allScores.length).toFixed(1) : '—';
   const bestScore = allScores.length ? Math.max(...allScores).toFixed(2) : '—';
+
+  if (dbError) {
+    return (
+      <div className="page animate-fade-up">
+        <div style={{ padding: '60px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <h2 style={{ marginBottom: '16px' }}>Veritabanı Bağlantı Sorunu 🛰️</h2>
+          <p style={{ opacity: 0.7, maxWidth: '500px', margin: '0 auto 24px' }}>
+            Şu anda veritabanına ulaşılamıyor. Lütfen internet bağlantınızı kontrol edin veya biraz sonra tekrar deneyin.
+          </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="btn-primary"
+            style={{ padding: '12px 32px' }}
+          >
+            Yeniden Dene
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page animate-fade-up">
