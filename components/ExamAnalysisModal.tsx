@@ -81,12 +81,16 @@ export default function ExamAnalysisModal({
   const basePuan = 400;
   const targetVal = targetPuan || 500;
   const totalRange = Math.max(1, targetVal - basePuan);
+  const DIFFICULTY_FACTOR = 1.5;
 
   const currentPuan = exam.lgsPuani;
   const prevPuanValue = prevExam ? prevExam.lgsPuani : currentPuan;
 
-  const currentProgressPct = Math.max(0, Math.min(100, ((currentPuan - basePuan) / totalRange) * 100));
-  const prevProgressPct = Math.max(0, Math.min(100, ((prevPuanValue - basePuan) / totalRange) * 100));
+  const currentRatio = Math.max(0, Math.min(1, (currentPuan - basePuan) / totalRange));
+  const prevRatio = Math.max(0, Math.min(1, (prevPuanValue - basePuan) / totalRange));
+
+  const currentProgressPct = Math.pow(currentRatio, DIFFICULTY_FACTOR) * 100;
+  const prevProgressPct = Math.pow(prevRatio, DIFFICULTY_FACTOR) * 100;
 
   const handleSaveNotes = async () => {
     setIsSaving(true);

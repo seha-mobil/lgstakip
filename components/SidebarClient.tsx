@@ -11,6 +11,7 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
   const { theme, setTheme } = useTheme();
   const [isModalOpen, setModalOpen] = useState(false);
   const [newStudentName, setNewStudentName] = useState('');
+  const [newStudentPassword, setNewStudentPassword] = useState('');
   const [isCollapsed, setIsCollapsed] = useState(false);
   // ... rest of the code ...
 
@@ -24,8 +25,9 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newStudentName.trim()) {
-      await addStudent(newStudentName.trim());
+      await addStudent(newStudentName.trim(), newStudentPassword.trim() || undefined);
       setNewStudentName('');
+      setNewStudentPassword('');
       setModalOpen(false);
     }
   };
@@ -206,6 +208,10 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
             <form onSubmit={handleAddStudent}>
               <label className="input-label">Öğrenci Adı</label>
               <input type="text" className="input" autoFocus required value={newStudentName} onChange={e => setNewStudentName(e.target.value)} style={{ marginBottom: '16px' }} placeholder="Adı girin…" />
+              
+              <label className="input-label">Giriş Şifresi (Opsiyonel)</label>
+              <input type="password" className="input" value={newStudentPassword} onChange={e => setNewStudentPassword(e.target.value)} style={{ marginBottom: '16px' }} placeholder="Boş bırakırsanız '123456' olur" />
+
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button type="button" className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setModalOpen(false)}>İptal</button>
                 <button type="submit" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>Ekle</button>

@@ -67,9 +67,11 @@ export default async function StudentDetail({ params }: { params: { id: string }
   // Progress logic: 400 is base (0%), 500 is target (100%).
   // So 450 is 50%.
   const basePuan = 400;
-  const progressPct = targetPuan && targetPuan > basePuan 
-    ? Math.max(0, Math.min(100, ((avgScore - basePuan) / (targetPuan - basePuan)) * 100)) 
+  const DIFFICULTY_FACTOR = 1.5;
+  const rawRatio = targetPuan && targetPuan > basePuan 
+    ? Math.max(0, Math.min(1, (avgScore - basePuan) / (targetPuan - basePuan))) 
     : 0;
+  const progressPct = Math.pow(rawRatio, DIFFICULTY_FACTOR) * 100;
   const remainingPuan = targetPuan ? Math.max(0, targetPuan - avgScore) : 0;
 
   // Calculate personal subject averages
