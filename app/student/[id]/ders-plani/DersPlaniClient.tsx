@@ -47,7 +47,6 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const [timerSeconds, setTimerSeconds] = useState(0);
 
   const storageKey = `lgs_premium_v4_${studentId}`;
-
   const todayKey = new Date().toISOString().split('T')[0];
 
   // Load state
@@ -151,22 +150,23 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
             if (data) {
                 const total = data.correct + data.wrong;
                 const pct = total > 0 ? (data.correct / total) : 0;
-                // Threshold: < 80% success AND at least 10 questions solved
                 if (total >= 10 && pct < 0.8) {
-                    critical.push({
-                        sid: sub.id,
-                        ui: idx,
-                        subjectName: sub.name,
-                        unitName: unit,
-                        accuracy: Math.round(pct * 100),
-                        color: sub.color
-                    });
+                    critical.push({ sid: sub.id, ui: idx, subjectName: sub.name, unitName: unit, accuracy: Math.round(pct * 100), color: sub.color });
                 }
             }
         });
     }
     return critical.sort((a, b) => a.accuracy - b.accuracy);
   }, [state]);
+
+  // Helper to check if a unit is "Dusty" (>15 days no solve)
+  const isUnitDusty = (sid: string, ui: number) => {
+    if (!state) return false;
+    const data = state.units[`${sid}_${ui}`];
+    if (!data || !data.lastDate) return false;
+    const diff = Date.now() - new Date(data.lastDate).getTime();
+    return diff > 15 * 24 * 60 * 60 * 1000;
+  };
 
   if (!state) return null;
 
@@ -191,6 +191,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
       if (!newState.units[key]) newState.units[key] = { correct: 0, wrong: 0 };
       newState.units[key].correct += correct;
       newState.units[key].wrong += wrong;
+      newState.units[key].lastDate = new Date().toISOString(); // Update last solve date
       const today = new Date().toDateString();
       if (newState.lastSolveDate !== today) { newState.streak++; newState.lastSolveDate = today; }
       const dayIdx = [6, 0, 1, 2, 3, 4, 5][new Date().getDay()];
@@ -238,157 +239,161 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const globalAcc = totalSolved ? Math.round((totalCorrect / totalSolved) * 100) : 0;
   const todayGoals = state.agenda[todayKey] || [];
 
+  return (
     <>
       <div className="page animate-fade-up">
         {/* Header */}
-      <div className="flex-mobile-col" style={{ alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <Link href={`/student/${studentId}`} className="btn btn-ghost" style={{ width: '36px', height: '36px', padding: 0, justifyContent: 'center' }}><i className="fas fa-arrow-left"></i></Link>
-          <div><h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Ders Planı: {studentName}</h1><p style={{ fontSize: '0.85rem', color: 'var(--text3)', fontWeight: 500 }}>Premium Gelişim Paneli</p></div>
-        </div>
-        <div style={{ background: 'var(--accent-dim)', border: '1px solid var(--accent-glow)', padding: '6px 14px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent)' }}><i className="fas fa-clock"></i> {countdown.days} GÜN ({countdown.weeks} Hafta)</div>
-      </div>
-
-      {/* Tabs */}
-      <div style={{ position: 'relative', display: 'flex', gap: '4px', marginBottom: '32px', background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(12px)', padding: '6px', borderRadius: '18px', border: '1px solid rgba(255, 255, 255, 0.05)', width: 'fit-content', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.3)', marginLeft: 'auto', marginRight: 'auto' }}>
-        <div style={{ position: 'absolute', top: '6px', bottom: '6px', left: activeTab === 'analiz' ? '6px' : 'calc(50% + 2px)', width: 'calc(50% - 8px)', background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)', borderRadius: '14px', transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 4px 15px -2px var(--accent-glow)', zIndex: 0 }} />
-        {[{ id: 'analiz', label: 'Analiz & Durum', icon: 'fa-chart-pie' }, { id: 'planlama', label: 'Ajanda & Planlama', icon: 'fa-calendar-alt' }].map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} style={{ position: 'relative', zIndex: 1, padding: '12px 24px', borderRadius: '14px', fontSize: '0.9rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '12px', transition: 'all 0.3s ease', background: 'transparent', color: activeTab === tab.id ? 'white' : 'var(--text3)', border: 'none', cursor: 'pointer', minWidth: '180px', justifyContent: 'center' }}>
-            <i className={`fas ${tab.icon}`} style={{ fontSize: '1rem', opacity: activeTab === tab.id ? 1 : 0.6, transform: activeTab === tab.id ? 'scale(1.1)' : 'scale(1)', transition: 'all 0.3s ease' }}></i> <span style={{ letterSpacing: '0.3px', textShadow: activeTab === tab.id ? '0 2px 4px rgba(0,0,0,0.2)' : 'none' }}>{tab.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {activeTab === 'analiz' ? (
-        <div className="animate-fade-up">
-          {/* Stats Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
-            {[{ label: 'Soru', val: totalSolved, icon: 'fa-check-double', color: 'var(--text)' }, { label: 'Net', val: totalNet, icon: 'fa-chart-line', color: 'var(--accent)' }, { label: 'Başarı', val: `%${globalAcc}`, icon: 'fa-percentage', color: '#10b981' }, { label: 'Seri', val: `${state.streak} Gün`, icon: 'fa-fire', color: '#f59e0b' }].map((s, idx) => (
-              <div key={idx} className="glass-card" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px' }}>
-                <div style={{ width: '28px', height: '28px', flexShrink: 0, background: 'var(--card-bg)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, border: '1px solid var(--border)', fontSize: '0.8rem' }}><i className={`fas ${s.icon}`}></i></div>
-                <div style={{ overflow: 'hidden' }}><p style={{ fontSize: '0.55rem', color: 'var(--text3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px', whiteSpace: 'nowrap' }}>{s.label}</p><p style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text)', lineHeight: 1, whiteSpace: 'nowrap' }}>{s.val}</p></div>
-              </div>
-            ))}
+        <div className="flex-mobile-col" style={{ alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <Link href={`/student/${studentId}`} className="btn btn-ghost" style={{ width: '36px', height: '36px', padding: 0, justifyContent: 'center' }}><i className="fas fa-arrow-left"></i></Link>
+            <div><h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Ders Planı: {studentName}</h1><p style={{ fontSize: '0.85rem', color: 'var(--text3)', fontWeight: 500 }}>Premium Gelişim Paneli</p></div>
           </div>
+          <div style={{ background: 'var(--accent-dim)', border: '1px solid var(--accent-glow)', padding: '6px 14px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent)' }}><i className="fas fa-clock"></i> {countdown.days} GÜN ({countdown.weeks} Hafta)</div>
+        </div>
 
-          <div className="flex-mobile-col" style={{ gap: '24px' }}>
-            <div style={{ flex: 1.6 }}>
-              {/* Subject Analysis */}
-              <div className="glass-card" style={{ padding: '24px' }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Ders ve Ünite Analizi</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {SUBJECT_DATA.map(s => {
-                    let sc = 0, sw = 0;
-                    s.units.forEach((_, i) => { const u = state.units[`${s.id}_${i}`] || { correct: 0, wrong: 0 }; sc += u.correct; sw += u.wrong; });
-                    const pct = (sc + sw) ? Math.round((sc / (sc + sw)) * 100) : 0;
-                    const isOpen = openSubjects[s.id];
-                    return (
-                      <div key={s.id} style={{ borderBottom: '1px solid var(--border)', paddingBottom: '2px' }}>
-                        <div onClick={() => setOpenSubjects(p => ({ ...p, [s.id]: !p[s.id] }))} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px', cursor: 'pointer', borderRadius: '10px' }} className="hover-bg">
-                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.color }}></div>
-                          <span style={{ flex: 1, fontSize: '0.85rem', fontWeight: 700 }}>{s.name}</span>
-                          <div style={{ width: '70px', height: '5px', background: 'var(--card-bg)', borderRadius: '3px', overflow: 'hidden', border: '1px solid var(--border)' }}><div style={{ height: '100%', width: `${pct}%`, background: s.color }}></div></div>
-                          <span style={{ fontSize: '0.7rem', fontWeight: 800, width: '30px', textAlign: 'right' }}>%{pct}</span>
-                        </div>
-                        {isOpen && <div style={{ padding: '8px 10px 10px 30px', display: 'flex', flexDirection: 'column', gap: '6px' }}>{s.units.map((u, i) => { const ud = state.units[`${s.id}_${i}`] || { correct: 0, wrong: 0 }; return (<div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8rem', padding: '5px 0', borderBottom: '1px dashed var(--border)' }}><span style={{ color: 'var(--text2)', fontWeight: 500 }}>{u}</span><div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><span style={{ color: '#3dd68c', fontWeight: 700 }}>{ud.correct}D</span><span style={{ color: '#f43f5e', fontWeight: 700 }}>{ud.wrong}Y</span><div style={{ display: 'flex', gap: '4px' }}><button className="btn btn-ghost" style={{ padding: '3px 6px', fontSize: '10px' }} onClick={() => { setCurrentAction({ sid: s.id, ui: i, subjectName: s.name, unitName: u }); setSolveData({ correct: 0, wrong: 0 }); setSolveModalOpen(true); }}>Soru</button><button className="btn btn-ghost" style={{ padding: '3px 6px', fontSize: '10px' }} onClick={() => { setCurrentAction({ sid: s.id, ui: i, subjectName: s.name, unitName: u }); setStudyModalOpen(true); }}>Çalış</button></div></div></div>); })}</div>}
-                      </div>
-                    );
-                  })}
+        {/* Tabs - Premium Segmented Control */}
+        <div style={{ position: 'relative', display: 'flex', gap: '4px', marginBottom: '32px', background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(12px)', padding: '6px', borderRadius: '18px', border: '1px solid rgba(255, 255, 255, 0.05)', width: 'fit-content', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.3)', marginLeft: 'auto', marginRight: 'auto' }}>
+          <div style={{ position: 'absolute', top: '6px', bottom: '6px', left: activeTab === 'analiz' ? '6px' : 'calc(50% + 2px)', width: 'calc(50% - 8px)', background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)', borderRadius: '14px', transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 4px 15px -2px var(--accent-glow)', zIndex: 0 }} />
+          {[{ id: 'analiz', label: 'Analiz & Durum', icon: 'fa-chart-pie' }, { id: 'planlama', label: 'Ajanda & Planlama', icon: 'fa-calendar-alt' }].map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} style={{ position: 'relative', zIndex: 1, padding: '12px 24px', borderRadius: '14px', fontSize: '0.9rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '12px', transition: 'all 0.3s ease', background: 'transparent', color: activeTab === tab.id ? 'white' : 'var(--text3)', border: 'none', cursor: 'pointer', minWidth: '180px', justifyContent: 'center' }}>
+              <i className={`fas ${tab.icon}`} style={{ fontSize: '1rem', opacity: activeTab === tab.id ? 1 : 0.6, transform: activeTab === tab.id ? 'scale(1.1)' : 'scale(1)', transition: 'all 0.3s ease' }}></i> <span style={{ letterSpacing: '0.3px', textShadow: activeTab === tab.id ? '0 2px 4px rgba(0,0,0,0.2)' : 'none' }}>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {activeTab === 'analiz' ? (
+          <div className="animate-fade-up">
+            {/* Stats Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
+              {[{ label: 'Soru', val: totalSolved, icon: 'fa-check-double', color: 'var(--text)' }, { label: 'Net', val: totalNet, icon: 'fa-chart-line', color: 'var(--accent)' }, { label: 'Başarı', val: `%${globalAcc}`, icon: 'fa-percentage', color: '#10b981' }, { label: 'Seri', val: `${state.streak} Gün`, icon: 'fa-fire', color: '#f59e0b' }].map((s, idx) => (
+                <div key={idx} className="glass-card" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px' }}>
+                  <div style={{ width: '28px', height: '28px', flexShrink: 0, background: 'var(--card-bg)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, border: '1px solid var(--border)', fontSize: '0.8rem' }}><i className={`fas ${s.icon}`}></i></div>
+                  <div style={{ overflow: 'hidden' }}><p style={{ fontSize: '0.55rem', color: 'var(--text3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px', whiteSpace: 'nowrap' }}>{s.label}</p><p style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text)', lineHeight: 1, whiteSpace: 'nowrap' }}>{s.val}</p></div>
                 </div>
-              </div>
+              ))}
             </div>
 
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              {/* Critical Radar (Weak Points) */}
-              <div className="glass-card" style={{ padding: '24px', border: '1px solid rgba(244, 63, 94, 0.2)', background: 'rgba(244, 63, 94, 0.03)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#f43f5e', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                        <i className="fas fa-satellite-dish animate-pulse"></i>
-                    </div>
-                    <div>
-                        <h3 style={{ fontSize: '0.9rem', fontWeight: 800 }}>Kritik Ünite Radarı</h3>
-                        <p style={{ fontSize: '0.65rem', color: 'var(--text3)', fontWeight: 600 }}>BAŞARI ORANI %80 ALTI ÜNİTELER</p>
-                    </div>
+            <div className="flex-mobile-col" style={{ gap: '24px' }}>
+              <div style={{ flex: 1.6 }}>
+                {/* Subject Analysis (Including Dusty Icons) */}
+                <div className="glass-card" style={{ padding: '24px' }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Ders ve Ünite Analizi</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {SUBJECT_DATA.map(s => {
+                      let sc = 0, sw = 0;
+                      s.units.forEach((_, i) => { const u = state.units[`${s.id}_${i}`] || { correct: 0, wrong: 0 }; sc += u.correct; sw += u.wrong; });
+                      const pct = (sc + sw) ? Math.round((sc / (sc + sw)) * 100) : 0;
+                      const isOpen = openSubjects[s.id];
+                      return (
+                        <div key={s.id} style={{ borderBottom: '1px solid var(--border)', paddingBottom: '2px' }}>
+                          <div onClick={() => setOpenSubjects(p => ({ ...p, [s.id]: !p[s.id] }))} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px', cursor: 'pointer', borderRadius: '10px' }} className="hover-bg">
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.color }}></div>
+                            <span style={{ flex: 1, fontSize: '0.85rem', fontWeight: 700 }}>{s.name}</span>
+                            <div style={{ width: '70px', height: '5px', background: 'var(--card-bg)', borderRadius: '3px', overflow: 'hidden', border: '1px solid var(--border)' }}><div style={{ height: '100%', width: `${pct}%`, background: s.color }}></div></div>
+                            <span style={{ fontSize: '0.7rem', fontWeight: 800, width: '30px', textAlign: 'right' }}>%{pct}</span>
+                          </div>
+                          {isOpen && (
+                            <div style={{ padding: '8px 10px 10px 30px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                {s.units.map((u, i) => { 
+                                    const ud = state.units[`${s.id}_${i}`] || { correct: 0, wrong: 0, lastDate: null }; 
+                                    const isDusty = isUnitDusty(s.id, i);
+                                    return (
+                                        <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8rem', padding: '5px 0', borderBottom: '1px dashed var(--border)' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <span style={{ color: 'var(--text2)', fontWeight: 500 }}>{u}</span>
+                                                {isDusty && (
+                                                    <span title="Tozlanmış: 15+ gündür çalışılmadı!" style={{ color: '#f59e0b', fontSize: '0.75rem' }}>
+                                                        <i className="fas fa-wind animate-pulse"></i>
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ color: '#3dd68c', fontWeight: 700 }}>{ud.correct}D</span>
+                                                <span style={{ color: '#f43f5e', fontWeight: 700 }}>{ud.wrong}Y</span>
+                                                <div style={{ display: 'flex', gap: '4px' }}>
+                                                    <button className="btn btn-ghost" style={{ padding: '3px 6px', fontSize: '10px' }} onClick={() => { setCurrentAction({ sid: s.id, ui: i, subjectName: s.name, unitName: u }); setSolveData({ correct: 0, wrong: 0 }); setSolveModalOpen(true); }}>Soru</button>
+                                                    <button className="btn btn-ghost" style={{ padding: '3px 6px', fontSize: '10px' }} onClick={() => { setCurrentAction({ sid: s.id, ui: i, subjectName: s.name, unitName: u }); setStudyModalOpen(true); }}>Çalış</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ); 
+                                })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              </div>
+
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                {/* Critical Radar */}
+                <div className="glass-card" style={{ padding: '24px', border: '1px solid rgba(244, 63, 94, 0.2)', background: 'rgba(244, 63, 94, 0.03)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#f43f5e', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}><i className="fas fa-satellite-dish animate-pulse"></i></div>
+                    <div><h3 style={{ fontSize: '0.9rem', fontWeight: 800 }}>Kritik Ünite Radarı</h3><p style={{ fontSize: '0.65rem', color: 'var(--text3)', fontWeight: 600 }}>BAŞARI ORANI %80 ALTI ÜNİTELER</p></div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {criticalUnits.length > 0 ? criticalUnits.slice(0, 4).map((cu, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                            <div style={{ flex: 1, overflow: 'hidden' }}>
-                                <p style={{ fontSize: '0.75rem', fontWeight: 800, color: cu.color }}>{cu.subjectName}</p>
-                                <p style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cu.unitName}</p>
-                            </div>
-                            <div style={{ textAlign: 'right' }}>
-                                <p style={{ fontSize: '0.8rem', fontWeight: 800, color: '#f43f5e' }}>%{cu.accuracy}</p>
-                                <button 
-                                    onClick={() => { setCurrentAction({ sid: cu.sid, ui: cu.ui, subjectName: cu.subjectName, unitName: cu.unitName }); setStudyModalOpen(true); }}
-                                    style={{ fontSize: '0.6rem', fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', cursor: 'pointer', padding: '2px 0' }}
-                                    className="hover-bg-btn"
-                                >Tekrar Et</button>
-                            </div>
-                        </div>
-                    )) : (
-                        <div style={{ textAlign: 'center', padding: '20px' }}>
-                            <i className="fas fa-medal" style={{ fontSize: '1.5rem', color: '#f59e0b', marginBottom: '8px' }}></i>
-                            <p style={{ fontSize: '0.75rem', color: 'var(--text3)', fontWeight: 600 }}>Tebrikler! Şu an kritik seviyede bir konun bulunmuyor.</p>
-                        </div>
-                    )}
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                        <div style={{ flex: 1, overflow: 'hidden' }}><p style={{ fontSize: '0.75rem', fontWeight: 800, color: cu.color }}>{cu.subjectName}</p><p style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cu.unitName}</p></div>
+                        <div style={{ textAlign: 'right' }}><p style={{ fontSize: '0.8rem', fontWeight: 800, color: '#f43f5e' }}>%{cu.accuracy}</p><button onClick={() => { setCurrentAction({ sid: cu.sid, ui: cu.ui, subjectName: cu.subjectName, unitName: cu.unitName }); setStudyModalOpen(true); }} style={{ fontSize: '0.6rem', fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', cursor: 'pointer', padding: '2px 0' }} className="hover-bg-btn">Tekrar Et</button></div>
+                      </div>
+                    )) : (<div style={{ textAlign: 'center', padding: '20px' }}><i className="fas fa-medal" style={{ fontSize: '1.5rem', color: '#f59e0b', marginBottom: '8px' }}></i><p style={{ fontSize: '0.75rem', color: 'var(--text3)', fontWeight: 600 }}>Harika gidiyorsun! Şu an kritik bir konun bulunmuyor.</p></div>)}
+                  </div>
+                </div>
+
+                {/* Daily Goals */}
+                <div className="glass-card" style={{ padding: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>Bugünkü Hedefler</h3>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--accent)', background: 'var(--accent-dim)', padding: '2px 8px', borderRadius: '10px' }}>{todayGoals.filter((g: any) => g.done).length}/{todayGoals.length}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+                    {todayGoals.length > 0 ? todayGoals.map((g: any) => (<div key={g.id} className="hover-bg" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', borderRadius: '12px', background: 'var(--card-bg)', border: '1px solid var(--border)' }}><div onClick={() => toggleAgendaGoal(todayKey, g.id)} style={{ width: '18px', height: '18px', borderRadius: '5px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: g.done ? 'var(--accent)' : 'transparent', borderColor: g.done ? 'var(--accent)' : 'var(--border)' }}>{g.done && <i className="fas fa-check" style={{ fontSize: '8px', color: 'white' }}></i>}</div><span style={{ flex: 1, fontSize: '0.85rem', fontWeight: 600, color: g.done ? 'var(--text3)' : 'var(--text)', textDecoration: g.done ? 'line-through' : 'none' }}>{g.text}</span></div>)) : <p style={{ fontSize: '0.8rem', color: 'var(--text3)', textAlign: 'center', padding: '20px' }}>Henüz bir hedef planlanmamış.</p>}
+                  </div>
+                  <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center', fontSize: '0.8rem' }} onClick={() => { setGoalDateKey(todayKey); setAddGoalModalOpen(true); }}>+ Yeni Hedef Ekle</button>
                 </div>
               </div>
+            </div>
 
-              {/* Daily Goals */}
-              <div className="glass-card" style={{ padding: '24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                  <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>Bugünkü Hedefler</h3>
-                  <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--accent)', background: 'var(--accent-dim)', padding: '2px 8px', borderRadius: '10px' }}>{todayGoals.filter((g: any) => g.done).length}/{todayGoals.length}</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
-                  {todayGoals.length > 0 ? todayGoals.map((g: any) => (
-                    <div key={g.id} className="hover-bg" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', borderRadius: '12px', background: 'var(--card-bg)', border: '1px solid var(--border)' }}>
-                      <div onClick={() => toggleAgendaGoal(todayKey, g.id)} style={{ width: '18px', height: '18px', borderRadius: '5px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: g.done ? 'var(--accent)' : 'transparent', borderColor: g.done ? 'var(--accent)' : 'var(--border)' }}>{g.done && <i className="fas fa-check" style={{ fontSize: '8px', color: 'white' }}></i>}</div>
-                      <span style={{ flex: 1, fontSize: '0.85rem', fontWeight: 600, color: g.done ? 'var(--text3)' : 'var(--text)', textDecoration: g.done ? 'line-through' : 'none' }}>{g.text}</span>
-                    </div>
-                  )) : <p style={{ fontSize: '0.8rem', color: 'var(--text3)', textAlign: 'center', padding: '20px' }}>Henüz bir hedef planlanmamış.</p>}
-                </div>
-                <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center', fontSize: '0.8rem' }} onClick={() => { setGoalDateKey(todayKey); setAddGoalModalOpen(true); }}>+ Yeni Hedef Ekle</button>
+            {/* Timeline Journal */}
+            <div className="glass-card" style={{ padding: '24px', marginTop: '24px' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}><i className="fas fa-history" style={{ color: 'var(--accent)' }}></i> Ders Çalışma Günlüğü</h3>
+              <div style={{ position: 'relative', paddingLeft: '30px' }}>
+                <div style={{ position: 'absolute', top: 0, bottom: 0, left: '11px', width: '2px', background: 'var(--border)' }}></div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>{mergedHistory.map((event: any) => { const dateObj = new Date(event.date); const label = `${dateObj.getHours() || '00'}:${dateObj.getMinutes().toString().padStart(2, '0')} - ${dateObj.toLocaleDateString('tr-TR')}`; const isDb = typeof event.id === 'string'; const configMap: any = { solve: { icon: 'fa-check', bg: '#10b981', label: 'Soru Çözümü' }, study: { icon: 'fa-stopwatch', bg: '#6366f1', label: 'Konu Tanımı' }, exam: { icon: 'fa-file-signature', bg: '#f59e0b', label: 'Deneme Girişi' } }; const config = configMap[event.type] || { icon: 'fa-info', bg: 'var(--accent)', label: 'Bilgi' }; return (<div key={event.id} style={{ position: 'relative' }}><div style={{ position: 'absolute', left: '-25px', top: '0', width: '12px', height: '12px', borderRadius: '50%', background: config.bg, border: '3px solid var(--bg)', zIndex: 2 }}></div><div className="hover-bg" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px' }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}><span style={{ fontSize: '0.65rem', fontWeight: 800, color: config.bg, textTransform: 'uppercase' }}>{config.label} {isDb && '(DB)'}</span><span style={{ fontSize: '0.65rem', color: 'var(--text3)', fontWeight: 600 }}>{label}</span></div>{event.type === 'solve' && <div><p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.subject} <span style={{ color: 'var(--text2)', fontWeight: 500 }}>- {event.unit}</span></p><p style={{ fontSize: '0.8rem', fontWeight: 700, marginTop: '4px' }}><span style={{ color: '#3dd68c' }}>{event.correct} Doğru</span> • <span style={{ color: '#f43f5e' }}>{event.wrong} Yanlış</span></p></div>}{event.type === 'study' && <div><p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.subject} <span style={{ color: 'var(--text2)', fontWeight: 500 }}>- {event.unit}</span></p><p style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 700, marginTop: '4px' }}>{event.duration} dakika çalışıldı</p></div>}{event.type === 'exam' && <div><p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.name}</p><p style={{ fontSize: '0.9rem', color: '#f59e0b', fontWeight: 800, marginTop: '4px' }}>{event.net} Net</p></div>}</div></div>); })}</div>
               </div>
             </div>
           </div>
-
-          {/* Timeline Journal */}
-          <div className="glass-card" style={{ padding: '24px', marginTop: '24px' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}><i className="fas fa-history" style={{ color: 'var(--accent)' }}></i> Ders Çalışma Günlüğü</h3>
-            <div style={{ position: 'relative', paddingLeft: '30px' }}>
-              <div style={{ position: 'absolute', top: 0, bottom: 0, left: '11px', width: '2px', background: 'var(--border)' }}></div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>{mergedHistory.map((event: any) => { const dateObj = new Date(event.date); const label = `${dateObj.getHours() || '00'}:${dateObj.getMinutes().toString().padStart(2, '0')} - ${dateObj.toLocaleDateString('tr-TR')}`; const isDb = typeof event.id === 'string'; const configMap: any = { solve: { icon: 'fa-check', bg: '#10b981', label: 'Soru Çözümü' }, study: { icon: 'fa-stopwatch', bg: '#6366f1', label: 'Konu Tanımı' }, exam: { icon: 'fa-file-signature', bg: '#f59e0b', label: 'Deneme Girişi' } }; const config = configMap[event.type] || { icon: 'fa-info', bg: 'var(--accent)', label: 'Bilgi' }; return (<div key={event.id} style={{ position: 'relative' }}><div style={{ position: 'absolute', left: '-25px', top: '0', width: '12px', height: '12px', borderRadius: '50%', background: config.bg, border: '3px solid var(--bg)', zIndex: 2 }}></div><div className="hover-bg" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px' }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}><span style={{ fontSize: '0.65rem', fontWeight: 800, color: config.bg, textTransform: 'uppercase' }}>{config.label} {isDb && '(DB)'}</span><span style={{ fontSize: '0.65rem', color: 'var(--text3)', fontWeight: 600 }}>{label}</span></div>{event.type === 'solve' && <div><p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.subject} <span style={{ color: 'var(--text2)', fontWeight: 500 }}>- {event.unit}</span></p><p style={{ fontSize: '0.8rem', fontWeight: 700, marginTop: '4px' }}><span style={{ color: '#3dd68c' }}>{event.correct} Doğru</span> • <span style={{ color: '#f43f5e' }}>{event.wrong} Yanlış</span></p></div>}{event.type === 'study' && <div><p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.subject} <span style={{ color: 'var(--text2)', fontWeight: 500 }}>- {event.unit}</span></p><p style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 700, marginTop: '4px' }}>{event.duration} dakika çalışıldı</p></div>}{event.type === 'exam' && <div><p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.name}</p><p style={{ fontSize: '0.9rem', color: '#f59e0b', fontWeight: 800, marginTop: '4px' }}>{event.net} Net</p></div>}</div></div>); })}</div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="animate-fade-up">
-           <div className="glass-card" style={{ padding: '28px' }}>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}><i className="fas fa-calendar-alt" style={{ color: 'var(--accent)' }}></i> 15 Günlük Çalışma Ajandası</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        ) : (
+          <div className="animate-fade-up">
+            <div className="glass-card" style={{ padding: '28px' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}><i className="fas fa-calendar-alt" style={{ color: 'var(--accent)' }}></i> 15 Günlük Çalışma Ajandası</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {agendaDays.map(day => (
-                    <div key={day.dateKey} style={{ display: 'flex', gap: '16px', padding: '16px', borderRadius: '16px', background: day.isToday ? 'var(--accent-dim)' : 'var(--card-bg)', border: day.isToday ? '1px solid var(--accent-glow)' : '1px solid var(--border)' }}>
-                        <div style={{ width: '60px', textAlign: 'center', borderRight: '1px solid var(--border)', paddingRight: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                            <p style={{ fontSize: '0.65rem', fontWeight: 800, color: day.isToday ? 'var(--accent)' : 'var(--text3)', textTransform: 'uppercase' }}>{day.dayName.slice(0, 3)}</p>
-                            <p style={{ fontSize: '1.2rem', fontWeight: 900, color: day.isToday ? 'var(--accent)' : 'var(--text)', lineHeight: 1 }}>{day.label.split(' ')[0]}</p>
-                            <p style={{ fontSize: '0.6rem', fontWeight: 600, color: 'var(--text3)' }}>{day.label.split(' ')[1]}</p>
-                        </div>
-                        <div style={{ flex: 1 }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {(state.agenda[day.dateKey] || []).map((goal: any) => (<div key={goal.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border)' }}><div onClick={() => toggleAgendaGoal(day.dateKey, goal.id)} style={{ width: '16px', height: '16px', borderRadius: '4px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: goal.done ? 'var(--accent)' : 'transparent', borderColor: goal.done ? 'var(--accent)' : 'var(--border)' }}>{goal.done && <i className="fas fa-check" style={{ fontSize: '8px', color: 'white' }}></i>}</div><span style={{ flex: 1, fontSize: '0.85rem', fontWeight: 600, color: goal.done ? 'var(--text3)' : 'var(--text)', textDecoration: goal.done ? 'line-through' : 'none' }}>{goal.text}</span><button onClick={() => removeGoal(day.dateKey, goal.id)} style={{ color: 'var(--text3)', fontSize: '0.8rem', opacity: 0.5 }} className="hover-bg-btn"><i className="fas fa-times"></i></button></div>))}
-                                <button onClick={() => { setGoalDateKey(day.dateKey); setAddGoalModalOpen(true); }} style={{ padding: '8px', borderRadius: '10px', border: '1px dashed var(--border)', fontSize: '0.8rem', color: 'var(--text3)', fontWeight: 700, textAlign: 'left', cursor: 'pointer' }} className="hover-bg">+ Hedef Ekle</button>
-                            </div>
-                        </div>
+                  <div key={day.dateKey} style={{ display: 'flex', gap: '16px', padding: '16px', borderRadius: '16px', background: day.isToday ? 'var(--accent-dim)' : 'var(--card-bg)', border: day.isToday ? '1px solid var(--accent-glow)' : '1px solid var(--border)' }}>
+                    <div style={{ width: '60px', textAlign: 'center', borderRight: '1px solid var(--border)', paddingRight: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      <p style={{ fontSize: '0.65rem', fontWeight: 800, color: day.isToday ? 'var(--accent)' : 'var(--text3)', textTransform: 'uppercase' }}>{day.dayName.slice(0, 3)}</p>
+                      <p style={{ fontSize: '1.2rem', fontWeight: 900, color: day.isToday ? 'var(--accent)' : 'var(--text)', lineHeight: 1 }}>{day.label.split(' ')[0]}</p>
+                      <p style={{ fontSize: '0.6rem', fontWeight: 600, color: 'var(--text3)' }}>{day.label.split(' ')[1]}</p>
                     </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {(state.agenda[day.dateKey] || []).map((goal: any) => (<div key={goal.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border)' }}><div onClick={() => toggleAgendaGoal(day.dateKey, goal.id)} style={{ width: '16px', height: '16px', borderRadius: '4px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: goal.done ? 'var(--accent)' : 'transparent', borderColor: goal.done ? 'var(--accent)' : 'var(--border)' }}>{goal.done && <i className="fas fa-check" style={{ fontSize: '8px', color: 'white' }}></i>}</div><span style={{ flex: 1, fontSize: '0.85rem', fontWeight: 600, color: goal.done ? 'var(--text3)' : 'var(--text)', textDecoration: goal.done ? 'line-through' : 'none' }}>{goal.text}</span><button onClick={() => removeGoal(day.dateKey, goal.id)} style={{ color: 'var(--text3)', fontSize: '0.8rem', opacity: 0.5 }} className="hover-bg-btn"><i className="fas fa-times"></i></button></div>))}
+                        <button onClick={() => { setGoalDateKey(day.dateKey); setAddGoalModalOpen(true); }} style={{ padding: '8px', borderRadius: '10px', border: '1px dashed var(--border)', fontSize: '0.8rem', color: 'var(--text3)', fontWeight: 700, textAlign: 'left', cursor: 'pointer' }} className="hover-bg">+ Hedef Ekle</button>
+                      </div>
+                    </div>
+                  </div>
                 ))}
+              </div>
             </div>
-           </div>
-        </div>
-      )}
+          </div>
+        )}
       </div>
 
+      {/* Modals outside with absolute viewport-fixed positioning */}
       {isAddGoalModalOpen && (
         <div className="modal-overlay open" onClick={() => setAddGoalModalOpen(false)}>
           <div className="glass-card" style={{ padding: '24px', maxWidth: '440px', width: '100%' }} onClick={e => e.stopPropagation()}>
@@ -426,38 +431,10 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
       <style jsx global>{`
         .hover-bg:hover { background: var(--accent-dim) !important; }
         .hover-bg-btn:hover { opacity: 1 !important; color: #f43f5e !important; background: transparent; }
-        
-        .modal-overlay {
-          position: fixed !important;
-          top: 0 !important;
-          left: 0 !important;
-          right: 0 !important;
-          bottom: 0 !important;
-          background: rgba(0, 0, 0, 0.6) !important;
-          backdrop-filter: blur(8px) !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          z-index: 9999 !important;
-          padding: 20px !important;
-          opacity: 0;
-          pointer-events: none;
-          transition: all 0.3s ease;
-        }
-        
-        .modal-overlay.open {
-          opacity: 1 !important;
-          pointer-events: auto !important;
-        }
-
-        .modal-overlay .glass-card {
-          transform: scale(0.9);
-          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .modal-overlay.open .glass-card {
-          transform: scale(1) !important;
-        }
+        .modal-overlay { position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; background: rgba(0, 0, 0, 0.6) !important; backdrop-filter: blur(8px) !important; display: flex !important; align-items: center !important; justify-content: center !important; z-index: 9999 !important; padding: 20px !important; opacity: 0; pointer-events: none; transition: all 0.3s ease; }
+        .modal-overlay.open { opacity: 1 !important; pointer-events: auto !important; }
+        .modal-overlay .glass-card { transform: scale(0.9); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .modal-overlay.open .glass-card { transform: scale(1) !important; }
       `}</style>
     </>
   );
