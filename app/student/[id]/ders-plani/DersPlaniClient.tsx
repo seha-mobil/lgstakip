@@ -86,11 +86,16 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
     if (state) localStorage.setItem(storageKey, JSON.stringify(state));
   }, [state, storageKey]);
 
-  // Merge History with DB Exams
+  // Merge History with DB Exams (Filtered for last 7 days)
   const mergedHistory = useMemo(() => {
     if (!state) return [];
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
     const combined = [...state.history, ...dbExams];
-    return combined.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return combined
+      .filter(event => new Date(event.date) >= sevenDaysAgo)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [state, dbExams]);
 
   if (!state) return null;
@@ -291,7 +296,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
       {/* Timeline */}
       <div className="glass-card" style={{ padding: '24px', marginTop: '24px' }}>
         <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <i className="fas fa-history" style={{ color: 'var(--accent)' }}></i> Aktivite Zaman Çizelgesi
+          <i className="fas fa-history" style={{ color: 'var(--accent)' }}></i> Ders Çalışma Günlüğü
         </h3>
         <div style={{ position: 'relative', paddingLeft: '30px' }}>
           <div style={{ position: 'absolute', top: 0, bottom: 0, left: '11px', width: '2px', background: 'var(--border)' }}></div>
