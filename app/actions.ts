@@ -406,10 +406,14 @@ export async function updateExamResult(studentId: string, examResultId: string, 
 }
 
 export async function updateExamNotes(examResultId: string, notes: string) {
-  await prisma.examResult.update({
+  const result = await prisma.examResult.update({
     where: { id: examResultId },
     data: { notes }
   });
-  // We don't necessarily need to revalidate path here if the UI handles the local state well,
-  // but it's safer for consistency.
+  
+  // Revalidate to show new notes immediately
+  revalidatePath('/');
+  if (result.studentId) {
+    revalidatePath(`/student/${result.studentId}`);
+  }
 }
