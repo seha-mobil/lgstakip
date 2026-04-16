@@ -19,7 +19,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     : 0;
 
   const targetPuan = student.targetLisePuan || 0;
-  const progressPercent = targetPuan > 0 ? Math.min(100, (Math.pow(avgPuan / targetPuan, 1.5) * 100)) : 0;
+  const basePuan = 400;
+  const DIFFICULTY_FACTOR = 1.5;
+  const rawRatio = targetPuan && targetPuan > basePuan 
+    ? Math.max(0, Math.min(1, (avgPuan - basePuan) / (targetPuan - basePuan))) 
+    : 0;
+  const progressPercent = Math.pow(rawRatio, DIFFICULTY_FACTOR) * 100;
 
   const html = `<!DOCTYPE html>
   <html lang="tr">
