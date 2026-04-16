@@ -225,7 +225,7 @@ export default function DersPlani() {
         </div>
       </div>
 
-      <div className="grid-desktop-4" style={{ gap: '12px', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
         {[
           { label: 'Soru', val: totalSolved, icon: 'fa-check-double', color: 'var(--text)' },
           { label: 'Net', val: totalNet, icon: 'fa-chart-line', color: 'var(--accent)' },
@@ -233,14 +233,14 @@ export default function DersPlani() {
           { label: 'Seri', val: `${state.streak} Gün`, icon: 'fa-fire', color: '#f59e0b' }
         ].map((s, idx) => (
           <div key={idx} className="glass-card" style={{ 
-            display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px'
+            display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px'
           }}>
-            <div style={{ width: '32px', height: '32px', flexShrink: 0, background: 'var(--card-bg)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, border: '1px solid var(--border)', fontSize: '0.9rem' }}>
+            <div style={{ width: '28px', height: '28px', flexShrink: 0, background: 'var(--card-bg)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, border: '1px solid var(--border)', fontSize: '0.8rem' }}>
               <i className={`fas ${s.icon}`}></i>
             </div>
             <div style={{ overflow: 'hidden' }}>
-              <p style={{ fontSize: '0.6rem', color: 'var(--text3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px', whiteSpace: 'nowrap' }}>{s.label}</p>
-              <p style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{s.val}</p>
+              <p style={{ fontSize: '0.55rem', color: 'var(--text3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px', whiteSpace: 'nowrap' }}>{s.label}</p>
+              <p style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text)', lineHeight: 1, whiteSpace: 'nowrap' }}>{s.val}</p>
             </div>
           </div>
         ))}
