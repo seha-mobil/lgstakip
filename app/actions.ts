@@ -428,7 +428,10 @@ export async function getAIFeedback(studentId: string) {
         examResults: {
           orderBy: { date: 'desc' },
           take: 5,
-          include: { subjects: true }
+          include: { 
+            subjects: true,
+            trialExam: true
+          }
         }
       }
     });
