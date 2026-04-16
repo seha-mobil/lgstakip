@@ -11,7 +11,6 @@ import SubjectStatsTable from '@/components/SubjectStatsTable';
 import LiseTargetPicker from '@/components/LiseTargetPicker';
 import RemoveTargetButton from '@/components/RemoveTargetButton';
 import AnalysisHoverCard from '@/components/AnalysisHoverCard';
-import ReportShareButton from '@/components/ReportShareButton';
 
 export default async function StudentDetail({ params }: { params: { id: string } }) {
   // ... existing code ...
@@ -118,12 +117,9 @@ export default async function StudentDetail({ params }: { params: { id: string }
             </Link>
           )}
           {exams.length > 0 && (
-            <>
-              <ReportShareButton studentId={student.id} studentName={student.name} />
-              <a href={"/student/" + student.id + "/print"} target="_blank" className="btn btn-ghost" style={{ padding: '8px 12px', fontSize: '12px' }}>
-                <i className="fas fa-print"></i> Yazdır
-              </a>
-            </>
+            <a href={"/student/" + student.id + "/print"} target="_blank" className="btn btn-ghost" style={{ padding: '8px 12px', fontSize: '12px' }}>
+              <i className="fas fa-print"></i> Yazdır
+            </a>
           )}
           <Link href={"/student/" + student.id + "/add-exam"} className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '12px' }}>
             <i className="fas fa-plus"></i> Yeni Deneme
