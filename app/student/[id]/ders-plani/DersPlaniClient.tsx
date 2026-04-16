@@ -577,6 +577,38 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
       <style jsx>{`
         .hover-bg:hover { background: var(--accent-dim) !important; }
         .hover-bg-btn:hover { opacity: 1 !important; color: #f43f5e !important; background: transparent; }
+        
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(8px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          padding: 20px;
+          opacity: 0;
+          pointer-events: none;
+          transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.open {
+          opacity: 1;
+          pointer-events: auto;
+        }
+
+        .modal-overlay .glass-card {
+          transform: scale(0.9);
+          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-overlay.open .glass-card {
+          transform: scale(1);
+        }
       `}</style>
     </div>
   );
