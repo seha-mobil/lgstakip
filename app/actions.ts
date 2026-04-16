@@ -405,6 +405,19 @@ export async function updateExamResult(studentId: string, examResultId: string, 
   revalidatePath(`/student/${studentId}`);
 }
 
+export async function updateExamNotes(examResultId: string, notes: string) {
+  const result = await prisma.examResult.update({
+    where: { id: examResultId },
+    data: { notes }
+  });
+  
+  // Revalidate to show new notes immediately
+  revalidatePath('/');
+  if (result.studentId) {
+    revalidatePath(`/student/${result.studentId}`);
+  }
+}
+
 import { generateAnalysis } from '@/lib/gemini';
 
 export async function getAIFeedback(studentId: string) {
