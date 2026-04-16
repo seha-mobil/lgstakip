@@ -1,4 +1,4 @@
-// Direct REST API call to Gemini - bypasses SDK v1beta issue entirely
+// Direct REST API call to Gemini 2.0 Flash
 export async function generateAnalysis(studentData: any, examsData: any[]) {
   const API_KEY = process.env.GEMINI_API_KEY || "";
   
@@ -30,52 +30,39 @@ export async function generateAnalysis(studentData: any, examsData: any[]) {
     5. Dil: Türkçe. Samimi ama profesyonel bir üslup kullan.
   `;
 
-  // Try multiple API versions and model names via direct REST
-  const attempts = [
-    { version: "v1", model: "gemini-2.0-flash" },
-    { version: "v1", model: "gemini-1.5-flash" },
-    { version: "v1beta", model: "gemini-2.0-flash" },
-    { version: "v1", model: "gemini-pro" },
-    { version: "v1beta", model: "gemini-pro" },
-  ];
-
   const body = JSON.stringify({
     contents: [{ parts: [{ text: prompt }] }]
   });
 
-  let lastError = null;
+  // gemini-2.0-flash is the correct and available model
+  const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+  
+  console.log(`[AI Analysis] Calling gemini-2.0-flash via v1 API...`);
+  
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body
+  });
 
-  for (const attempt of attempts) {
-    const url = `https://generativelanguage.googleapis.com/${attempt.version}/models/${attempt.model}:generateContent?key=${API_KEY}`;
+  if (!res.ok) {
+    const errBody = await res.text();
+    console.error(`[AI Analysis] Error ${res.status}:`, errBody.substring(0, 300));
     
-    try {
-      console.log(`[AI Analysis] Trying ${attempt.version}/${attempt.model}...`);
-      
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body
-      });
-
-      if (!res.ok) {
-        const errBody = await res.text();
-        console.error(`[AI Analysis] ${attempt.version}/${attempt.model} -> ${res.status}: ${errBody.substring(0, 200)}`);
-        lastError = new Error(`${res.status}: ${errBody.substring(0, 200)}`);
-        continue;
-      }
-
-      const data = await res.json();
-      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-      if (text) {
-        console.log(`[AI Analysis] SUCCESS with ${attempt.version}/${attempt.model}`);
-        return text;
-      }
-    } catch (err: any) {
-      console.error(`[AI Analysis] ${attempt.version}/${attempt.model} fetch error:`, err.message);
-      lastError = err;
+    if (res.status === 429) {
+      throw new Error("Günlük AI analiz kotası doldu. Lütfen yarın tekrar deneyin veya Google AI Studio'dan kotanızı yükseltin.");
     }
+    
+    throw new Error(`AI analiz hatası (${res.status}). Lütfen daha sonra tekrar deneyin.`);
   }
 
-  throw lastError || new Error("Hiçbir AI modeli yanıt veremedi. Lütfen API anahtarınızı kontrol edin.");
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+  if (!text) {
+    throw new Error("AI'dan boş yanıt geldi. Lütfen tekrar deneyin.");
+  }
+
+  console.log(`[AI Analysis] Success! Response received.`);
+  return text;
 }
