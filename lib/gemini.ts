@@ -9,8 +9,12 @@ export async function generateAnalysis(studentData: any, examsData: any[]) {
 
   const genAI = new GoogleGenerativeAI(API_KEY);
   
-  // Try using the 'latest' alias which is often more stable across SDK versions
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+  // Try these models in order until one works
+  const modelsToTry = [
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-latest",
+    "gemini-pro"
+  ];
 
   const prompt = `
     Sen bir LGS (Liselere Geçiş Sistemi) eğitim koçusun. Aşağıdaki öğrenci verilerini analiz et ve öğrenciye özel, motive edici ve aksiyon odaklı bir rapor hazırla.
@@ -36,7 +40,27 @@ export async function generateAnalysis(studentData: any, examsData: any[]) {
     5. Dil: Türkçe. Samimi ama profesyonel bir üslup kullan.
   `;
 
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  return response.text();
+  let lastError = null;
+
+  for (const modelName of modelsToTry) {
+    try {
+      console.log(`[AI Analysis] Attempting model: ${modelName}`);
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      if (text) {
+        console.log(`[AI Analysis] Success with model: ${modelName}`);
+        return text;
+      }
+    } catch (err: any) {
+      console.error(`[AI Analysis] Failed with model: ${modelName}. Error:`, err.message || err);
+      lastError = err;
+      // Continue to next model
+    }
+  }
+
+  // If we reach here, all models failed
+  throw lastError || new Error("All AI models failed to generate content.");
 }
