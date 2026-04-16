@@ -11,6 +11,7 @@ import SubjectStatsTable from '@/components/SubjectStatsTable';
 import LiseTargetPicker from '@/components/LiseTargetPicker';
 import RemoveTargetButton from '@/components/RemoveTargetButton';
 import AnalysisHoverCard from '@/components/AnalysisHoverCard';
+import AIFeedbackSection from '@/components/AIFeedbackSection';
 
 export default async function StudentDetail({ params }: { params: { id: string } }) {
   // ... existing code ...
@@ -126,6 +127,10 @@ export default async function StudentDetail({ params }: { params: { id: string }
           </Link>
         </div>
       </div>
+      
+      {exams.length > 0 && (
+        <AIFeedbackSection studentId={student.id} />
+      )}
 
       {targetPuan && (
         <div className="glass-card animate-fade-up" style={{ 

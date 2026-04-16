@@ -405,15 +405,27 @@ export async function updateExamResult(studentId: string, examResultId: string, 
   revalidatePath(`/student/${studentId}`);
 }
 
-export async function updateExamNotes(examResultId: string, notes: string) {
-  const result = await prisma.examResult.update({
-    where: { id: examResultId },
-    data: { notes }
-  });
-  
-  // Revalidate to show new notes immediately
-  revalidatePath('/');
-  if (result.studentId) {
-    revalidatePath(`/student/${result.studentId}`);
+import { generateAnalysis } from '@/lib/gemini';
+
+export async function getAIFeedback(studentId: string) {
+  try {
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      include: {
+        examResults: {
+          orderBy: { date: 'desc' },
+          take: 5,
+          include: { subjects: true }
+        }
+      }
+    });
+
+    if (!student) throw new Error("Öğrenci bulunamadı.");
+
+    const analysis = await generateAnalysis(student, student.examResults);
+    return { success: true, analysis };
+  } catch (error: any) {
+    console.error("AI Analysis Error:", error);
+    return { success: false, error: error.message || "Analiz sırasında bir hata oluştu." };
   }
 }
