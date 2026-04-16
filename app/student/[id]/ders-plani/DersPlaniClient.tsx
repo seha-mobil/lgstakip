@@ -144,7 +144,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   // Critical Unit Detection Logic
   const criticalUnits = useMemo(() => {
     if (!state) return [];
-    const critical = [];
+    const critical: any[] = [];
     for (const sub of SUBJECT_DATA) {
         sub.units.forEach((unit, idx) => {
             const data = state.units[`${sub.id}_${idx}`];
