@@ -435,10 +435,15 @@ export async function getAIFeedback(studentId: string) {
 
     if (!student) throw new Error("Öğrenci bulunamadı.");
 
+    console.log(`[AI Analysis] Starting analysis for student: ${student.name} (${studentId})`);
+    const startTime = Date.now();
+    
     const analysis = await generateAnalysis(student, student.examResults);
+    
+    console.log(`[AI Analysis] Success! Analysis completed in ${Date.now() - startTime}ms`);
     return { success: true, analysis };
   } catch (error: any) {
-    console.error("AI Analysis Error:", error);
+    console.error("[AI Analysis] Error:", error);
     return { success: false, error: error.message || "Analiz sırasında bir hata oluştu." };
   }
 }
