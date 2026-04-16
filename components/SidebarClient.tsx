@@ -119,16 +119,28 @@ export default function SidebarClient({ initialStudents }: { initialStudents: an
           }}>
             <i className="fas fa-stopwatch" style={{ width: '16px', textAlign: 'center' }}></i> Odaklan
           </Link>
-          <Link href="/ders-plani" style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            padding: '10px 12px', borderRadius: '8px',
-            background: pathname === '/ders-plani' ? 'var(--accent-dim)' : 'transparent',
-            color: pathname === '/ders-plani' ? 'var(--accent)' : 'var(--text3)',
-            border: pathname === '/ders-plani' ? '1px solid var(--accent-glow)' : '1px solid transparent',
-            fontSize: '13px', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s'
-          }}>
-            <i className="fas fa-calendar-check" style={{ width: '16px', textAlign: 'center' }}></i> Ders Planı
-          </Link>
+          {/* Ders Planı - Only active when a student is selected */}
+          {pathname.includes('/student/') ? (
+            <Link href={`/student/${pathname.split('/')[2]}/ders-plani`} style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '10px 12px', borderRadius: '8px',
+              background: pathname.includes('/ders-plani') ? 'var(--accent-dim)' : 'transparent',
+              color: pathname.includes('/ders-plani') ? 'var(--accent)' : 'var(--text3)',
+              border: pathname.includes('/ders-plani') ? '1px solid var(--accent-glow)' : '1px solid transparent',
+              fontSize: '13px', fontWeight: 600, textDecoration: 'none', transition: 'all 0.2s'
+            }}>
+              <i className="fas fa-calendar-check" style={{ width: '16px', textAlign: 'center' }}></i> Ders Planı
+            </Link>
+          ) : (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '10px 12px', borderRadius: '8px',
+              color: 'var(--text3)', opacity: 0.4, cursor: 'not-allowed',
+              fontSize: '13px', fontWeight: 600
+            }} title="Önce bir öğrenci seçmelisiniz">
+              <i className="fas fa-calendar-check" style={{ width: '16px', textAlign: 'center' }}></i> Ders Planı
+            </div>
+          )}
         </nav>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
