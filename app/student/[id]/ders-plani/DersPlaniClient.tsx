@@ -212,7 +212,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   // Line Chart Data Processing
   const soruStatsData = useMemo(() => {
     if (!state) return null;
-    const days = [];
+    const days: string[] = [];
     const now = new Date();
     for (let i = 14; i >= 0; i--) {
         const d = new Date(now);
