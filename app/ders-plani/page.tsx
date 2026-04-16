@@ -225,23 +225,22 @@ export default function DersPlani() {
         </div>
       </div>
 
-      {/* Stats Grid - Square Cards */}
-      <div className="grid-desktop-4" style={{ gap: '16px', marginBottom: '24px' }}>
+      <div className="grid-desktop-4" style={{ gap: '12px', marginBottom: '24px' }}>
         {[
-          { label: 'TOPLAM SORU', val: totalSolved, icon: 'fa-check-double', color: 'var(--text)' },
-          { label: 'GENEL NET', val: totalNet, icon: 'fa-chart-line', color: 'var(--accent)' },
-          { label: 'BAŞARI ORANI', val: `%${globalAcc}`, icon: 'fa-percentage', color: '#10b981' },
-          { label: 'ÇALIŞMA SERİSİ', val: `${state.streak} GÜN`, icon: 'fa-fire', color: '#f59e0b' }
+          { label: 'Soru', val: totalSolved, icon: 'fa-check-double', color: 'var(--text)' },
+          { label: 'Net', val: totalNet, icon: 'fa-chart-line', color: 'var(--accent)' },
+          { label: 'Başarı', val: `%${globalAcc}`, icon: 'fa-percentage', color: '#10b981' },
+          { label: 'Seri', val: `${state.streak} Gün`, icon: 'fa-fire', color: '#f59e0b' }
         ].map((s, idx) => (
           <div key={idx} className="glass-card" style={{ 
-            aspectRatio: '1/1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', padding: '15px'
+            display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px'
           }}>
-            <div style={{ width: '40px', height: '40px', background: 'var(--card-bg)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, border: '1px solid var(--border)' }}>
+            <div style={{ width: '32px', height: '32px', flexShrink: 0, background: 'var(--card-bg)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, border: '1px solid var(--border)', fontSize: '0.9rem' }}>
               <i className={`fas ${s.icon}`}></i>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: '0.65rem', color: 'var(--text3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>{s.label}</p>
-              <p style={{ fontSize: '1.4rem', fontWeight: 800, color: s.color }}>{s.val}</p>
+            <div style={{ overflow: 'hidden' }}>
+              <p style={{ fontSize: '0.6rem', color: 'var(--text3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px', whiteSpace: 'nowrap' }}>{s.label}</p>
+              <p style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{s.val}</p>
             </div>
           </div>
         ))}
