@@ -19,7 +19,7 @@ export default async function StudentDetail({ params }: { params: { id: string }
   const auth = cookieStore.get(`student_auth_${params.id}`);
   if (!auth) redirect(`/student/${params.id}/login`);
 
-  let student = null;
+  let student: any = null;
   let dbError = false;
 
   try {

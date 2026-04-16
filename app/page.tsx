@@ -5,7 +5,7 @@ import CountdownCard from '@/components/CountdownCard';
 export const dynamic = 'force-dynamic';
 
 export default async function Dashboard() {
-  let students = [];
+  let students: any[] = [];
   let dbError = false;
 
   try {
