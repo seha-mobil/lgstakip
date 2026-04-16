@@ -280,18 +280,17 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
 
         {activeTab === 'analiz' ? (
           <div className="animate-fade-up">
-            {/* Stats Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
-              {[{ label: 'Soru', val: totalSolved, icon: 'fa-check-double', color: 'var(--text)' }, { label: 'Net', val: totalNet, icon: 'fa-chart-line', color: 'var(--accent)' }, { label: 'Başarı', val: `%${globalAcc}`, icon: 'fa-percentage', color: '#10b981' }, { label: 'Hedef', val: `%${weeklyCompletion}`, icon: 'fa-bullseye', color: '#f59e0b' }].map((s, idx) => (
-                <div key={idx} className="glass-card" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px' }}>
-                  <div style={{ width: '28px', height: '28px', flexShrink: 0, background: 'var(--card-bg)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, border: '1px solid var(--border)', fontSize: '0.8rem' }}><i className={`fas ${s.icon}`}></i></div>
-                  <div style={{ overflow: 'hidden' }}><p style={{ fontSize: '0.55rem', color: 'var(--text3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px', whiteSpace: 'nowrap' }}>{s.label}</p><p style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text)', lineHeight: 1, whiteSpace: 'nowrap' }}>{s.val}</p></div>
-                </div>
-              ))}
-            </div>
-
             <div className="flex-mobile-col" style={{ gap: '24px' }}>
-              <div style={{ flex: 1.6 }}>
+              <div style={{ flex: 1.6, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Compact Stats Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                  {[{ label: 'Soru', val: totalSolved, icon: 'fa-check-double', color: 'var(--text)' }, { label: 'Net', val: totalNet, icon: 'fa-chart-line', color: 'var(--accent)' }, { label: 'Başarı', val: `%${globalAcc}`, icon: 'fa-percentage', color: '#10b981' }, { label: 'Hedef', val: `%${weeklyCompletion}`, icon: 'fa-bullseye', color: '#f59e0b' }].map((s, idx) => (
+                    <div key={idx} className="glass-card" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px' }}>
+                      <div style={{ width: '22px', height: '22px', flexShrink: 0, background: 'var(--card-bg)', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, border: '1px solid var(--border)', fontSize: '0.65rem' }}><i className={`fas ${s.icon}`}></i></div>
+                      <div style={{ overflow: 'hidden' }}><p style={{ fontSize: '0.45rem', color: 'var(--text3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0px', whiteSpace: 'nowrap' }}>{s.label}</p><p style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text)', lineHeight: 1, whiteSpace: 'nowrap' }}>{s.val}</p></div>
+                    </div>
+                  ))}
+                </div>
                 {/* Subject Analysis (Including Dusty Icons) */}
                 <div className="glass-card" style={{ padding: '24px' }}>
                   <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Ders ve Ünite Analizi</h3>
