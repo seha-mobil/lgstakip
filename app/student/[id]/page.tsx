@@ -28,7 +28,7 @@ export default async function StudentDetail({ params }: { params: { id: string }
       where: { id: params.id },
       include: {
         examResults: {
-          include: { subjects: true },
+          include: { subjects: true, trialExam: true },
           orderBy: { date: 'asc' }
         }
       }
