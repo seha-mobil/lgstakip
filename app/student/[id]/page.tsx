@@ -56,10 +56,10 @@ export default async function StudentDetail({ params }: { params: { id: string }
   if (!student) return <div className="page">Öğrenci bulunamadı.</div>;
 
   const exams = student.examResults;
-  const bestExam = exams.length ? [...exams].sort((a,b) => b.lgsPuani - a.lgsPuani)[0] : null;
+  const bestExam = exams.length ? [...exams].sort((a: any, b: any) => b.lgsPuani - a.lgsPuani)[0] : null;
   const lastExam = exams.length ? exams[exams.length - 1] : null;
   const prevExam = exams.length > 1 ? exams[exams.length - 2] : null;
-  const avgScore = exams.length ? exams.reduce((acc, ex) => acc + ex.lgsPuani, 0) / exams.length : 0;
+  const avgScore = exams.length ? exams.reduce((acc: any, ex: any) => acc + ex.lgsPuani, 0) / exams.length : 0;
   
   const targetName = student.targetLiseName;
   const targetPuan = student.targetLisePuan;
@@ -76,8 +76,8 @@ export default async function StudentDetail({ params }: { params: { id: string }
   const personalAverages: Record<string, number> = {};
   const totals: Record<string, { sum: number, count: number }> = {};
   
-  exams.forEach(ex => {
-    ex.subjects.forEach(sub => {
+  exams.forEach((ex: any) => {
+    ex.subjects.forEach((sub: any) => {
       if (!totals[sub.subjectKey]) totals[sub.subjectKey] = { sum: 0, count: 0 };
       totals[sub.subjectKey].sum += Math.max(0, sub.dogru - (sub.yanlis / 3));
       totals[sub.subjectKey].count += 1;
