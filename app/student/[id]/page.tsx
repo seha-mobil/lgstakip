@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
-import { redirect } from 'next/redirect';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 // Import V2 Styles
