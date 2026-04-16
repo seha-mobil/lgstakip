@@ -24,33 +24,59 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const [state, setState] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'analiz' | 'planlama'>('analiz');
   const [countdown, setCountdown] = useState({ days: 0, weeks: 0 });
-  const [isGoalModalOpen, setGoalModalOpen] = useState(false);
+  
+  // Modals
   const [isSolveModalOpen, setSolveModalOpen] = useState(false);
   const [isStudyModalOpen, setStudyModalOpen] = useState(false);
+  const [isAddGoalModalOpen, setAddGoalModalOpen] = useState(false);
   
+  // Goal Modal State
+  const [goalDateKey, setGoalDateKey] = useState("");
+  const [goalType, setGoalType] = useState<"solve" | "study" | "custom">("solve");
+  const [goalSubject, setGoalSubject] = useState(SUBJECT_DATA[0]);
+  const [goalUnit, setGoalUnit] = useState(SUBJECT_DATA[0].units[0]);
+  const [goalValue, setGoalValue] = useState("");
+  const [goalCustomText, setGoalCustomText] = useState("");
+
   const [currentAction, setCurrentAction] = useState<any>(null);
   const [solveData, setSolveData] = useState({ correct: 0, wrong: 0 });
-  const [newGoal, setNewGoal] = useState("");
   const [openSubjects, setOpenSubjects] = useState<Record<string, boolean>>({});
 
   const [studyMinutes, setStudyMinutes] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
 
-  const storageKey = `lgs_premium_v3_${studentId}`;
+  const storageKey = `lgs_premium_v4_${studentId}`;
+
+  const todayKey = new Date().toISOString().split('T')[0];
 
   // Load state
   useEffect(() => {
-    const saved = localStorage.getItem(storageKey);
+    const saved = localStorage.getItem(storageKey) || localStorage.getItem(`lgs_premium_v3_${studentId}`);
     if (saved) {
       const parsed = JSON.parse(saved);
       if (!parsed.history) parsed.history = [];
       if (!parsed.agenda) parsed.agenda = {};
+      
+      // Data Migration
+      Object.keys(parsed.agenda).forEach(key => {
+        if (typeof parsed.agenda[key] === 'string') {
+            const oldText = parsed.agenda[key];
+            parsed.agenda[key] = oldText ? [{ id: Date.now() + Math.random(), type: 'custom', text: oldText, done: false }] : [];
+        }
+      });
+
+      // Move global goals to today if they exist and delete them
+      if (parsed.goals && parsed.goals.length > 0) {
+        if (!parsed.agenda[todayKey]) parsed.agenda[todayKey] = [];
+        parsed.agenda[todayKey] = [...parsed.agenda[todayKey], ...parsed.goals];
+        delete parsed.goals;
+      }
+
       setState(parsed);
     } else {
       setState({
         units: {},
-        goals: [],
         weekly: { correct: [0, 0, 0, 0, 0, 0, 0], wrong: [0, 0, 0, 0, 0, 0, 0] },
         history: [],
         agenda: {},
@@ -67,7 +93,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
     updateCountdown();
     const interval = setInterval(updateCountdown, 60000);
     return () => clearInterval(interval);
-  }, [storageKey]);
+  }, [storageKey, studentId, todayKey]);
 
   // Timer Effect
   useEffect(() => {
@@ -89,19 +115,18 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
     if (state) localStorage.setItem(storageKey, JSON.stringify(state));
   }, [state, storageKey]);
 
-  // Merge History with DB Exams (Filtered for last 7 days)
+  // Merge History
   const mergedHistory = useMemo(() => {
     if (!state) return [];
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
     const combined = [...state.history, ...dbExams];
     return combined
       .filter(event => new Date(event.date) >= sevenDaysAgo)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [state, dbExams]);
 
-  // Generate next 15 days for Agenda
+  // Agenda Days
   const agendaDays = useMemo(() => {
     const days = [];
     const today = new Date();
@@ -128,12 +153,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
 
   const addHistory = (type: string, data: any) => {
     const newState = { ...state };
-    newState.history.unshift({
-      id: Date.now(),
-      type,
-      date: new Date().toISOString(),
-      ...data
-    });
+    newState.history.unshift({ id: Date.now(), type, date: new Date().toISOString(), ...data });
     if (newState.history.length > 100) newState.history = newState.history.slice(0, 100);
     setState(newState);
   };
@@ -146,63 +166,67 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
       if (!newState.units[key]) newState.units[key] = { correct: 0, wrong: 0 };
       newState.units[key].correct += correct;
       newState.units[key].wrong += wrong;
-
       const today = new Date().toDateString();
-      if (newState.lastSolveDate !== today) {
-        newState.streak++;
-        newState.lastSolveDate = today;
-      }
-
+      if (newState.lastSolveDate !== today) { newState.streak++; newState.lastSolveDate = today; }
       const dayIdx = [6, 0, 1, 2, 3, 4, 5][new Date().getDay()];
       newState.weekly.correct[dayIdx] += correct;
       newState.weekly.wrong[dayIdx] += wrong;
-
       setState(newState);
-      addHistory('solve', { 
-        subject: currentAction.subjectName, 
-        unit: currentAction.unitName, 
-        correct, 
-        wrong 
-      });
+      addHistory('solve', { subject: currentAction.subjectName, unit: currentAction.unitName, correct, wrong });
     }
     setSolveModalOpen(false);
   };
 
-  const saveStudy = () => {
-    if (studyMinutes > 0) {
-      addHistory('study', {
-        subject: currentAction.subjectName,
-        unit: currentAction.unitName,
-        duration: studyMinutes
-      });
-    }
-    setStudyMinutes(0);
-    setTimerSeconds(0);
-    setIsTimerRunning(false);
-    setStudyModalOpen(false);
-  };
-
-  const toggleGoal = (id: number) => {
+  const toggleAgendaGoal = (dateKey: string, goalId: number) => {
     const newState = { ...state };
-    newState.goals = newState.goals.map((g: any) => g.id === id ? { ...g, done: !g.done } : g);
+    if (!newState.agenda[dateKey]) return;
+    newState.agenda[dateKey] = newState.agenda[dateKey].map((g: any) => 
+        g.id === goalId ? { ...g, done: !g.done } : g
+    );
     setState(newState);
   };
 
-  const updateAgenda = (dateKey: string, text: string) => {
+  const removeGoal = (dateKey: string, goalId: number) => {
     const newState = { ...state };
-    newState.agenda[dateKey] = text;
+    newState.agenda[dateKey] = newState.agenda[dateKey].filter((g: any) => g.id !== goalId);
     setState(newState);
+  };
+
+  const addNewGoal = () => {
+    const newState = { ...state };
+    if (!newState.agenda[goalDateKey]) newState.agenda[goalDateKey] = [];
+    
+    let text = "";
+    if (goalType === "solve") text = `${goalSubject.name} - ${goalUnit}: ${goalValue} Soru`;
+    else if (goalType === "study") text = `${goalSubject.name} - ${goalUnit}: ${goalValue} Dakika Çalışma`;
+    else text = goalCustomText;
+
+    if (!text.trim()) return;
+
+    newState.agenda[goalDateKey].push({
+        id: Date.now(),
+        type: goalType,
+        subject: goalSubject.name,
+        unit: goalUnit,
+        targetValue: goalValue,
+        text,
+        done: false
+    });
+    setState(newState);
+    setAddGoalModalOpen(false);
+    // Reset modal
+    setGoalValue("");
+    setGoalCustomText("");
   };
 
   // Stats
-  let totalSolved = 0, totalCorrect = 0, totalWrong = 0;
-  Object.values(state.units).forEach((u: any) => {
-    totalCorrect += u.correct;
-    totalWrong += u.wrong;
-  });
-  totalSolved = totalCorrect + totalWrong;
+  let totalCorrect = 0, totalWrong = 0;
+  Object.values(state.units).forEach((u: any) => { totalCorrect += u.correct; totalWrong += u.wrong; });
+  const totalSolved = totalCorrect + totalWrong;
   const totalNet = totalSolved ? (totalCorrect - (totalWrong / 3)).toFixed(2) : "0";
   const globalAcc = totalSolved ? Math.round((totalCorrect / totalSolved) * 100) : 0;
+
+  const todayGoals = state.agenda[todayKey] || [];
 
   return (
     <div className="page animate-fade-up">
@@ -223,39 +247,12 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
       </div>
 
       {/* Tabs */}
-      <div style={{ 
-        display: 'flex', 
-        gap: '8px', 
-        marginBottom: '24px', 
-        background: 'var(--card-bg)', 
-        padding: '6px', 
-        borderRadius: '14px', 
-        border: '1px solid var(--border)',
-        maxWidth: 'fit-content'
-      }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', background: 'var(--card-bg)', padding: '6px', borderRadius: '14px', border: '1px solid var(--border)', maxWidth: 'fit-content' }}>
         {[
           { id: 'analiz', label: 'Analiz & Durum', icon: 'fa-chart-pie' },
           { id: 'planlama', label: 'Ajanda & Planlama', icon: 'fa-calendar-alt' }
         ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            style={{
-              padding: '10px 20px',
-              borderRadius: '10px',
-              fontSize: '0.85rem',
-              fontWeight: 700,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              background: activeTab === tab.id ? 'var(--accent)' : 'transparent',
-              color: activeTab === tab.id ? 'white' : 'var(--text3)',
-              boxShadow: activeTab === tab.id ? '0 10px 20px -10px var(--accent)' : 'none',
-              transform: activeTab === tab.id ? 'scale(1.05)' : 'scale(1)',
-              cursor: 'pointer'
-            }}
-          >
+          <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} style={{ padding: '10px 20px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', background: activeTab === tab.id ? 'var(--accent)' : 'transparent', color: activeTab === tab.id ? 'white' : 'var(--text3)', boxShadow: activeTab === tab.id ? '0 10px 20px -10px var(--accent)' : 'none', transform: activeTab === tab.id ? 'scale(1.05)' : 'scale(1)', cursor: 'pointer' }}>
             <i className={`fas ${tab.icon}`}></i> {tab.label}
           </button>
         ))}
@@ -263,7 +260,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
 
       {activeTab === 'analiz' ? (
         <div className="animate-fade-up">
-          {/* Stats Grid - Compact */}
+          {/* Stats Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
             {[
               { label: 'Soru', val: totalSolved, icon: 'fa-check-double', color: 'var(--text)' },
@@ -291,14 +288,9 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {SUBJECT_DATA.map(s => {
                     let sc = 0, sw = 0;
-                    s.units.forEach((_, i) => {
-                      const u = state.units[`${s.id}_${i}`] || { correct: 0, wrong: 0 };
-                      sc += u.correct; sw += u.wrong;
-                    });
-                    const total = sc + sw;
-                    const pct = total ? Math.round((sc / total) * 100) : 0;
+                    s.units.forEach((_, i) => { const u = state.units[`${s.id}_${i}`] || { correct: 0, wrong: 0 }; sc += u.correct; sw += u.wrong; });
+                    const pct = (sc + sw) ? Math.round((sc / (sc + sw)) * 100) : 0;
                     const isOpen = openSubjects[s.id];
-
                     return (
                       <div key={s.id} style={{ borderBottom: '1px solid var(--border)', paddingBottom: '2px' }}>
                         <div onClick={() => setOpenSubjects(p => ({ ...p, [s.id]: !p[s.id] }))} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px', cursor: 'pointer', borderRadius: '10px' }} className="hover-bg">
@@ -336,31 +328,33 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
               </div>
             </div>
 
-            {/* Goals */}
+            {/* Daily Goals (Synced with Agenda) */}
             <div style={{ flex: 1 }}>
               <div className="glass-card" style={{ padding: '24px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                  <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>Günlük Hedefler</h3>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>Bugünkü Hedefler</h3>
                   <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--accent)', background: 'var(--accent-dim)', padding: '2px 8px', borderRadius: '10px' }}>
-                    {state.goals.filter((g: any) => g.done).length}/{state.goals.length}
+                    {todayGoals.filter((g: any) => g.done).length}/{todayGoals.length}
                   </span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
-                  {state.goals.map((g: any) => (
+                  {todayGoals.length > 0 ? todayGoals.map((g: any) => (
                     <div key={g.id} className="hover-bg" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', borderRadius: '12px', background: 'var(--card-bg)', border: '1px solid var(--border)' }}>
-                      <div onClick={() => toggleGoal(g.id)} style={{ width: '18px', height: '18px', borderRadius: '5px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: g.done ? 'var(--accent)' : 'transparent', borderColor: g.done ? 'var(--accent)' : 'var(--border)' }}>
+                      <div onClick={() => toggleAgendaGoal(todayKey, g.id)} style={{ width: '18px', height: '18px', borderRadius: '5px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: g.done ? 'var(--accent)' : 'transparent', borderColor: g.done ? 'var(--accent)' : 'var(--border)' }}>
                         {g.done && <i className="fas fa-check" style={{ fontSize: '8px', color: 'white' }}></i>}
                       </div>
                       <span style={{ flex: 1, fontSize: '0.85rem', fontWeight: 600, color: g.done ? 'var(--text3)' : 'var(--text)', textDecoration: g.done ? 'line-through' : 'none' }}>{g.text}</span>
                     </div>
-                  ))}
+                  )) : (
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text3)', textAlign: 'center', padding: '20px' }}>Bugün için henüz bir hedef planlanmamış.</p>
+                  )}
                 </div>
-                <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center', fontSize: '0.8rem' }} onClick={() => setGoalModalOpen(true)}>+ Yeni Hedef Ekle</button>
+                <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center', fontSize: '0.8rem' }} onClick={() => { setGoalDateKey(todayKey); setAddGoalModalOpen(true); }}>+ Yeni Hedef Ekle</button>
               </div>
             </div>
           </div>
 
-          {/* Timeline */}
+          {/* Timeline... (journal view remains same) */}
           <div className="glass-card" style={{ padding: '24px', marginTop: '24px' }}>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <i className="fas fa-history" style={{ color: 'var(--accent)' }}></i> Ders Çalışma Günlüğü
@@ -371,43 +365,17 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                 {mergedHistory.map((event: any) => {
                   const dateObj = new Date(event.date);
                   const label = `${dateObj.getHours() || '00'}:${dateObj.getMinutes().toString().padStart(2, '0')} - ${dateObj.toLocaleDateString('tr-TR')}`;
-                  const isDb = !!event.id && typeof event.id === 'string'; // DB exams have string IDs
-
-                  const configMap: Record<string, any> = {
-                    solve: { icon: 'fa-check', bg: '#10b981', label: 'Soru Çözümü' },
-                    study: { icon: 'fa-stopwatch', bg: '#6366f1', label: 'Konu Tanımı' },
-                    exam: { icon: 'fa-file-signature', bg: '#f59e0b', label: 'Deneme Girişi' }
-                  };
+                  const isDb = typeof event.id === 'string';
+                  const configMap: any = { solve: { icon: 'fa-check', bg: '#10b981', label: 'Soru Çözümü' }, study: { icon: 'fa-stopwatch', bg: '#6366f1', label: 'Konu Tanımı' }, exam: { icon: 'fa-file-signature', bg: '#f59e0b', label: 'Deneme Girişi' } };
                   const config = configMap[event.type] || { icon: 'fa-info', bg: 'var(--accent)', label: 'Bilgi' };
-
                   return (
                     <div key={event.id} style={{ position: 'relative' }}>
                       <div style={{ position: 'absolute', left: '-25px', top: '0', width: '12px', height: '12px', borderRadius: '50%', background: config.bg, border: '3px solid var(--bg)', zIndex: 2 }}></div>
                       <div className="hover-bg" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: config.bg, textTransform: 'uppercase' }}>{config.label} {isDb && '(DB)'}</span>
-                          <span style={{ fontSize: '0.65rem', color: 'var(--text3)', fontWeight: 600 }}>{label}</span>
-                        </div>
-                        {event.type === 'solve' && (
-                          <div>
-                            <p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.subject} <span style={{ color: 'var(--text2)', fontWeight: 500 }}>- {event.unit}</span></p>
-                            <p style={{ fontSize: '0.8rem', fontWeight: 700, marginTop: '4px' }}>
-                              <span style={{ color: '#3dd68c' }}>{event.correct} Doğru</span> • <span style={{ color: '#f43f5e' }}>{event.wrong} Yanlış</span>
-                            </p>
-                          </div>
-                        )}
-                        {event.type === 'study' && (
-                          <div>
-                            <p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.subject} <span style={{ color: 'var(--text2)', fontWeight: 500 }}>- {event.unit}</span></p>
-                            <p style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 700, marginTop: '4px' }}>{event.duration} dakika çalışıldı</p>
-                          </div>
-                        )}
-                        {event.type === 'exam' && (
-                          <div>
-                            <p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.name}</p>
-                            <p style={{ fontSize: '0.9rem', color: '#f59e0b', fontWeight: 800, marginTop: '4px' }}>{event.net} Net</p>
-                          </div>
-                        )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}><span style={{ fontSize: '0.65rem', fontWeight: 800, color: config.bg, textTransform: 'uppercase' }}>{config.label} {isDb && '(DB)'}</span><span style={{ fontSize: '0.65rem', color: 'var(--text3)', fontWeight: 600 }}>{label}</span></div>
+                        {event.type === 'solve' && <div><p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.subject} <span style={{ color: 'var(--text2)', fontWeight: 500 }}>- {event.unit}</span></p><p style={{ fontSize: '0.8rem', fontWeight: 700, marginTop: '4px' }}><span style={{ color: '#3dd68c' }}>{event.correct} Doğru</span> • <span style={{ color: '#f43f5e' }}>{event.wrong} Yanlış</span></p></div>}
+                        {event.type === 'study' && <div><p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.subject} <span style={{ color: 'var(--text2)', fontWeight: 500 }}>- {event.unit}</span></p><p style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 700, marginTop: '4px' }}>{event.duration} dakika çalışıldı</p></div>}
+                        {event.type === 'exam' && <div><p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.name}</p><p style={{ fontSize: '0.9rem', color: '#f59e0b', fontWeight: 800, marginTop: '4px' }}>{event.net} Net</p></div>}
                       </div>
                     </div>
                   );
@@ -424,38 +392,31 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {agendaDays.map(day => (
-                    <div key={day.dateKey} style={{ 
-                        display: 'flex', 
-                        gap: '16px', 
-                        padding: '16px', 
-                        borderRadius: '16px', 
-                        background: day.isToday ? 'var(--accent-dim)' : 'var(--card-bg)', 
-                        border: day.isToday ? '1px solid var(--accent-glow)' : '1px solid var(--border)',
-                        transition: 'all 0.2s ease'
-                    }}>
+                    <div key={day.dateKey} style={{ display: 'flex', gap: '16px', padding: '16px', borderRadius: '16px', background: day.isToday ? 'var(--accent-dim)' : 'var(--card-bg)', border: day.isToday ? '1px solid var(--accent-glow)' : '1px solid var(--border)' }}>
                         <div style={{ width: '60px', textAlign: 'center', borderRight: '1px solid var(--border)', paddingRight: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                             <p style={{ fontSize: '0.65rem', fontWeight: 800, color: day.isToday ? 'var(--accent)' : 'var(--text3)', textTransform: 'uppercase' }}>{day.dayName.slice(0, 3)}</p>
                             <p style={{ fontSize: '1.2rem', fontWeight: 900, color: day.isToday ? 'var(--accent)' : 'var(--text)', lineHeight: 1 }}>{day.label.split(' ')[0]}</p>
                             <p style={{ fontSize: '0.6rem', fontWeight: 600, color: 'var(--text3)' }}>{day.label.split(' ')[1]}</p>
                         </div>
                         <div style={{ flex: 1 }}>
-                            <textarea
-                                className="input"
-                                placeholder={day.isToday ? "Bugün neler yapacaksın?" : "Planlarını buraya not et..."}
-                                value={state.agenda[day.dateKey] || ""}
-                                onChange={(e) => updateAgenda(day.dateKey, e.target.value)}
-                                style={{ 
-                                    background: 'transparent', 
-                                    border: 'none', 
-                                    minHeight: '40px', 
-                                    padding: '4px 0', 
-                                    fontSize: '0.9rem', 
-                                    fontWeight: 500,
-                                    resize: 'none',
-                                    color: 'var(--text)',
-                                    width: '100%'
-                                }}
-                            />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {(state.agenda[day.dateKey] || []).map((goal: any) => (
+                                    <div key={goal.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                                        <div onClick={() => toggleAgendaGoal(day.dateKey, goal.id)} style={{ width: '16px', height: '16px', borderRadius: '4px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: goal.done ? 'var(--accent)' : 'transparent', borderColor: goal.done ? 'var(--accent)' : 'var(--border)' }}>
+                                            {goal.done && <i className="fas fa-check" style={{ fontSize: '8px', color: 'white' }}></i>}
+                                        </div>
+                                        <span style={{ flex: 1, fontSize: '0.85rem', fontWeight: 600, color: goal.done ? 'var(--text3)' : 'var(--text)', textDecoration: goal.done ? 'line-through' : 'none' }}>{goal.text}</span>
+                                        <button onClick={() => removeGoal(day.dateKey, goal.id)} style={{ color: 'var(--text3)', fontSize: '0.8rem', opacity: 0.5 }} className="hover-bg-btn"><i className="fas fa-times"></i></button>
+                                    </div>
+                                ))}
+                                <button 
+                                    onClick={() => { setGoalDateKey(day.dateKey); setAddGoalModalOpen(true); }}
+                                    style={{ padding: '8px', borderRadius: '10px', border: '1px dashed var(--border)', fontSize: '0.8rem', color: 'var(--text3)', fontWeight: 700, textAlign: 'left', cursor: 'pointer' }}
+                                    className="hover-bg"
+                                >
+                                    + Hedef Ekle
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ))}
@@ -464,26 +425,66 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
         </div>
       )}
 
-      {/* Modals */}
-      {isGoalModalOpen && (
-        <div className="modal-overlay open" onClick={() => setGoalModalOpen(false)}>
-          <div className="glass-card" style={{ padding: '24px', maxWidth: '400px', width: '100%' }} onClick={e => e.stopPropagation()}>
-            <h3 style={{ marginBottom: '20px', fontWeight: 800 }}>Yeni Hedef</h3>
-            <input type="text" className="input" value={newGoal} onChange={e => setNewGoal(e.target.value)} placeholder="Örn: 50 Matematik sorusu..." autoFocus />
-            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-              <button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setGoalModalOpen(false)}>İptal</button>
-              <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => {
-                const newState = { ...state };
-                newState.goals.push({ id: Date.now(), text: newGoal.trim(), done: false });
-                setState(newState);
-                setNewGoal("");
-                setGoalModalOpen(false);
-              }}>Ekle</button>
+      {/* Add Goal Modal (Advanced) */}
+      {isAddGoalModalOpen && (
+        <div className="modal-overlay open" onClick={() => setAddGoalModalOpen(false)}>
+          <div className="glass-card" style={{ padding: '24px', maxWidth: '440px', width: '100%' }} onClick={e => e.stopPropagation()}>
+            <div style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Yeni Hedef Planla</h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text3)' }}>{agendaDays.find(d => d.dateKey === goalDateKey)?.label} için hedef ekliyorsun</p>
+            </div>
+
+            {/* Type Selector */}
+            <div style={{ display: 'flex', gap: '4px', background: 'var(--card-bg)', padding: '4px', borderRadius: '12px', marginBottom: '20px', border: '1px solid var(--border)' }}>
+                {[
+                    { id: 'solve', label: 'Soru', icon: 'fa-check' },
+                    { id: 'study', label: 'Çalışma', icon: 'fa-stopwatch' },
+                    { id: 'custom', label: 'Özel', icon: 'fa-pen' }
+                ].map(t => (
+                    <button key={t.id} onClick={() => setGoalType(t.id as any)} style={{ flex: 1, padding: '8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 800, background: goalType === t.id ? 'var(--accent)' : 'transparent', color: goalType === t.id ? 'white' : 'var(--text3)', border: 'none', cursor: 'pointer' }}>
+                        <i className={`fas ${t.icon}`}></i> {t.label}
+                    </button>
+                ))}
+            </div>
+
+            {goalType !== 'custom' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div>
+                        <label className="input-label">Branş / Ders</label>
+                        <select className="input" value={goalSubject.id} onChange={(e) => {
+                            const sub = SUBJECT_DATA.find(s => s.id === e.target.value);
+                            if (sub) { setGoalSubject(sub); setGoalUnit(sub.units[0]); }
+                        }}>
+                            {SUBJECT_DATA.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="input-label">Ünite</label>
+                        <select className="input" value={goalUnit} onChange={(e) => setGoalUnit(e.target.value)}>
+                            {goalSubject.units.map((u, i) => <option key={i} value={u}>{u}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="input-label">{goalType === 'solve' ? 'Hedef Soru Sayısı' : 'Hedef Süre (Dakika)'}</label>
+                        <input type="number" className="input" placeholder={goalType === 'solve' ? "Örn: 50" : "Örn: 40"} value={goalValue} onChange={(e) => setGoalValue(e.target.value)} />
+                    </div>
+                </div>
+            ) : (
+                <div>
+                    <label className="input-label">Özel Hedef Notu</label>
+                    <textarea className="input" style={{ minHeight: '80px', resize: 'none' }} placeholder="Örn: Bugün genel deneme çözülecek..." value={goalCustomText} onChange={(e) => setGoalCustomText(e.target.value)}></textarea>
+                </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+              <button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setAddGoalModalOpen(false)}>Vazgeç</button>
+              <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={addNewGoal}>Hedefi Ekle</button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Other Modals (Keep Solve & Study) */}
       {isSolveModalOpen && (
         <div className="modal-overlay open" onClick={() => setSolveModalOpen(false)}>
           <div className="glass-card" style={{ padding: '24px', maxWidth: '400px', width: '100%' }} onClick={e => e.stopPropagation()}>
@@ -493,10 +494,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
               <div><label className="input-label">Doğru</label><input type="number" className="input" value={solveData.correct} onChange={e => setSolveData({ ...solveData, correct: parseInt(e.target.value) || 0 })} /></div>
               <div><label className="input-label">Yanlış</label><input type="number" className="input" value={solveData.wrong} onChange={e => setSolveData({ ...solveData, wrong: parseInt(e.target.value) || 0 })} /></div>
             </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setSolveModalOpen(false)}>İptal</button>
-              <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={saveSolve}>Kaydet</button>
-            </div>
+            <div style={{ display: 'flex', gap: '12px' }}><button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setSolveModalOpen(false)}>İptal</button><button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={saveSolve}>Kaydet</button></div>
           </div>
         </div>
       )}
@@ -508,21 +506,17 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
             <p style={{ fontSize: '0.8rem', color: 'var(--text3)', marginBottom: '20px' }}>{currentAction?.subjectName} - {currentAction?.unitName}</p>
             <div style={{ background: 'var(--accent-dim)', padding: '20px', borderRadius: '16px', textAlign: 'center', marginBottom: '20px' }}>
               <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--accent)', marginBottom: '10px' }}>{formatTime(timerSeconds)}</div>
-              <button className={`btn ${isTimerRunning ? 'btn-ghost' : 'btn-primary'}`} style={{ width: '100%', justifyContent: 'center' }} onClick={() => setIsTimerRunning(!isTimerRunning)}>
-                {isTimerRunning ? 'Duraklat' : 'Başlat'}
-              </button>
+              <button className={`btn ${isTimerRunning ? 'btn-ghost' : 'btn-primary'}`} style={{ width: '100%', justifyContent: 'center' }} onClick={() => setIsTimerRunning(!isTimerRunning)}>{isTimerRunning ? 'Duraklat' : 'Başlat'}</button>
             </div>
             <input type="number" className="input" value={studyMinutes} onChange={e => setStudyMinutes(parseInt(e.target.value) || 0)} placeholder="Dakika..." />
-            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-              <button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { setIsTimerRunning(false); setStudyModalOpen(false); }}>İptal</button>
-              <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={saveStudy}>Kaydet</button>
-            </div>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}><button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { setIsTimerRunning(false); setStudyModalOpen(false); }}>İptal</button><button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { addHistory('study', { subject: currentAction.subjectName, unit: currentAction.unitName, duration: studyMinutes }); setStudyMinutes(0); setTimerSeconds(0); setIsTimerRunning(false); setStudyModalOpen(false); }}>Kaydet</button></div>
           </div>
         </div>
       )}
 
       <style jsx>{`
         .hover-bg:hover { background: var(--accent-dim) !important; }
+        .hover-bg-btn:hover { opacity: 1 !important; color: #f43f5e !important; background: transparent; }
       `}</style>
     </div>
   );
