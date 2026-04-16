@@ -10,7 +10,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.11.1",
+    "@google/generative-ai": "^0.12.0",
     "@prisma/client": "^5.12.0",
     "chart.js": "^4.4.2",
     "next": "14.2.0",
