@@ -2,6 +2,29 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 const SUBJECT_DATA = [
   { id: "mat", name: "Matematik", icon: "fa-calculator", color: "#6366f1", units: ["Çarpanlar ve Katlar", "Üslü İfadeler", "Kareköklü İfadeler", "Veri Analizi", "Olasılık", "Cebirsel İfadeler"] },
@@ -29,6 +52,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const [isSolveModalOpen, setSolveModalOpen] = useState(false);
   const [isStudyModalOpen, setStudyModalOpen] = useState(false);
   const [isAddGoalModalOpen, setAddGoalModalOpen] = useState(false);
+  const [isSoruStatsModalOpen, setSoruStatsModalOpen] = useState(false);
   
   // Goal Modal State
   const [goalDateKey, setGoalDateKey] = useState("");
@@ -185,6 +209,43 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
     return diff > 15 * 24 * 60 * 60 * 1000;
   };
 
+  // Line Chart Data Processing
+  const soruStatsData = useMemo(() => {
+    if (!state) return null;
+    const days = [];
+    const now = new Date();
+    for (let i = 14; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(now.getDate() - i);
+        days.push(d.toISOString().split('T')[0]);
+    }
+
+    const datasets = SUBJECT_DATA.map(sub => {
+        const dataArr = days.map(day => {
+            const daySolves = state.history.filter((h: any) => h.type === 'solve' && h.date.startsWith(day) && h.subject === sub.name);
+            return daySolves.reduce((sum: number, s: any) => sum + (s.correct + s.wrong), 0);
+        });
+        
+        return {
+            label: sub.name,
+            data: dataArr,
+            borderColor: sub.color,
+            backgroundColor: sub.color + '15',
+            fill: true,
+            tension: 0.4,
+            cubicInterpolationMode: 'monotone' as const,
+            pointRadius: 2,
+            pointHoverRadius: 5,
+            borderWidth: 2
+        };
+    });
+
+    return {
+        labels: days.map(d => new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })),
+        datasets
+    };
+  }, [state]);
+
   if (!state) return null;
 
   const formatTime = (totalSeconds: number) => {
@@ -284,8 +345,13 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
               <div style={{ flex: 1.6, display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {/* Compact Stats Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-                  {[{ label: 'Soru', val: totalSolved, icon: 'fa-check-double', color: 'var(--text)' }, { label: 'Net', val: totalNet, icon: 'fa-chart-line', color: 'var(--accent)' }, { label: 'Başarı', val: `%${globalAcc}`, icon: 'fa-percentage', color: '#10b981' }, { label: 'Hedef', val: `%${weeklyCompletion}`, icon: 'fa-bullseye', color: '#f59e0b' }].map((s, idx) => (
-                    <div key={idx} className="glass-card" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px' }}>
+                  {[{ id: 'soru', label: 'Soru', val: totalSolved, icon: 'fa-check-double', color: 'var(--text)' }, { id: 'net', label: 'Net', val: totalNet, icon: 'fa-chart-line', color: 'var(--accent)' }, { id: 'basari', label: 'Başarı', val: `%${globalAcc}`, icon: 'fa-percentage', color: '#10b981' }, { id: 'hedef', label: 'Hedef', val: `%${weeklyCompletion}`, icon: 'fa-bullseye', color: '#f59e0b' }].map((s, idx) => (
+                    <div 
+                      key={idx} 
+                      className="glass-card" 
+                      style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', cursor: s.id === 'soru' ? 'pointer' : 'default', transition: 'all 0.3s ease' }}
+                      onClick={() => s.id === 'soru' && setSoruStatsModalOpen(true)}
+                    >
                       <div style={{ width: '22px', height: '22px', flexShrink: 0, background: 'var(--card-bg)', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, border: '1px solid var(--border)', fontSize: '0.65rem' }}><i className={`fas ${s.icon}`}></i></div>
                       <div style={{ overflow: 'hidden' }}><p style={{ fontSize: '0.45rem', color: 'var(--text3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0px', whiteSpace: 'nowrap' }}>{s.label}</p><p style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text)', lineHeight: 1, whiteSpace: 'nowrap' }}>{s.val}</p></div>
                     </div>
@@ -440,6 +506,54 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
             <div style={{ background: 'var(--accent-dim)', padding: '20px', borderRadius: '16px', textAlign: 'center', marginBottom: '20px' }}><div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--accent)', marginBottom: '10px' }}>{formatTime(timerSeconds)}</div><button className={`btn ${isTimerRunning ? 'btn-ghost' : 'btn-primary'}`} style={{ width: '100%', justifyContent: 'center' }} onClick={() => setIsTimerRunning(!isTimerRunning)}>{isTimerRunning ? 'Duraklat' : 'Başlat'}</button></div>
             <input type="number" className="input" value={studyMinutes} onChange={e => setStudyMinutes(parseInt(e.target.value) || 0)} placeholder="Dakika..." />
             <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}><button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { setIsTimerRunning(false); setStudyModalOpen(false); }}>İptal</button><button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { addHistory('study', { subject: currentAction.subjectName, unit: currentAction.unitName, duration: studyMinutes }); setStudyMinutes(0); setTimerSeconds(0); setIsTimerRunning(false); setStudyModalOpen(false); }}>Kaydet</button></div>
+          </div>
+        </div>
+      )}
+
+      {isSoruStatsModalOpen && (
+        <div className="modal-overlay open" onClick={() => setSoruStatsModalOpen(false)}>
+          <div className="glass-card" style={{ padding: '32px', maxWidth: '800px', width: '95%', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                <div>
+                    <h2 style={{ fontSize: '1.4rem', fontWeight: 900 }}>Soru Çözüm Analizi</h2>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text3)', fontWeight: 600 }}>Son 15 Günlük Performans Grafiği</p>
+                </div>
+                <button onClick={() => setSoruStatsModalOpen(false)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)', cursor: 'pointer' }}><i className="fas fa-times"></i></button>
+            </div>
+            
+            <div style={{ background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '20px', border: '1px solid var(--border)', marginBottom: '32px' }}>
+                {soruStatsData && (
+                    <div style={{ height: '300px', width: '100%' }}>
+                        <Line 
+                            data={soruStatsData} 
+                            options={{
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, weight: 'bold' }, usePointStyle: true, padding: 20 } },
+                                    tooltip: { backgroundColor: '#0f172a', titleFont: { size: 12 }, bodyFont: { size: 12 }, padding: 12, cornerRadius: 10, displayColors: true }
+                                },
+                                scales: {
+                                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { size: 10 } } },
+                                    x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 10 } } }
+                                }
+                            }} 
+                        />
+                    </div>
+                )}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px' }}>
+                {SUBJECT_DATA.map(sub => {
+                    const total = state.history.filter((h: any) => h.type === 'solve' && h.subject === sub.name).reduce((sum: number, s: any) => sum + (s.correct + s.wrong), 0);
+                    return (
+                        <div key={sub.id} className="glass-card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', borderLeft: `4px solid ${sub.color}` }}>
+                            <p style={{ fontSize: '0.7rem', color: 'var(--text3)', fontWeight: 800, textTransform: 'uppercase' }}>{sub.name}</p>
+                            <p style={{ fontSize: '1.2rem', fontWeight: 900 }}>{total} <span style={{ fontSize: '0.7rem', color: 'var(--text3)' }}>Soru</span></p>
+                        </div>
+                    );
+                })}
+            </div>
           </div>
         </div>
       )}
