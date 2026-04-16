@@ -246,14 +246,74 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
         </div>
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', background: 'var(--card-bg)', padding: '6px', borderRadius: '14px', border: '1px solid var(--border)', maxWidth: 'fit-content' }}>
+      {/* Tabs - Premium Segmented Control */}
+      <div style={{ 
+        position: 'relative',
+        display: 'flex', 
+        gap: '4px', 
+        marginBottom: '32px', 
+        background: 'rgba(15, 23, 42, 0.4)', // Sophisticated dark-dim
+        backdropFilter: 'blur(12px)',
+        padding: '6px', 
+        borderRadius: '18px', 
+        border: '1px solid rgba(255, 255, 255, 0.05)',
+        width: 'fit-content',
+        boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.3)',
+        marginLeft: 'auto',
+        marginRight: 'auto'
+      }}>
+        {/* Sliding Highlight */}
+        <div style={{
+          position: 'absolute',
+          top: '6px',
+          bottom: '6px',
+          left: activeTab === 'analiz' ? '6px' : 'calc(50% + 2px)',
+          width: 'calc(50% - 8px)',
+          background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)',
+          borderRadius: '14px',
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          boxShadow: '0 4px 15px -2px var(--accent-glow)',
+          zIndex: 0
+        }} />
+
         {[
           { id: 'analiz', label: 'Analiz & Durum', icon: 'fa-chart-pie' },
           { id: 'planlama', label: 'Ajanda & Planlama', icon: 'fa-calendar-alt' }
         ].map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} style={{ padding: '10px 20px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', background: activeTab === tab.id ? 'var(--accent)' : 'transparent', color: activeTab === tab.id ? 'white' : 'var(--text3)', boxShadow: activeTab === tab.id ? '0 10px 20px -10px var(--accent)' : 'none', transform: activeTab === tab.id ? 'scale(1.05)' : 'scale(1)', cursor: 'pointer' }}>
-            <i className={`fas ${tab.icon}`}></i> {tab.label}
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            style={{
+              position: 'relative',
+              zIndex: 1,
+              padding: '12px 24px',
+              borderRadius: '14px',
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              transition: 'all 0.3s ease',
+              background: 'transparent',
+              color: activeTab === tab.id ? 'white' : 'var(--text3)',
+              border: 'none',
+              cursor: 'pointer',
+              minWidth: '180px',
+              justifyContent: 'center'
+            }}
+          >
+            <i className={`fas ${tab.icon}`} style={{ 
+                fontSize: '1rem',
+                opacity: activeTab === tab.id ? 1 : 0.6,
+                transform: activeTab === tab.id ? 'scale(1.1)' : 'scale(1)',
+                transition: 'all 0.3s ease'
+            }}></i> 
+            <span style={{ 
+                letterSpacing: '0.3px',
+                textShadow: activeTab === tab.id ? '0 2px 4px rgba(0,0,0,0.2)' : 'none'
+            }}>
+                {tab.label}
+            </span>
           </button>
         ))}
       </div>
