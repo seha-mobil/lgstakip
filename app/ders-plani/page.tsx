@@ -375,11 +375,12 @@ export default function DersPlani() {
               const dateObj = new Date(event.date);
               const label = `${dateObj.getHours()}:${dateObj.getMinutes().toString().padStart(2, '0')} - ${dateObj.toLocaleDateString('tr-TR')}`;
               
-              const config: any = {
+              const configMap: Record<string, any> = {
                 solve: { icon: 'fa-check', bg: '#10b981', label: 'Soru Çözümü' },
                 study: { icon: 'fa-stopwatch', bg: '#6366f1', label: 'Konu Tanımı' },
                 exam: { icon: 'fa-file-signature', bg: '#f59e0b', label: 'Deneme Girişi' }
-              }[event.type] || { icon: 'fa-info', bg: 'var(--accent)', label: 'Bilgi' };
+              };
+              const config = configMap[event.type] || { icon: 'fa-info', bg: 'var(--accent)', label: 'Bilgi' };
 
               return (
                 <div key={event.id} style={{ position: 'relative' }}>
