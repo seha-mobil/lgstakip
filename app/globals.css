@@ -103,6 +103,7 @@ body {
   font-family: var(--font);
   background-color: var(--bg);
   background-image: var(--bg-gradient);
+  background-attachment: fixed;
   color: var(--text);
   min-height: 100vh;
   overflow: hidden;
@@ -164,7 +165,12 @@ body {
   border-radius: 16px;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+              background-color 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.4s ease;
+  will-change: transform, background-color;
+  transform: translateZ(0);
 }
 .glass-card:hover {
   background: var(--card-hover);
@@ -230,8 +236,8 @@ body {
 
 /* Animations */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); filter: blur(5px); }
-  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-up {
