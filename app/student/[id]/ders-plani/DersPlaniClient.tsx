@@ -334,7 +334,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
           <div style={{ position: 'absolute', top: '6px', bottom: '6px', left: activeTab === 'analiz' ? '6px' : 'calc(50% + 2px)', width: 'calc(50% - 8px)', background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)', borderRadius: '14px', transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 4px 15px -2px var(--accent-glow)', zIndex: 0 }} />
           {[{ id: 'analiz', label: 'Analiz & Durum', icon: 'fa-chart-pie' }, { id: 'planlama', label: 'Ajanda & Planlama', icon: 'fa-calendar-alt' }].map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} style={{ position: 'relative', zIndex: 1, padding: '12px 24px', borderRadius: '14px', fontSize: '0.9rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '12px', transition: 'all 0.3s ease', background: 'transparent', color: activeTab === tab.id ? 'white' : 'var(--text3)', border: 'none', cursor: 'pointer', minWidth: '180px', justifyContent: 'center' }}>
-              <i className={`fas ${tab.icon}`} style={{ fontSize: '1rem', opacity: activeTab === tab.id ? 1 : 0.6, transform: activeTab === tab.id ? 'scale(1.1)' : 'scale(1)', transition: 'all 0.3s ease' }}></i> <span style={{ letterSpacing: '0.3px', textShadow: activeTab === tab.id ? '0 2px 4px rgba(0,0,0,0.2)' : 'none' }}>{tab.label}</span>
+              <i className={`fas ${tab.icon}`} style={{ fontSize: '1rem', opacity: activeTab === tab.id ? 1 : 0.6, transform: activeTab === tab.id ? 'none' : 'none', transition: 'all 0.3s ease' }}></i> <span style={{ letterSpacing: '0.3px', textShadow: activeTab === tab.id ? '0 2px 4px rgba(0,0,0,0.2)' : 'none' }}>{tab.label}</span>
             </button>
           ))}
         </div>
@@ -348,8 +348,8 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                   {[{ id: 'soru', label: 'Soru', val: totalSolved, icon: 'fa-check-double', color: 'var(--text)' }, { id: 'net', label: 'Net', val: totalNet, icon: 'fa-chart-line', color: 'var(--accent)' }, { id: 'basari', label: 'Başarı', val: `%${globalAcc}`, icon: 'fa-percentage', color: '#10b981' }, { id: 'hedef', label: 'Hedef', val: `%${weeklyCompletion}`, icon: 'fa-bullseye', color: '#f59e0b' }].map((s, idx) => (
                     <div 
                       key={idx} 
-                      className="glass-card" 
-                      style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', cursor: s.id === 'soru' ? 'pointer' : 'default', transition: 'all 0.3s ease' }}
+                      className="glass-card-solid" 
+                      style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', cursor: s.id === 'soru' ? 'pointer' : 'default', transition: 'all 0.2s ease', isolation: 'isolate' }}
                       onClick={() => s.id === 'soru' && setSoruStatsModalOpen(true)}
                     >
                       <div style={{ width: '22px', height: '22px', flexShrink: 0, background: 'var(--card-bg)', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, border: '1px solid var(--border)', fontSize: '0.65rem' }}><i className={`fas ${s.icon}`}></i></div>
@@ -413,7 +413,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                 {/* Critical Radar */}
                 <div className="glass-card" style={{ padding: '24px', border: '1px solid rgba(244, 63, 94, 0.2)', background: 'rgba(244, 63, 94, 0.03)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#f43f5e', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}><i className="fas fa-satellite-dish animate-pulse"></i></div>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#f43f5e', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', isolation: 'isolate' }}><i className="fas fa-satellite-dish"></i></div>
                     <div><h3 style={{ fontSize: '0.9rem', fontWeight: 800 }}>Kritik Ünite Radarı</h3><p style={{ fontSize: '0.65rem', color: 'var(--text3)', fontWeight: 600 }}>BAŞARI ORANI %80 ALTI ÜNİTELER</p></div>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -566,11 +566,8 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
         .modal-overlay .glass-card { transform: scale(0.9); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .modal-overlay.open .glass-card { transform: scale(1) !important; }
         
-        .animate-fade { animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-        @keyframes fadeIn { 
-          from { opacity: 0; transform: scale(0.985); } 
-          to { opacity: 1; transform: scale(1); } 
-        }
+        .animate-fade { animation: fadeIn 0.2s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(10px); }
