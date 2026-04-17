@@ -104,9 +104,10 @@ body {
   background-color: var(--bg);
   background-image: var(--bg-gradient);
   background-attachment: fixed;
+  background-size: cover;
   color: var(--text);
   min-height: 100vh;
-  overflow: hidden;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -171,6 +172,10 @@ body {
               box-shadow 0.4s ease;
   will-change: transform, background-color;
   transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  isolation: isolate;
+  contain: content;
 }
 .glass-card:hover {
   background: var(--card-hover);
