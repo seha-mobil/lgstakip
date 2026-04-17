@@ -53,6 +53,8 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const [isStudyModalOpen, setStudyModalOpen] = useState(false);
   const [isAddGoalModalOpen, setAddGoalModalOpen] = useState(false);
   const [isSoruStatsModalOpen, setSoruStatsModalOpen] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [editUnitData, setEditUnitData] = useState({ correct: 0, wrong: 0, sid: '', ui: 0, unitName: '', subjectName: '' });
   
   // Goal Modal State
   const [goalDateKey, setGoalDateKey] = useState("");
@@ -246,6 +248,32 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
     };
   }, [state]);
 
+  const updateUnitStats = () => {
+    if (!state) return;
+    const { sid, ui, correct, wrong } = editUnitData;
+    const key = `${sid}_${ui}`;
+    const newState = { ...state };
+    newState.units[key] = { 
+        ...(newState.units[key] || { lastDate: null }),
+        correct, 
+        wrong,
+        lastDate: new Date().toISOString()
+    };
+    setState(newState);
+    setEditModalOpen(false);
+  };
+
+  const resetUnitStats = () => {
+    if (!window.confirm("Bu ünitenin verilerini sıfırlamak istediğine emin misin?")) return;
+    if (!state) return;
+    const { sid, ui } = editUnitData;
+    const key = `${sid}_${ui}`;
+    const newState = { ...state };
+    delete newState.units[key];
+    setState(newState);
+    setEditModalOpen(false);
+  };
+
   if (!state) return null;
 
   const formatTime = (totalSeconds: number) => {
@@ -402,8 +430,16 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                                                 )}
                                             </div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <span style={{ color: '#3dd68c', fontWeight: 700 }}>{ud.correct}D</span>
-                                                <span style={{ color: '#f43f5e', fontWeight: 700 }}>{ud.wrong}Y</span>
+                                                <div 
+                                                  onClick={() => { setEditUnitData({ correct: ud.correct, wrong: ud.wrong, sid: s.id, ui: i, unitName: u, subjectName: s.name }); setEditModalOpen(true); }}
+                                                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '2px 8px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}
+                                                  className="hover-bg"
+                                                  title="Verileri Düzenle"
+                                                >
+                                                    <span style={{ color: '#3dd68c', fontWeight: 700 }}>{ud.correct}D</span>
+                                                    <span style={{ color: '#f43f5e', fontWeight: 700 }}>{ud.wrong}Y</span>
+                                                    <i className="fas fa-pen-to-square" style={{ fontSize: '0.7rem', opacity: 0.5 }}></i>
+                                                </div>
                                                 <div style={{ display: 'flex', gap: '4px' }}>
                                                     <button className="btn btn-ghost" style={{ padding: '3px 6px', fontSize: '10px' }} onClick={() => { setCurrentAction({ sid: s.id, ui: i, subjectName: s.name, unitName: u }); setSolveData({ correct: 0, wrong: 0 }); setSolveModalOpen(true); }}>Soru</button>
                                                     <button className="btn btn-ghost" style={{ padding: '3px 6px', fontSize: '10px' }} onClick={() => { setCurrentAction({ sid: s.id, ui: i, subjectName: s.name, unitName: u }); setStudyModalOpen(true); }}>Çalış</button>
@@ -565,6 +601,40 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                         </div>
                     );
                 })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isEditModalOpen && (
+        <div className="modal-overlay open" onClick={() => setEditModalOpen(false)}>
+          <div className="glass-card" style={{ padding: '24px', maxWidth: '400px', width: '100%' }} onClick={e => e.stopPropagation()}>
+            <div style={{ marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>İstatistikleri Düzenle</h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text3)' }}>{editUnitData.subjectName} - {editUnitData.unitName}</p>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+                <div>
+                    <label className="input-label">Toplam Doğru</label>
+                    <input type="number" className="input" value={editUnitData.correct} onChange={e => setEditUnitData({ ...editUnitData, correct: parseInt(e.target.value) || 0 })} />
+                </div>
+                <div>
+                    <label className="input-label">Toplam Yanlış</label>
+                    <input type="number" className="input" value={editUnitData.wrong} onChange={e => setEditUnitData({ ...editUnitData, wrong: parseInt(e.target.value) || 0 })} />
+                </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    <button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setEditModalOpen(false)}>Vazgeç</button>
+                    <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={updateUnitStats}>Güncelle</button>
+                </div>
+                <button 
+                  className="btn btn-ghost" 
+                  style={{ width: '100%', justifyContent: 'center', color: 'var(--red)', border: '1px solid rgba(244, 63, 94, 0.2)' }} 
+                  onClick={resetUnitStats}
+                >
+                    <i className="fas fa-trash-can" style={{ marginRight: '6px' }}></i> Verileri Sıfırla
+                </button>
             </div>
           </div>
         </div>
