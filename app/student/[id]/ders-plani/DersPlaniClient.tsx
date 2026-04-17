@@ -118,7 +118,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const [isAddGoalModalOpen, setAddGoalModalOpen] = useState(false);
   const [isSoruStatsModalOpen, setSoruStatsModalOpen] = useState(false);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
-  const [editUnitData, setEditUnitData] = useState({ correct: 0, wrong: 0, sid: '', ui: 0, ti: 0, topicName: '', subjectName: '' });
+  const [editUnitData, setEditUnitData] = useState({ correct: 0, wrong: 0, sid: '', ui: 0, ti: 0, topicName: '', unitName: '', subjectName: '' });
   
   // Goal Modal State
   const [goalDateKey, setGoalDateKey] = useState("");
@@ -545,7 +545,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                                                                 </div>
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                                     <div 
-                                                                      onClick={() => { setEditUnitData({ correct: ud.correct, wrong: ud.wrong, sid: s.id, ui, ti, topicName: topic, subjectName: s.name }); setEditModalOpen(true); }}
+                                                                      onClick={() => { setEditUnitData({ correct: ud.correct, wrong: ud.wrong, sid: s.id, ui, ti, topicName: topic, unitName: unit.name, subjectName: s.name }); setEditModalOpen(true); }}
                                                                       style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '2px 8px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}
                                                                       className="hover-bg"
                                                                     >
