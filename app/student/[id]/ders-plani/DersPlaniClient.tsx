@@ -340,7 +340,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
         </div>
 
         {activeTab === 'analiz' ? (
-          <div className="animate-fade">
+          <div key="analiz" className="animate-fade" style={{ willChange: 'opacity, transform' }}>
             <div className="flex-mobile-col" style={{ gap: '24px' }}>
               <div style={{ flex: 1.6, display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {/* Compact Stats Grid */}
@@ -450,7 +450,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
             </div>
           </div>
         ) : (
-          <div className="animate-fade">
+          <div key="planlama" className="animate-fade" style={{ willChange: 'opacity, transform' }}>
             <div className="glass-card" style={{ padding: '28px' }}>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}><i className="fas fa-calendar-alt" style={{ color: 'var(--accent)' }}></i> 15 Günlük Çalışma Ajandası</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -566,8 +566,11 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
         .modal-overlay .glass-card { transform: scale(0.9); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .modal-overlay.open .glass-card { transform: scale(1) !important; }
         
-        .animate-fade { animation: fadeIn 0.2s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fade { animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        @keyframes fadeIn { 
+          from { opacity: 0; transform: scale(0.985); } 
+          to { opacity: 1; transform: scale(1); } 
+        }
 
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(10px); }
