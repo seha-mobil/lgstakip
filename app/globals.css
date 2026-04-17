@@ -176,12 +176,38 @@ body {
 }
 
 .glass-card-solid {
-  background: rgba(13, 18, 32, 0.95);
+  background: rgba(13, 18, 32, 0.96);
   border: 1px solid var(--border);
   border-radius: 12px;
-  transition: transform 0.3s ease, background-color 0.3s ease;
-  will-change: transform;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, background-color, border-color;
   transform: translateZ(0);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.glass-card-solid:hover {
+  background: rgba(22, 31, 48, 0.98);
+  border-color: var(--accent);
+  box-shadow: 0 0 15px var(--accent-dim);
+}
+
+.glass-card-solid::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -100%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.08), transparent);
+  transform: rotate(30deg);
+  pointer-events: none;
+}
+
+.glass-card-solid:hover::after {
+  left: 150%;
+  transition: all 0.6s ease-in-out;
 }
 .glass-card:hover {
   background: var(--card-hover);

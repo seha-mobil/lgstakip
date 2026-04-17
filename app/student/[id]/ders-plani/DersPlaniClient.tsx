@@ -340,7 +340,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
         </div>
 
         {activeTab === 'analiz' ? (
-          <div key="analiz" className="animate-fade" style={{ willChange: 'opacity, transform' }}>
+          <div key="analiz" className="animate-fade" style={{ contain: 'paint', isolation: 'isolate', transform: 'translateZ(0)' }}>
             <div className="flex-mobile-col" style={{ gap: '24px' }}>
               <div style={{ flex: 1.6, display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {/* Compact Stats Grid */}
@@ -349,7 +349,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                     <div 
                       key={idx} 
                       className="glass-card-solid" 
-                      style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', cursor: s.id === 'soru' ? 'pointer' : 'default', transition: 'all 0.2s ease', isolation: 'isolate' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', cursor: s.id === 'soru' ? 'pointer' : 'default' }}
                       onClick={() => s.id === 'soru' && setSoruStatsModalOpen(true)}
                     >
                       <div style={{ width: '22px', height: '22px', flexShrink: 0, background: 'var(--card-bg)', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, border: '1px solid var(--border)', fontSize: '0.65rem' }}><i className={`fas ${s.icon}`}></i></div>
@@ -450,7 +450,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
             </div>
           </div>
         ) : (
-          <div key="planlama" className="animate-fade" style={{ willChange: 'opacity, transform' }}>
+          <div key="planlama" className="animate-fade" style={{ contain: 'paint', isolation: 'isolate', transform: 'translateZ(0)' }}>
             <div className="glass-card" style={{ padding: '28px' }}>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}><i className="fas fa-calendar-alt" style={{ color: 'var(--accent)' }}></i> 15 Günlük Çalışma Ajandası</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
