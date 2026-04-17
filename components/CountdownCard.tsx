@@ -65,16 +65,13 @@ export default function CountdownCard({
   if (!timeLeft) return null;
 
   return (
-    <div className="glass-card" style={{ 
+    <div className="glass-stable" style={{ 
       padding: '10px 16px', 
       display: 'flex', 
       flexDirection: 'column', 
       alignItems: 'center',
       gap: '0px', 
-      background: 'rgba(0, 0, 0, 0.45)',
-      backdropFilter: 'blur(20px)',
-      border: `1px solid ${color}20`,
-      boxShadow: `0 0 10px ${color}10`,
+      border: `1px solid ${color}30`,
       minWidth: '135px',
       position: 'relative',
       overflow: 'hidden'
@@ -85,11 +82,8 @@ export default function CountdownCard({
           100% { transform: translateY(110px); }
         }
         @keyframes heartbeat-glow {
-          0% { text-shadow: 0 0 5px ${color}40, 0 0 10px ${color}20; }
-          15% { text-shadow: 0 0 12px ${color}CC, 0 0 25px ${color}80, 0 0 35px ${color}40; }
-          30% { text-shadow: 0 0 5px ${color}40, 0 0 10px ${color}20; }
-          45% { text-shadow: 0 0 10px ${color}AA, 0 0 20px ${color}60; }
-          100% { text-shadow: 0 0 5px ${color}40, 0 0 10px ${color}20; }
+          0%, 100% { text-shadow: 0 0 5px ${color}40; opacity: 0.9; }
+          50% { text-shadow: 0 0 15px ${color}80; opacity: 1; }
         }
         .glow-heartbeat {
           color: ${color};

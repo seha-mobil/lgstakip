@@ -145,7 +145,7 @@ export default function PastExamsTable({
 
       {selectedEditExamId && editData && (
         <>
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 10000 }} onClick={() => setSelectedEditExamId(null)}></div>
+          <div className="modal-overlay open" style={{ zIndex: 10000 }} onClick={() => setSelectedEditExamId(null)}></div>
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
             width: '95%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto',

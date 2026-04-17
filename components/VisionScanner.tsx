@@ -142,9 +142,9 @@ export default function VisionScanner({ studentId, onSuccess }: VisionScannerPro
             )}
             
             {scanning && (
-              <div style={{
-                position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)'
+              <div className="glass-stable" style={{
+                position: 'absolute', inset: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5
               }}>
                 <div style={{ textAlign: 'center' }}>
                   <div className="animate-spin" style={{ width: '40px', height: '40px', border: '3px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%', margin: '0 auto 15px' }}></div>
