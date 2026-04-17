@@ -330,8 +330,20 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
         </div>
 
         {/* Tabs - Premium Segmented Control */}
-        <div style={{ position: 'relative', display: 'flex', gap: '4px', marginBottom: '32px', background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(12px)', padding: '6px', borderRadius: '18px', border: '1px solid rgba(255, 255, 255, 0.05)', width: 'fit-content', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.3)', marginLeft: 'auto', marginRight: 'auto' }}>
-          <div style={{ position: 'absolute', top: '6px', bottom: '6px', left: activeTab === 'analiz' ? '6px' : 'calc(50% + 2px)', width: 'calc(50% - 8px)', background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)', borderRadius: '14px', transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 4px 15px -2px var(--accent-glow)', zIndex: 0 }} />
+        <div style={{ position: 'relative', display: 'flex', gap: '4px', marginBottom: '32px', background: 'rgba(13, 18, 32, 0.98)', padding: '6px', borderRadius: '18px', border: '1px solid var(--border)', width: 'fit-content', boxShadow: '0 8px 24px -8px rgba(0, 0, 0, 0.5)', marginLeft: 'auto', marginRight: 'auto', isolation: 'isolate', contain: 'content' }}>
+          <div style={{ 
+            position: 'absolute', 
+            top: '6px', 
+            bottom: '6px', 
+            left: '6px', 
+            width: 'calc(50% - 8px)', 
+            background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)', 
+            borderRadius: '14px', 
+            transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+            transform: activeTab === 'analiz' ? 'translateX(0)' : 'translateX(calc(100% + 4px))',
+            boxShadow: '0 2px 10px rgba(232, 184, 75, 0.3)', 
+            zIndex: 0 
+          }} />
           {[{ id: 'analiz', label: 'Analiz & Durum', icon: 'fa-chart-pie' }, { id: 'planlama', label: 'Ajanda & Planlama', icon: 'fa-calendar-alt' }].map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} style={{ position: 'relative', zIndex: 1, padding: '12px 24px', borderRadius: '14px', fontSize: '0.9rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '12px', transition: 'all 0.3s ease', background: 'transparent', color: activeTab === tab.id ? 'white' : 'var(--text3)', border: 'none', cursor: 'pointer', minWidth: '180px', justifyContent: 'center' }}>
               <i className={`fas ${tab.icon}`} style={{ fontSize: '1rem', opacity: activeTab === tab.id ? 1 : 0.6, transform: activeTab === tab.id ? 'none' : 'none', transition: 'all 0.3s ease' }}></i> <span style={{ letterSpacing: '0.3px', textShadow: activeTab === tab.id ? '0 2px 4px rgba(0,0,0,0.2)' : 'none' }}>{tab.label}</span>
@@ -340,7 +352,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
         </div>
 
         {activeTab === 'analiz' ? (
-          <div key="analiz" className="animate-fade" style={{ contain: 'paint', isolation: 'isolate', transform: 'translateZ(0)' }}>
+          <div key="analiz" className="animate-fade" style={{ contain: 'strict', isolation: 'isolate', minHeight: '400px' }}>
             <div className="flex-mobile-col" style={{ gap: '24px' }}>
               <div style={{ flex: 1.6, display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {/* Compact Stats Grid */}
@@ -450,7 +462,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
             </div>
           </div>
         ) : (
-          <div key="planlama" className="animate-fade" style={{ contain: 'paint', isolation: 'isolate', transform: 'translateZ(0)' }}>
+          <div key="planlama" className="animate-fade" style={{ contain: 'strict', isolation: 'isolate', minHeight: '400px' }}>
             <div className="glass-card" style={{ padding: '28px' }}>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}><i className="fas fa-calendar-alt" style={{ color: 'var(--accent)' }}></i> 15 Günlük Çalışma Ajandası</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
