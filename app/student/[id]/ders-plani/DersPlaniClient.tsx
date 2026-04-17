@@ -352,7 +352,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
         </div>
 
         {activeTab === 'analiz' ? (
-          <div key="analiz" className="animate-fade" style={{ contain: 'strict', isolation: 'isolate', minHeight: '400px' }}>
+          <div key="analiz" className="animate-fade" style={{ contain: 'content', isolation: 'isolate' }}>
             <div className="flex-mobile-col" style={{ gap: '24px' }}>
               <div style={{ flex: 1.6, display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {/* Compact Stats Grid */}
@@ -462,7 +462,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
             </div>
           </div>
         ) : (
-          <div key="planlama" className="animate-fade" style={{ contain: 'strict', isolation: 'isolate', minHeight: '400px' }}>
+          <div key="planlama" className="animate-fade" style={{ contain: 'content', isolation: 'isolate' }}>
             <div className="glass-card" style={{ padding: '28px' }}>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}><i className="fas fa-calendar-alt" style={{ color: 'var(--accent)' }}></i> 15 Günlük Çalışma Ajandası</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
