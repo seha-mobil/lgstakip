@@ -70,7 +70,7 @@ export default async function Dashboard() {
           </h1>
           
           <p className="animate-fade-up" style={{ fontSize: '18px', color: 'var(--text2)', lineHeight: 1.6, maxWidth: '500px', animationDelay: '0.2s' }}>
-            Günlük görevler, deneme analitiği, koç notları ve ilerleme grafikleri tek bir uygulamada.
+            Hayalindeki liseye giden yolu, deneme takip, net analizi ve stratejik ders planlamayla her gün takip et.
           </p>
         </div>
 
