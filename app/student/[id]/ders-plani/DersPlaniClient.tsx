@@ -978,12 +978,10 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                         <i className="fas fa-plus-circle" style={{ fontSize: '2rem', marginBottom: '12px' }}></i>
                         <p style={{ fontSize: '0.9rem', fontWeight: 600 }}>Buraya yeni özellikler gelecek...</p>
                     </div>
-                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Modals outside with absolute viewport-fixed positioning */}
       {isAddGoalModalOpen && (
