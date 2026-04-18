@@ -41,6 +41,7 @@ export default async function Dashboard() {
   }
 
   return (
+    <div className="page animate-fade-up">
       {/* Premium Hero Section */}
       <div className="flex-mobile-col" style={{ alignItems: 'center', justifyContent: 'space-between', gap: '40px', marginBottom: '64px', marginTop: '20px' }}>
         <div style={{ flex: 1, maxWidth: '650px' }}>
