@@ -815,9 +815,17 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={() => setCurrentCalendarMonth(new Date(currentCalendarMonth.getFullYear(), currentCalendarMonth.getMonth() - 1, 1))} className="hover-bg-btn" style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'transparent', color: 'var(--text)' }}><i className="fas fa-chevron-left"></i></button>
+                    <button onClick={() => {
+                        const target = new Date(currentCalendarMonth);
+                        target.setDate(target.getDate() - 28);
+                        setCurrentCalendarMonth(target);
+                    }} className="hover-bg-btn" style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'transparent', color: 'var(--text)' }}><i className="fas fa-chevron-left"></i></button>
                     <button onClick={() => setCurrentCalendarMonth(new Date())} className="hover-bg-btn" style={{ padding: '0 12px', borderRadius: '10px', border: '1px solid var(--border)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', background: 'transparent', color: 'var(--text)' }}>Bugün</button>
-                    <button onClick={() => setCurrentCalendarMonth(new Date(currentCalendarMonth.getFullYear(), currentCalendarMonth.getMonth() + 1, 1))} className="hover-bg-btn" style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'transparent', color: 'var(--text)' }}><i className="fas fa-chevron-right"></i></button>
+                    <button onClick={() => {
+                        const target = new Date(currentCalendarMonth);
+                        target.setDate(target.getDate() + 28);
+                        setCurrentCalendarMonth(target);
+                    }} className="hover-bg-btn" style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'transparent', color: 'var(--text)' }}><i className="fas fa-chevron-right"></i></button>
                   </div>
                 </div>
 
@@ -831,28 +839,23 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                 {/* Calendar Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
                   {(() => {
-                    const year = currentCalendarMonth.getFullYear();
-                    const month = currentCalendarMonth.getMonth();
-                    const firstDay = new Date(year, month, 1);
-                    const lastDay = new Date(year, month + 1, 0);
-                    let startDayIdx = firstDay.getDay() - 1;
-                    if (startDayIdx === -1) startDayIdx = 6;
+                    const rollingStart = new Date(currentCalendarMonth);
+                    let dayIdx = rollingStart.getDay() - 1;
+                    if (dayIdx === -1) dayIdx = 6;
+                    rollingStart.setDate(rollingStart.getDate() - dayIdx);
                     
                     const cells = [];
-                    const prevMonthLastDay = new Date(year, month, 0).getDate();
-                    for (let i = startDayIdx; i > 0; i--) {
-                        const d = prevMonthLastDay - i + 1;
-                        const date = new Date(year, month - 1, d);
-                        cells.push({ day: d, dateKey: date.toISOString().split('T')[0], current: false });
-                    }
-                    for (let i = 1; i <= lastDay.getDate(); i++) {
-                        const date = new Date(year, month, i);
-                        cells.push({ day: i, dateKey: date.toISOString().split('T')[0], current: true });
-                    }
-                    const remaining = 42 - cells.length;
-                    for (let i = 1; i <= remaining; i++) {
-                        const date = new Date(year, month + 1, i);
-                        cells.push({ day: i, dateKey: date.toISOString().split('T')[0], current: false });
+                    for (let i = 0; i < 42; i++) {
+                        const date = new Date(rollingStart);
+                        date.setDate(rollingStart.getDate() + i);
+                        const dateKey = date.toISOString().split('T')[0];
+                        cells.push({ 
+                            day: date.getDate(), 
+                            dateKey: dateKey, 
+                            // Current is true if same month as today OR simply true for rolling view?
+                            // Let's mark it current if it's within the main focal month of the view
+                            current: date.getMonth() === currentCalendarMonth.getMonth()
+                        });
                     }
 
                     return cells.map((cell, idx) => {
@@ -927,47 +930,6 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                 </div>
               </div>
 
-              {/* Selected Day Details - Sade Akış */}
-              <div className="glass-card animate-fade-up" key={selectedCalendarDate} style={{ padding: '24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                  <div>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>
-                      {new Date(selectedCalendarDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })}
-                    </h3>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text3)', fontWeight: 600 }}>GÜNLÜK HEDEF LİSTESİ</p>
-                  </div>
-                  <button 
-                    onClick={() => { setGoalDateKey(selectedCalendarDate); initDateTime(); setAddGoalModalOpen(true); }}
-                    className="btn btn-ghost"
-                    style={{ padding: '8px 16px', borderRadius: '12px', fontSize: '0.8rem' }}
-                  >
-                    <i className="fas fa-plus"></i> Hedef Ekle
-                  </button>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {(state.agenda[selectedCalendarDate] || []).length > 0 ? (state.agenda[selectedCalendarDate] || []).map((goal: any) => (
-                    <div key={goal.id} className="hover-bg" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', borderRadius: '16px', background: 'var(--card-bg)', border: '1px solid var(--border)', transition: 'all 0.3s ease' }}>
-                      <div 
-                        onClick={() => toggleAgendaGoal(selectedCalendarDate, goal.id)} 
-                        style={{ width: '22px', height: '22px', borderRadius: '7px', border: '2px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: goal.done ? 'var(--accent)' : 'transparent', borderColor: goal.done ? 'var(--accent)' : 'var(--border)', transition: 'all 0.2s ease' }}
-                      >
-                        {goal.done && <i className="fas fa-check" style={{ fontSize: '10px', color: 'white' }}></i>}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <p style={{ fontSize: '0.9rem', fontWeight: 700, color: goal.done ? 'var(--text3)' : 'var(--text)', textDecoration: goal.done ? 'line-through' : 'none', transition: 'all 0.2s ease' }}>{goal.text}</p>
-                        {goal.time && <p style={{ fontSize: '0.7rem', color: 'var(--text3)', fontWeight: 600 }}><i className="fas fa-clock"></i> {goal.time}</p>}
-                      </div>
-                      <button onClick={() => removeGoal(selectedCalendarDate, goal.id)} style={{ padding: '8px', color: 'var(--text3)', fontSize: '0.9rem', opacity: 0.5 }} className="hover-bg-btn"><i className="fas fa-trash-can"></i></button>
-                    </div>
-                  )) : (
-                    <div style={{ textAlign: 'center', padding: '40px 20px', border: '1px dashed var(--border)', borderRadius: '20px', opacity: 0.6 }}>
-                      <i className="fas fa-calendar-day" style={{ fontSize: '2rem', marginBottom: '12px', color: 'var(--text3)' }}></i>
-                      <p style={{ fontSize: '0.85rem', fontWeight: 600 }}>Bu gün için henüz bir planlama yapılmamış.</p>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text3)' }}>Yukarıdaki butondan ilk hedefini ekleyebilirsin.</p>
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
           </div>
