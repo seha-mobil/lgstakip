@@ -977,7 +977,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
       {/* Modals outside with absolute viewport-fixed positioning */}
       {isAddGoalModalOpen && (
         <div className="modal-overlay open" onClick={() => setAddGoalModalOpen(false)}>
-          <div className="glass-card" style={{ padding: '24px', maxWidth: '440px', width: '100%' }} onClick={e => e.stopPropagation()}>
+          <div className="glass-card modal-content" style={{ padding: '24px', maxWidth: '440px', width: '100%' }} onClick={e => e.stopPropagation()}>
             <div style={{ marginBottom: '24px' }}><h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Yeni Hedef Planla</h3><p style={{ fontSize: '0.8rem', color: 'var(--text3)' }}>{agendaDays.find(d => d.dateKey === goalDateKey)?.label} için hedef ekliyorsun</p></div>
             <div style={{ display: 'flex', gap: '4px', background: 'var(--card-bg)', padding: '4px', borderRadius: '12px', marginBottom: '20px', border: '1px solid var(--border)' }}>
                 {[{ id: 'solve', label: 'Soru', icon: 'fa-check' }, { id: 'study', label: 'Çalışma', icon: 'fa-stopwatch' }, { id: 'custom', label: 'Özel', icon: 'fa-pen' }].map(t => (<button key={t.id} onClick={() => setGoalType(t.id as any)} style={{ flex: 1, padding: '8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 800, background: goalType === t.id ? 'var(--accent)' : 'transparent', color: goalType === t.id ? 'white' : 'var(--text3)', border: 'none', cursor: 'pointer' }}><i className={`fas ${t.icon}`}></i> {t.label}</button>))}
@@ -1039,9 +1039,47 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
         </div>
       )}
 
+      {isDayDetailModalOpen && (
+        <div className="modal-overlay open" onClick={() => setDayDetailModalOpen(false)}>
+          <div className="glass-card modal-content" style={{ padding: '24px', maxWidth: '500px', width: '100%' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                <div>
+                   <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Günlük Plan Özeti</h3>
+                   <p style={{ fontSize: '0.85rem', color: 'var(--text3)', fontWeight: 600 }}>{new Date(selectedCalendarDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })}</p>
+                </div>
+                <button onClick={() => setDayDetailModalOpen(false)} style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text)', cursor: 'pointer' }} className="hover-bg-btn"><i className="fas fa-times"></i></button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px', maxHeight: '400px', overflowY: 'auto', paddingRight: '4px' }}>
+                {(state.agenda[selectedCalendarDate] || []).length > 0 ? (state.agenda[selectedCalendarDate] || []).map((goal: any) => (
+                    <div key={goal.id} className="hover-bg" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', borderRadius: '18px', background: 'var(--card-bg)', border: '1px solid var(--border)' }}>
+                        <div onClick={() => toggleAgendaGoal(selectedCalendarDate, goal.id)} style={{ width: '24px', height: '24px', borderRadius: '8px', border: '2px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: goal.done ? 'var(--accent)' : 'transparent', borderColor: goal.done ? 'var(--accent)' : 'var(--border)' }}>
+                            {goal.done && <i className="fas fa-check" style={{ fontSize: '10px', color: 'white' }}></i>}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <p style={{ fontSize: '0.95rem', fontWeight: 700, color: goal.done ? 'var(--text3)' : 'var(--text)', textDecoration: goal.done ? 'line-through' : 'none' }}>{goal.text}</p>
+                            {goal.time && <p style={{ fontSize: '0.7rem', color: 'var(--text3)', fontWeight: 600 }}><i className="fas fa-clock"></i> {goal.time}</p>}
+                        </div>
+                        <button onClick={() => removeGoal(selectedCalendarDate, goal.id)} style={{ padding: '8px', color: 'var(--text3)', fontSize: '0.9rem', opacity: 0.5 }} className="hover-bg-btn"><i className="fas fa-trash-can"></i></button>
+                    </div>
+                )) : <div style={{ textAlign: 'center', padding: '40px', opacity: 0.5 }}><i className="fas fa-calendar-day" style={{ fontSize: '2.5rem', marginBottom: '16px' }}></i><p style={{ fontWeight: 600 }}>Henüz bir planlama yok.</p></div>}
+            </div>
+
+            <button 
+                onClick={() => { setDayDetailModalOpen(false); setGoalDateKey(selectedCalendarDate); initDateTime(); setAddGoalModalOpen(true); }}
+                className="btn btn-primary" 
+                style={{ width: '100%', justifyContent: 'center', marginBottom: '8px' }}
+            >
+                <i className="fas fa-plus"></i> Yeni Hedef Ekle
+            </button>
+            <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setDayDetailModalOpen(false)}>Kapat</button>
+          </div>
+        </div>
+      )}
+
       {isSolveModalOpen && (
         <div className="modal-overlay open" onClick={() => setSolveModalOpen(false)}>
-          <div className="glass-card" style={{ padding: '24px', maxWidth: '400px', width: '100%' }} onClick={e => e.stopPropagation()}>
+          <div className="glass-card modal-content" style={{ padding: '24px', maxWidth: '440px', width: '100%' }} onClick={e => e.stopPropagation()}>
             <h3 style={{ marginBottom: '4px', fontWeight: 800 }}>{currentAction?.subjectName}</h3>
             <p style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '2px' }}>{currentAction?.unitName}</p>
             <p style={{ fontSize: '0.85rem', color: 'var(--text3)', marginBottom: '20px' }}>{currentAction?.topicName}</p>
@@ -1067,7 +1105,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
 
       {isStudyModalOpen && (
         <div className="modal-overlay open" onClick={() => setStudyModalOpen(false)}>
-          <div className="glass-card" style={{ padding: '24px', maxWidth: '400px', width: '100%' }} onClick={e => e.stopPropagation()}>
+          <div className="glass-card modal-content" style={{ padding: '24px', maxWidth: '440px', width: '100%' }} onClick={e => e.stopPropagation()}>
             <h3 style={{ marginBottom: '4px', fontWeight: 800 }}>Konu Çalışma</h3>
             <p style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '2px' }}>{currentAction?.subjectName} - {currentAction?.unitName}</p>
             <p style={{ fontSize: '0.85rem', color: 'var(--text3)', marginBottom: '20px' }}>{currentAction?.topicName}</p>
