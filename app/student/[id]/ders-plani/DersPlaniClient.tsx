@@ -132,6 +132,21 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const [currentAction, setCurrentAction] = useState<any>(null);
   const [solveData, setSolveData] = useState({ correct: 0, wrong: 0 });
   const [selectedDateTime, setSelectedDateTime] = useState("");
+
+  const initDateTime = () => {
+    const now = new Date();
+    // Format YYYY-MM-DDTHH:mm for datetime-local input
+    const localISO = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+    setSelectedDateTime(localISO);
+  };
+
+  const changeDateTimeDay = (days: number) => {
+    if (!selectedDateTime) return;
+    const current = new Date(selectedDateTime);
+    current.setDate(current.getDate() + days);
+    const localISO = new Date(current.getTime() - (current.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+    setSelectedDateTime(localISO);
+  };
   const [openSubjects, setOpenSubjects] = useState<Record<string, boolean>>({});
   const [openUnits, setOpenUnits] = useState<Record<string, boolean>>({});
 
@@ -649,8 +664,8 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                                                                         <i className="fas fa-pen-to-square" style={{ fontSize: '0.7rem', opacity: 0.5 }}></i>
                                                                     </div>
                                                                     <div style={{ display: 'flex', gap: '4px' }}>
-                                                                        <button className="btn btn-ghost" style={{ padding: '3px 6px', fontSize: '10px' }} onClick={() => { setCurrentAction({ sid: s.id, ui, ti, subjectName: s.name, unitName: unit.name, topicName: topic }); setSolveData({ correct: 0, wrong: 0 }); setSolveModalOpen(true); }}>Soru</button>
-                                                                        <button className="btn btn-ghost" style={{ padding: '3px 6px', fontSize: '10px' }} onClick={() => { setCurrentAction({ sid: s.id, ui, ti, subjectName: s.name, unitName: unit.name, topicName: topic }); setStudyModalOpen(true); }}>Çalış</button>
+                                                                        <button className="btn btn-ghost" style={{ padding: '3px 6px', fontSize: '10px' }} onClick={() => { setCurrentAction({ sid: s.id, ui, ti, subjectName: s.name, unitName: unit.name, topicName: topic }); setSolveData({ correct: 0, wrong: 0 }); initDateTime(); setSolveModalOpen(true); }}>Soru</button>
+                                                                        <button className="btn btn-ghost" style={{ padding: '3px 6px', fontSize: '10px' }} onClick={() => { setCurrentAction({ sid: s.id, ui, ti, subjectName: s.name, unitName: unit.name, topicName: topic }); initDateTime(); setStudyModalOpen(true); }}>Çalış</button>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -696,7 +711,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
                     {todayGoals.length > 0 ? todayGoals.map((g: any) => (<div key={g.id} className="hover-bg" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', borderRadius: '12px', background: 'var(--card-bg)', border: '1px solid var(--border)' }}><div onClick={() => toggleAgendaGoal(todayKey, g.id)} style={{ width: '18px', height: '18px', borderRadius: '5px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: g.done ? 'var(--accent)' : 'transparent', borderColor: g.done ? 'var(--accent)' : 'var(--border)' }}>{g.done && <i className="fas fa-check" style={{ fontSize: '8px', color: 'white' }}></i>}</div><span style={{ flex: 1, fontSize: '0.85rem', fontWeight: 600, color: g.done ? 'var(--text3)' : 'var(--text)', textDecoration: g.done ? 'line-through' : 'none' }}>{g.text}</span></div>)) : <p style={{ fontSize: '0.8rem', color: 'var(--text3)', textAlign: 'center', padding: '20px' }}>Henüz bir hedef planlanmamış.</p>}
                   </div>
-                  <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center', fontSize: '0.8rem' }} onClick={() => { setGoalDateKey(todayKey); setAddGoalModalOpen(true); }}>+ Yeni Hedef Ekle</button>
+                  <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center', fontSize: '0.8rem' }} onClick={() => { setGoalDateKey(todayKey); initDateTime(); setAddGoalModalOpen(true); }}>+ Yeni Hedef Ekle</button>
                 </div>
               </div>
             </div>
@@ -725,7 +740,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {(state.agenda[day.dateKey] || []).map((goal: any) => (<div key={goal.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border)' }}><div onClick={() => toggleAgendaGoal(day.dateKey, goal.id)} style={{ width: '16px', height: '16px', borderRadius: '4px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: goal.done ? 'var(--accent)' : 'transparent', borderColor: goal.done ? 'var(--accent)' : 'var(--border)' }}>{goal.done && <i className="fas fa-check" style={{ fontSize: '8px', color: 'white' }}></i>}</div><span style={{ flex: 1, fontSize: '0.85rem', fontWeight: 600, color: goal.done ? 'var(--text3)' : 'var(--text)', textDecoration: goal.done ? 'line-through' : 'none' }}>{goal.text}</span><button onClick={() => removeGoal(day.dateKey, goal.id)} style={{ color: 'var(--text3)', fontSize: '0.8rem', opacity: 0.5 }} className="hover-bg-btn"><i className="fas fa-times"></i></button></div>))}
-                        <button onClick={() => { setGoalDateKey(day.dateKey); setAddGoalModalOpen(true); }} style={{ padding: '8px', borderRadius: '10px', border: '1px dashed var(--border)', fontSize: '0.8rem', color: 'var(--text3)', fontWeight: 700, textAlign: 'left', cursor: 'pointer' }} className="hover-bg">+ Hedef Ekle</button>
+                        <button onClick={() => { setGoalDateKey(day.dateKey); initDateTime(); setAddGoalModalOpen(true); }} style={{ padding: '8px', borderRadius: '10px', border: '1px dashed var(--border)', fontSize: '0.8rem', color: 'var(--text3)', fontWeight: 700, textAlign: 'left', cursor: 'pointer' }} className="hover-bg">+ Hedef Ekle</button>
                       </div>
                     </div>
                   </div>
@@ -783,8 +798,12 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                 </div>
             ) : (<div><label className="input-label">Özel Hedef Notu</label><textarea className="input" style={{ minHeight: '80px', resize: 'none' }} placeholder="Örn: Bugün genel deneme çözülecek..." value={goalCustomText} onChange={(e) => setGoalCustomText(e.target.value)}></textarea></div>)}
             <div style={{ marginTop: '16px' }}>
-                <label className="input-label">Hedef Zamanı (Opsiyonel)</label>
-                <input type="datetime-local" className="input" value={selectedDateTime} onChange={(e) => setSelectedDateTime(e.target.value)} />
+                <label className="input-label">Hedef Zamanı</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button className="btn btn-ghost" style={{ padding: '10px', width: '40px', height: '40px', justifyContent: 'center' }} onClick={() => changeDateTimeDay(-1)}><i className="fas fa-chevron-left"></i></button>
+                    <input type="datetime-local" className="input" style={{ flex: 1 }} value={selectedDateTime} onChange={(e) => setSelectedDateTime(e.target.value)} />
+                    <button className="btn btn-ghost" style={{ padding: '10px', width: '40px', height: '40px', justifyContent: 'center' }} onClick={() => changeDateTimeDay(1)}><i className="fas fa-chevron-right"></i></button>
+                </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}><button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setAddGoalModalOpen(false)}>Vazgeç</button><button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={addNewGoal}>Hedefi Ekle</button></div>
           </div>
@@ -799,8 +818,12 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
             <p style={{ fontSize: '0.85rem', color: 'var(--text3)', marginBottom: '20px' }}>{currentAction?.topicName}</p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}><div><label className="input-label">Doğru</label><input type="number" className="input" value={solveData.correct} onChange={e => setSolveData({ ...solveData, correct: parseInt(e.target.value) || 0 })} /></div><div><label className="input-label">Yanlış</label><input type="number" className="input" value={solveData.wrong} onChange={e => setSolveData({ ...solveData, wrong: parseInt(e.target.value) || 0 })} /></div></div>
             <div style={{ marginBottom: '24px' }}>
-                <label className="input-label">Çözüm Zamanı (Opsiyonel)</label>
-                <input type="datetime-local" className="input" value={selectedDateTime} onChange={(e) => setSelectedDateTime(e.target.value)} />
+                <label className="input-label">Çözüm Zamanı</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button className="btn btn-ghost" style={{ padding: '10px', width: '40px', height: '40px', justifyContent: 'center' }} onClick={() => changeDateTimeDay(-1)}><i className="fas fa-chevron-left"></i></button>
+                    <input type="datetime-local" className="input" style={{ flex: 1 }} value={selectedDateTime} onChange={(e) => setSelectedDateTime(e.target.value)} />
+                    <button className="btn btn-ghost" style={{ padding: '10px', width: '40px', height: '40px', justifyContent: 'center' }} onClick={() => changeDateTimeDay(1)}><i className="fas fa-chevron-right"></i></button>
+                </div>
             </div>
             <div style={{ display: 'flex', gap: '12px' }}><button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setSolveModalOpen(false)}>İptal</button><button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={saveSolve}>Kaydet</button></div>
           </div>
@@ -816,7 +839,14 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
             <div style={{ background: 'var(--accent-dim)', padding: '20px', borderRadius: '16px', textAlign: 'center', marginBottom: '16px' }}><div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--accent)', marginBottom: '10px' }}>{formatTime(timerSeconds)}</div><button className={`btn ${isTimerRunning ? 'btn-ghost' : 'btn-primary'}`} style={{ width: '100%', justifyContent: 'center' }} onClick={() => setIsTimerRunning(!isTimerRunning)}>{isTimerRunning ? 'Duraklat' : 'Başlat'}</button></div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div><label className="input-label">Dakika</label><input type="number" className="input" value={studyMinutes} onChange={e => setStudyMinutes(parseInt(e.target.value) || 0)} placeholder="Dakika..." /></div>
-                <div><label className="input-label">Çalışma Zamanı</label><input type="datetime-local" className="input" value={selectedDateTime} onChange={(e) => setSelectedDateTime(e.target.value)} /></div>
+                <div style={{ flex: 2 }}>
+                    <label className="input-label">Çalışma Zamanı</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <button className="btn btn-ghost" style={{ padding: '8px', width: '32px', height: '32px', justifyContent: 'center' }} onClick={() => changeDateTimeDay(-1)}><i className="fas fa-chevron-left"></i></button>
+                        <input type="datetime-local" className="input" style={{ flex: 1, fontSize: '0.75rem', padding: '8px' }} value={selectedDateTime} onChange={(e) => setSelectedDateTime(e.target.value)} />
+                        <button className="btn btn-ghost" style={{ padding: '8px', width: '32px', height: '32px', justifyContent: 'center' }} onClick={() => changeDateTimeDay(1)}><i className="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}><button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { setIsTimerRunning(false); setSelectedDateTime(""); setStudyModalOpen(false); }}>İptal</button><button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { addHistory('study', { subject: currentAction.subjectName, unit: currentAction.unitName, topic: currentAction.topicName, duration: studyMinutes }, selectedDateTime ? new Date(selectedDateTime).toISOString() : undefined); setStudyMinutes(0); setTimerSeconds(0); setIsTimerRunning(false); setSelectedDateTime(""); setStudyModalOpen(false); }}>Kaydet</button></div>
           </div>
