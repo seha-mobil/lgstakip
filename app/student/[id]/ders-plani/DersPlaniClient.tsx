@@ -422,14 +422,29 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
     
     // 2. Remove matching records from history to clear charts
     newState.history = newState.history.filter((h: any) => {
-        const isMatch = h.subject === subjectName && (h.topic === topicName || h.unit === editUnitData.unitName);
+        const hSub = (h.subject || "").trim().toLowerCase();
+        const targetSub = (subjectName || "").trim().toLowerCase();
         
-        // 3. If it's a solve, subtract from weekly stats
+        // Subject mismatch
+        if (hSub !== targetSub) return true;
+
+        // If it's legacy data (missing unit/topic), the user approved clearing it
+        if (!h.unit || !h.topic) return false;
+
+        // Check if it matches the current topic/unit being reset
+        const hTopic = (h.topic || "").trim().toLowerCase();
+        const targetTopic = (topicName || "").trim().toLowerCase();
+        const hUnit = (h.unit || "").trim().toLowerCase();
+        const targetUnit = (editUnitData.unitName || "").trim().toLowerCase();
+        
+        const isMatch = hTopic === targetTopic || hUnit === targetUnit;
+        
+        // 3. If it's a solve and it matches, subtract from weekly stats
         if (isMatch && h.type === 'solve') {
             const logDate = new Date(h.date);
             const dayIdx = [6, 0, 1, 2, 3, 4, 5][logDate.getDay()];
-            newState.weekly.correct[dayIdx] = Math.max(0, newState.weekly.correct[dayIdx] - (h.correct || 0));
-            newState.weekly.wrong[dayIdx] = Math.max(0, newState.weekly.wrong[dayIdx] - (h.wrong || 0));
+            newState.weekly.correct[dayIdx] = Math.max(0, (newState.weekly.correct[dayIdx] || 0) - (h.correct || 0));
+            newState.weekly.wrong[dayIdx] = Math.max(0, (newState.weekly.wrong[dayIdx] || 0) - (h.wrong || 0));
         }
         return !isMatch;
     });
@@ -451,7 +466,9 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
         newState.weekly.correct[dayIdx] = Math.max(0, (newState.weekly.correct[dayIdx] || 0) - (item.correct || 0));
         newState.weekly.wrong[dayIdx] = Math.max(0, (newState.weekly.wrong[dayIdx] || 0) - (item.wrong || 0));
 
-        const branch = SUBJECT_DATA.find(s => s.name === item.subject);
+        // 2. Roll back unit totals
+        // We need to find the branch id. Use case-insensitive match for robustness.
+        const branch = SUBJECT_DATA.find(s => s.name.trim().toLowerCase() === item.subject.trim().toLowerCase());
         if (branch) {
             let ui = -1, ti = -1;
             branch.units.forEach((u, uIdx) => {
