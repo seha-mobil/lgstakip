@@ -435,9 +435,57 @@ body {
 
 @keyframes fadeIn {
     from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
+
+/* Ticker Animation & Styling */
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
-.modal-content {
-    animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.ticker-container {
+  width: 100%;
+  overflow: hidden;
+  background: rgba(13, 18, 32, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 0;
+  margin-bottom: 24px;
+  position: relative;
+  white-space: nowrap;
+}
+
+.ticker-wrapper {
+  display: inline-flex;
+  gap: 40px;
+  padding-left: 100%;
+  animation: ticker-scroll 30s linear infinite;
+  will-change: transform;
+}
+
+.ticker-container:hover .ticker-wrapper {
+  animation-play-state: paused;
+}
+
+.ticker-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+}
+
+.ticker-item b {
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 15px;
+}
+
+.ticker-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text3);
+  opacity: 0.5;
 }

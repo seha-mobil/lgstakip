@@ -56,11 +56,26 @@ export default async function Dashboard() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-        <StatCard icon="fa-users" label="Öğrenci Sayısı" val={students.length} color="var(--blue)" delay={0} />
-        <StatCard icon="fa-file-alt" label="Toplam Deneme" val={totalExams} color="var(--purple)" delay={1} />
-        <StatCard icon="fa-chart-line" label="Ortalama Puan" val={avgScore} color="var(--accent)" delay={2} />
-        <StatCard icon="fa-trophy" label="En Yüksek Puan" val={bestScore} color="var(--green)" delay={3} />
+      <div className="ticker-container">
+        <div className="ticker-wrapper">
+          <div className="ticker-item"><i className="fas fa-users"></i> Öğrenci Sayısı <b>{students.length}</b></div>
+          <div className="ticker-dot"></div>
+          <div className="ticker-item"><i className="fas fa-file-alt"></i> Toplam Deneme <b>{totalExams}</b></div>
+          <div className="ticker-dot"></div>
+          <div className="ticker-item"><i className="fas fa-chart-line"></i> Ortalama Puan <b>{avgScore}</b></div>
+          <div className="ticker-dot"></div>
+          <div className="ticker-item"><i className="fas fa-trophy"></i> En Yüksek Puan <b>{bestScore}</b></div>
+          <div className="ticker-dot"></div>
+          {/* Seamless loop duplication */}
+          <div className="ticker-item"><i className="fas fa-users"></i> Öğrenci Sayısı <b>{students.length}</b></div>
+          <div className="ticker-dot"></div>
+          <div className="ticker-item"><i className="fas fa-file-alt"></i> Toplam Deneme <b>{totalExams}</b></div>
+          <div className="ticker-dot"></div>
+          <div className="ticker-item"><i className="fas fa-chart-line"></i> Ortalama Puan <b>{avgScore}</b></div>
+          <div className="ticker-dot"></div>
+          <div className="ticker-item"><i className="fas fa-trophy"></i> En Yüksek Puan <b>{bestScore}</b></div>
+          <div className="ticker-dot"></div>
+        </div>
       </div>
 
       {!students.length ? (
@@ -121,14 +136,3 @@ export default async function Dashboard() {
   );
 }
 
-function StatCard({ icon, label, val, color, delay }: { icon: string, label: string, val: any, color: string, delay: number }) {
-  return (
-    <div className="glass-card animate-fade-up" style={{ padding: '20px', animationDelay: (delay * 0.07) + "s" }}>
-      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: "color-mix(in srgb, " + color + " 15%, transparent)", color: color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', marginBottom: '12px' }}>
-        <i className={"fas " + icon}></i>
-      </div>
-      <div style={{ fontSize: '24px', fontWeight: 800, letterSpacing: '-0.5px' }}>{val}</div>
-      <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text3)', marginTop: '4px' }}>{label}</div>
-    </div>
-  );
-}
