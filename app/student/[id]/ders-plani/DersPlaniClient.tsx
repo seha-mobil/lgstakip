@@ -133,6 +133,16 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const [goalCustomText, setGoalCustomText] = useState("");
   const [isAnalysisEditMode, setIsAnalysisEditMode] = useState(false);
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState(new Date());
+    
+  // Safer date key formatter (Local YYYY-MM-DD instead of UTC to fix shifting)
+  const formatDateKey = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const todayKey = formatDateKey(new Date());
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(todayKey);
   const [isDayDetailModalOpen, setDayDetailModalOpen] = useState(false);
 
@@ -808,7 +818,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}><i className="fas fa-calendar-alt"></i></div>
                     <div>
-                      <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Çalışma Takvimi</h3>
+                      <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Haftalık Çalışma Takvimi</h3>
                       <p style={{ fontSize: '0.8rem', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                         {currentCalendarMonth.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}
                       </p>
@@ -846,10 +856,10 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                     timelineStart.setDate(timelineStart.getDate() - dayIdx);
                     
                     const cells = [];
-                    for (let i = 0; i < 8; i++) {
+                    for (let i = 0; i < 7; i++) {
                         const date = new Date(timelineStart);
                         date.setDate(timelineStart.getDate() + i);
-                        const dateKey = date.toISOString().split('T')[0];
+                        const dateKey = formatDateKey(date);
                         cells.push({ day: date.getDate(), dateKey, dateObj: date });
                     }
 
@@ -929,8 +939,20 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
               <div style={{ display: 'flex', gap: '24px' }}>
                 <div className="glass-card" style={{ padding: '20px', width: '300px', flexShrink: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text2)' }}>AYLIK ÖZET</h4>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--text3)' }}>{currentCalendarMonth.toLocaleDateString('tr-TR', { month: 'long' })}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <button onClick={() => {
+                              const target = new Date(currentCalendarMonth);
+                              target.setMonth(target.getMonth() - 1);
+                              setCurrentCalendarMonth(target);
+                          }} className="hover-bg-btn" style={{ background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', padding: '4px' }}><i className="fas fa-chevron-left" style={{ fontSize: '0.7rem' }}></i></button>
+                          <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text2)' }}>AYLIK ÖZET</h4>
+                          <button onClick={() => {
+                              const target = new Date(currentCalendarMonth);
+                              target.setMonth(target.getMonth() + 1);
+                              setCurrentCalendarMonth(target);
+                          }} className="hover-bg-btn" style={{ background: 'transparent', border: 'none', color: 'var(--text3)', cursor: 'pointer', padding: '4px' }}><i className="fas fa-chevron-right" style={{ fontSize: '0.7rem' }}></i></button>
+                        </div>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text3)', fontWeight: 800 }}>{currentCalendarMonth.toLocaleDateString('tr-TR', { month: 'long' })}</span>
                     </div>
                     
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
@@ -944,14 +966,23 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                         
                         const miniCells = [];
                         const prevEnd = new Date(year, month, 0).getDate();
-                        for (let i = startIdx; i > 0; i--) miniCells.push({ d: prevEnd - i + 1, k: new Date(year, month-1, prevEnd-i+1).toISOString().split('T')[0], cur: false });
-                        for (let i = 1; i <= lastDay.getDate(); i++) miniCells.push({ d: i, k: new Date(year, month, i).toISOString().split('T')[0], cur: true });
+                        for (let i = startIdx; i > 0; i--) {
+                          const d = new Date(year, month - 1, prevEnd - i + 1);
+                          miniCells.push({ d: d.getDate(), k: formatDateKey(d), cur: false });
+                        }
+                        for (let i = 1; i <= lastDay.getDate(); i++) {
+                          const d = new Date(year, month, i);
+                          miniCells.push({ d: i, k: formatDateKey(d), cur: true });
+                        }
                         
                         return miniCells.map((c, i) => {
                             const hasGoals = (state.agenda[c.k] || []).length > 0;
                             const isSel = selectedCalendarDate === c.k;
                             return (
-                                <div key={i} onClick={() => { setSelectedCalendarDate(c.k); setCurrentCalendarMonth(new Date(c.k)); }} style={{ 
+                                <div key={i} 
+                                  onClick={() => { setSelectedCalendarDate(c.k); setCurrentCalendarMonth(new Date(c.k)); }} 
+                                  onDoubleClick={() => { setSelectedCalendarDate(c.k); setDayDetailModalOpen(true); }}
+                                  style={{ 
                                     aspectRatio: '1', 
                                     fontSize: '0.65rem', 
                                     display: 'flex', 
@@ -961,7 +992,8 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                                     cursor: 'pointer',
                                     background: isSel ? 'var(--accent)' : (c.cur ? 'rgba(255,255,255,0.03)' : 'transparent'),
                                     color: isSel ? 'black' : (c.cur ? 'var(--text)' : 'var(--text3)'),
-                                    position: 'relative'
+                                    position: 'relative',
+                                    transition: 'all 0.2s ease'
                                 }} className="hover-bg">
                                     {c.d}
                                     {hasGoals && !isSel && <div style={{ position: 'absolute', bottom: '2px', width: '3px', height: '3px', borderRadius: '50%', background: 'var(--accent)' }}></div>}
