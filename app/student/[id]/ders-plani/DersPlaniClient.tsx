@@ -695,23 +695,22 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                                                                     {isDusty && (
                                                                         <span title="Tozlanmış: 15+ gündür çalışılmadı!" style={{ color: '#f59e0b', fontSize: '0.7rem' }}>
                                                                             <i className="fas fa-wind animate-pulse"></i>
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <div 
-                                                                      onClick={() => { setEditUnitData({ correct: ud.correct, wrong: ud.wrong, sid: s.id, ui, ti, topicName: topic, unitName: unit.name, subjectName: s.name }); setEditModalOpen(true); }}
-                                                                      style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '2px 8px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}
-                                                                      className="hover-bg"
-                                                                    >
+                                                                                                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '2px 8px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', userSelect: 'none' }}>
                                                                         <span style={{ color: '#3dd68c', fontWeight: 700 }}>{ud.correct}D</span>
                                                                         <span style={{ color: '#f43f5e', fontWeight: 700 }}>{ud.wrong}Y</span>
-                                                                        <i className="fas fa-pen-to-square" style={{ fontSize: '0.7rem', opacity: 0.5 }}></i>
                                                                     </div>
-                                                                    <div style={{ display: 'flex', gap: '4px' }}>
+                                                                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                                                                         <button className="btn btn-ghost" style={{ padding: '3px 6px', fontSize: '10px' }} onClick={() => { setCurrentAction({ sid: s.id, ui, ti, subjectName: s.name, unitName: unit.name, topicName: topic }); setSolveData({ correct: 0, wrong: 0 }); initDateTime(); setSolveModalOpen(true); }}>Soru</button>
                                                                         <button className="btn btn-ghost" style={{ padding: '3px 6px', fontSize: '10px' }} onClick={() => { setCurrentAction({ sid: s.id, ui, ti, subjectName: s.name, unitName: unit.name, topicName: topic }); initDateTime(); setStudyModalOpen(true); }}>Çalış</button>
-                                                                    </div>
+                                                                        <button 
+                                                                            onClick={() => { setEditUnitData({ correct: ud.correct, wrong: ud.wrong, sid: s.id, ui, ti, topicName: topic, unitName: unit.name, subjectName: s.name }); setEditModalOpen(true); }}
+                                                                            style={{ padding: '4px 8px', borderRadius: '8px', color: 'var(--text3)', fontSize: '0.8rem', background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.5 }}
+                                                                            className="hover-bg-btn"
+                                                                            title="İstatistikleri Düzenle"
+                                                                        >
+                                                                            <i className="fas fa-pen"></i>
+                                                                        </button>
                                                                 </div>
                                                             </div>
                                                         );
