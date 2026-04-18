@@ -929,8 +929,6 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                   })()}
                 </div>
               </div>
-
-              </div>
             </div>
           </div>
         )}
