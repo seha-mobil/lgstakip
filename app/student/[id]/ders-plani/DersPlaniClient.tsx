@@ -151,8 +151,17 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const updateTime = (h: string, m: string) => {
     if (!selectedDateTime) return;
     const [datePart] = selectedDateTime.split('T');
-    const hour = h.padStart(2, '0');
-    const min = m.padStart(2, '0');
+    
+    // Parse as integers to handle typing naturally, then pad for ISO format
+    let hNum = parseInt(h);
+    let mNum = parseInt(m);
+    
+    // Handle empty input or NaN while typing
+    if (isNaN(hNum)) hNum = 0;
+    if (isNaN(mNum)) mNum = 0;
+
+    const hour = Math.min(23, Math.max(0, hNum)).toString().padStart(2, '0');
+    const min = Math.min(59, Math.max(0, mNum)).toString().padStart(2, '0');
     setSelectedDateTime(`${datePart}T${hour}:${min}`);
   };
 
@@ -160,7 +169,11 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
     if (!selectedDateTime) return { h: "12", m: "00" };
     const [, timePart] = selectedDateTime.split('T');
     const [h, m] = timePart.split(':');
-    return { h: h || "12", m: m || "00" };
+    // Return numeric strings without leading zeros for natural typing
+    return { 
+        h: parseInt(h || "0").toString(), 
+        m: parseInt(m || "0").toString() 
+    };
   };
   const [openSubjects, setOpenSubjects] = useState<Record<string, boolean>>({});
   const [openUnits, setOpenUnits] = useState<Record<string, boolean>>({});
