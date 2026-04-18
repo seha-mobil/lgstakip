@@ -56,27 +56,6 @@ export default async function Dashboard() {
         </div>
       </div>
 
-      <div className="ticker-container">
-        <div className="ticker-wrapper">
-          <div className="ticker-item"><i className="fas fa-users"></i> Öğrenci Sayısı <b>{students.length}</b></div>
-          <div className="ticker-dot"></div>
-          <div className="ticker-item"><i className="fas fa-file-alt"></i> Toplam Deneme <b>{totalExams}</b></div>
-          <div className="ticker-dot"></div>
-          <div className="ticker-item"><i className="fas fa-chart-line"></i> Ortalama Puan <b>{avgScore}</b></div>
-          <div className="ticker-dot"></div>
-          <div className="ticker-item"><i className="fas fa-trophy"></i> En Yüksek Puan <b>{bestScore}</b></div>
-          <div className="ticker-dot"></div>
-          {/* Seamless loop duplication */}
-          <div className="ticker-item"><i className="fas fa-users"></i> Öğrenci Sayısı <b>{students.length}</b></div>
-          <div className="ticker-dot"></div>
-          <div className="ticker-item"><i className="fas fa-file-alt"></i> Toplam Deneme <b>{totalExams}</b></div>
-          <div className="ticker-dot"></div>
-          <div className="ticker-item"><i className="fas fa-chart-line"></i> Ortalama Puan <b>{avgScore}</b></div>
-          <div className="ticker-dot"></div>
-          <div className="ticker-item"><i className="fas fa-trophy"></i> En Yüksek Puan <b>{bestScore}</b></div>
-          <div className="ticker-dot"></div>
-        </div>
-      </div>
 
       {!students.length ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', textAlign: 'center' }}>
@@ -129,6 +108,28 @@ export default async function Dashboard() {
                 </Link>
               );
             })}
+          </div>
+          
+          <div className="ticker-container" style={{ marginTop: '32px' }}>
+            <div className="ticker-wrapper">
+              <div className="ticker-item"><i className="fas fa-users"></i> Öğrenci Sayısı <b>{students.length}</b></div>
+              <div className="ticker-dot"></div>
+              <div className="ticker-item"><i className="fas fa-file-alt"></i> Toplam Deneme <b>{totalExams}</b></div>
+              <div className="ticker-dot"></div>
+              <div className="ticker-item"><i className="fas fa-chart-line"></i> Ortalama Puan <b>{avgScore}</b></div>
+              <div className="ticker-dot"></div>
+              <div className="ticker-item"><i className="fas fa-trophy"></i> En Yüksek Puan <b>{bestScore}</b></div>
+              <div className="ticker-dot"></div>
+              {/* Seamless loop duplication */}
+              <div className="ticker-item"><i className="fas fa-users"></i> Öğrenci Sayısı <b>{students.length}</b></div>
+              <div className="ticker-dot"></div>
+              <div className="ticker-item"><i className="fas fa-file-alt"></i> Toplam Deneme <b>{totalExams}</b></div>
+              <div className="ticker-dot"></div>
+              <div className="ticker-item"><i className="fas fa-chart-line"></i> Ortalama Puan <b>{avgScore}</b></div>
+              <div className="ticker-dot"></div>
+              <div className="ticker-item"><i className="fas fa-trophy"></i> En Yüksek Puan <b>{bestScore}</b></div>
+              <div className="ticker-dot"></div>
+            </div>
           </div>
         </>
       )}
