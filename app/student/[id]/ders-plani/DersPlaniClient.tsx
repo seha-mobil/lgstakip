@@ -821,13 +821,22 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {SUBJECT_DATA.map(s => {
                       let totalC = 0, totalW = 0;
+                      let subjectTotalTopics = 0;
+                      let subjectCompletionSum = 0;
+
                       s.units.forEach((unit, ui) => {
                           unit.topics.forEach((topic, ti) => {
                               const data = state.units[`${s.id}_u${ui}_t${ti}`] || { correct: 0, wrong: 0 };
                               totalC += data.correct; totalW += data.wrong;
+                              
+                              const topicSolved = data.correct + data.wrong;
+                              const topicComp = Math.min(100, Math.round((topicSolved / 500) * 100));
+                              subjectTotalTopics++;
+                              subjectCompletionSum += topicComp;
                           });
                       });
                       const branchPct = (totalC + totalW) ? Math.round((totalC / (totalC + totalW)) * 100) : 0;
+                      const branchCompPct = subjectTotalTopics ? Math.round(subjectCompletionSum / subjectTotalTopics) : 0;
                       const isBranchOpen = openSubjects[s.id];
 
                       return (
@@ -835,8 +844,14 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                           <div onClick={() => setOpenSubjects(p => ({ ...p, [s.id]: !p[s.id] }))} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', cursor: 'pointer', borderRadius: '12px', background: isBranchOpen ? 'var(--accent-dim)' : 'transparent' }} className="hover-bg">
                             <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: s.color, boxShadow: `0 0 10px ${s.color}60` }}></div>
                             <span style={{ flex: 1, fontSize: '0.9rem', fontWeight: 800 }}>{s.name}</span>
-                            <div style={{ width: '80px', height: '6px', background: 'var(--card-bg)', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--border)' }}><div style={{ height: '100%', width: `${branchPct}%`, background: s.color }}></div></div>
-                            <span style={{ fontSize: '0.75rem', fontWeight: 900, width: '40px', textAlign: 'right', color: branchPct > 0 ? 'var(--text)' : 'var(--text3)' }}>%{branchPct}</span>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '80px', flexShrink: 0 }}>
+                                 <div title="Başarı Oranı" style={{ height: '4px', background: 'var(--card-bg)', borderRadius: '2px', overflow: 'hidden', border: '1px solid var(--border)' }}><div style={{ height: '100%', width: `${branchPct}%`, background: s.color }}></div></div>
+                                 <div title="Tamamlama Oranı" style={{ height: '3px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden', border: '1px solid var(--border)' }}><div style={{ height: '100%', width: `${branchCompPct}%`, background: 'var(--text3)', opacity: 0.6 }}></div></div>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', width: '50px', flexShrink: 0 }}>
+                                 <span style={{ fontSize: '0.7rem', fontWeight: 900, color: branchPct > 0 ? 'var(--text)' : 'var(--text3)', lineHeight: 1 }}>B: %{branchPct}</span>
+                                 <span style={{ fontSize: '0.55rem', fontWeight: 800, color: 'var(--text3)', marginTop: '2px' }}>T: %{branchCompPct}</span>
+                            </div>
                             <i className={`fas fa-chevron-${isBranchOpen ? 'up' : 'down'}`} style={{ fontSize: '0.7rem', opacity: 0.3 }}></i>
                           </div>
 
@@ -844,11 +859,15 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                             <div style={{ padding: '4px 0 12px 12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 {s.units.map((unit, ui) => {
                                     let unitC = 0, unitW = 0;
+                                    let unitCompSum = 0;
                                     unit.topics.forEach((_, ti) => {
                                         const d = state.units[`${s.id}_u${ui}_t${ti}`] || { correct: 0, wrong: 0 };
                                         unitC += d.correct; unitW += d.wrong;
+                                        const topicSolved = d.correct + d.wrong;
+                                        unitCompSum += Math.min(100, Math.round((topicSolved / 500) * 100));
                                     });
                                     const unitPct = (unitC + unitW) ? Math.round((unitC / (unitC + unitW)) * 100) : 0;
+                                    const unitCompPct = Math.round(unitCompSum / unit.topics.length);
                                     const isUnitOpen = openUnits[`${s.id}_${ui}`] !== false; // Active by default
 
                                     return (
@@ -859,7 +878,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                                             >
                                                 <i className={`fas fa-caret-${isUnitOpen ? 'down' : 'right'}`} style={{ color: s.color, fontSize: '0.8rem' }}></i>
                                                 <span style={{ flex: 1, fontSize: '0.75rem', fontWeight: 800, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{unit.name}</span>
-                                                <span style={{ fontSize: '0.65rem', fontWeight: 900, color: s.color, background: `${s.color}15`, padding: '2px 6px', borderRadius: '4px' }}>%{unitPct}</span>
+                                                <span style={{ fontSize: '0.62rem', fontWeight: 900, color: s.color, background: `${s.color}15`, padding: '2px 8px', borderRadius: '4px' }}>B: %{unitPct} | T: %{unitCompPct}</span>
                                             </div>
 
                                             {isUnitOpen && (
@@ -879,7 +898,8 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                                                                     )}
                                                                 </div>
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '2px 8px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', userSelect: 'none' }}>
+                                                                    <div title={`Tamamlama Oranı: %${Math.min(100, Math.round(((ud.correct + ud.wrong) / 500) * 100))}`} style={{ width: "40px", height: "4px", background: "rgba(255,255,255,0.05)", borderRadius: "2px", overflow: "hidden", border: "1px solid var(--border)", flexShrink: 0 }}><div style={{ height: "100%", width: `${Math.min(100, Math.round(((ud.correct + ud.wrong) / 500) * 100))}%`, background: s.color, opacity: 0.6 }}></div></div>
+                                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '2px 8px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', userSelect: 'none' }}>
                                                                         <span style={{ color: '#3dd68c', fontWeight: 700 }}>{ud.correct}D</span>
                                                                         <span style={{ color: '#f43f5e', fontWeight: 700 }}>{ud.wrong}Y</span>
                                                                     </div>
