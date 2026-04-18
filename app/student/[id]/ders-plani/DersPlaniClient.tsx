@@ -587,6 +587,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const totalNet = totalSolved ? (totalCorrect - (totalWrong / 3)).toFixed(2) : "0";
   const globalAcc = totalSolved ? Math.round((totalCorrect / totalSolved) * 100) : 0;
   const todayGoals = state.agenda[todayKey] || [];
+  const weeklyCompletion = Math.round((todayGoals.filter((g: any) => g.done).length / (todayGoals.length || 1)) * 100);
 
   return (
     <>
@@ -981,7 +982,8 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
       {/* Modals outside with absolute viewport-fixed positioning */}
       {isAddGoalModalOpen && (
