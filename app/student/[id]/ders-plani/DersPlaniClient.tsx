@@ -117,6 +117,9 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const [isStudyModalOpen, setStudyModalOpen] = useState(false);
   const [isAddGoalModalOpen, setAddGoalModalOpen] = useState(false);
   const [isSoruStatsModalOpen, setSoruStatsModalOpen] = useState(false);
+  const storageKey = `lgs_premium_v5_${studentId}`;
+  const todayKey = new Date().toISOString().split('T')[0];
+
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [editUnitData, setEditUnitData] = useState({ correct: 0, wrong: 0, sid: '', ui: 0, ti: 0, topicName: '', unitName: '', subjectName: '' });
   
@@ -185,8 +188,6 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
 
-  const storageKey = `lgs_premium_v5_${studentId}`;
-  const todayKey = new Date().toISOString().split('T')[0];
 
   // Load state and perform Data Migration
   useEffect(() => {
