@@ -981,8 +981,8 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                 </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Modals outside with absolute viewport-fixed positioning */}
       {isAddGoalModalOpen && (
