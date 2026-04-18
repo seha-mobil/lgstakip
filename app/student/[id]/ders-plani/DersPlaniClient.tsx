@@ -368,15 +368,66 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   };
 
   const resetUnitStats = () => {
-    if (!window.confirm("Bu ünitenin verilerini sıfırlamak istediğine emin misin?")) return;
+    if (!window.confirm("Bu ünitenin TÜM verilerini ve geçmiş kayıtlarını sıfırlamak istediğine emin misin? Bu işlem grafikleri de temizleyecektir.")) return;
     if (!state) return;
-    const { sid, ui, ti } = editUnitData;
+    const { sid, ui, ti, subjectName, topicName } = editUnitData;
     const key = `${sid}_u${ui}_t${ti}`;
     const newState = { ...state };
+    
+    // 1. Remove from unit totals
     delete newState.units[key];
+    
+    // 2. Remove matching records from history to clear charts
+    newState.history = newState.history.filter((h: any) => {
+        const isMatch = h.subject === subjectName && (h.topic === topicName || h.unit === editUnitData.unitName);
+        
+        // 3. If it's a solve, subtract from weekly stats
+        if (isMatch && h.type === 'solve') {
+            const logDate = new Date(h.date);
+            const dayIdx = [6, 0, 1, 2, 3, 4, 5][logDate.getDay()];
+            newState.weekly.correct[dayIdx] = Math.max(0, newState.weekly.correct[dayIdx] - (h.correct || 0));
+            newState.weekly.wrong[dayIdx] = Math.max(0, newState.weekly.wrong[dayIdx] - (h.wrong || 0));
+        }
+        return !isMatch;
+    });
+
     setState(newState);
     setEditModalOpen(false);
   };
+  const removeHistoryItem = (id: number) => {
+    if (!window.confirm("Bu kaydı silmek istediğine emin misin? Bu işlem bağlı tüm istatistikleri de düzeltecektir.")) return;
+    const newState = { ...state };
+    const itemIdx = newState.history.findIndex((h: any) => h.id === id);
+    if (itemIdx === -1) return;
+
+    const item = newState.history[itemIdx];
+
+    if (item.type === 'solve') {
+        const logDate = new Date(item.date);
+        const dayIdx = [6, 0, 1, 2, 3, 4, 5][logDate.getDay()];
+        newState.weekly.correct[dayIdx] = Math.max(0, (newState.weekly.correct[dayIdx] || 0) - (item.correct || 0));
+        newState.weekly.wrong[dayIdx] = Math.max(0, (newState.weekly.wrong[dayIdx] || 0) - (item.wrong || 0));
+
+        const branch = SUBJECT_DATA.find(s => s.name === item.subject);
+        if (branch) {
+            let ui = -1, ti = -1;
+            branch.units.forEach((u, uIdx) => {
+                const tIdx = u.topics.indexOf(item.topic);
+                if (tIdx !== -1) { ui = uIdx; ti = tIdx; }
+            });
+            if (ui !== -1 && ti !== -1) {
+                const key = `${branch.id}_u${ui}_t${ti}`;
+                if (newState.units[key]) {
+                    newState.units[key].correct = Math.max(0, newState.units[key].correct - (item.correct || 0));
+                    newState.units[key].wrong = Math.max(0, newState.units[key].wrong - (item.wrong || 0));
+                }
+            }
+        }
+    }
+    newState.history.splice(itemIdx, 1);
+    setState(newState);
+  };
+
 
   if (!state) return null;
 
@@ -655,7 +706,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
               <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}><i className="fas fa-history" style={{ color: 'var(--accent)' }}></i> Ders Çalışma Günlüğü</h3>
               <div style={{ position: 'relative', paddingLeft: '30px' }}>
                 <div style={{ position: 'absolute', top: 0, bottom: 0, left: '11px', width: '2px', background: 'var(--border)' }}></div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>{mergedHistory.map((event: any) => { const dateObj = new Date(event.date); const label = `${dateObj.getHours() || '00'}:${dateObj.getMinutes().toString().padStart(2, '0')} - ${dateObj.toLocaleDateString('tr-TR')}`; const isDb = typeof event.id === 'string'; const configMap: any = { solve: { icon: 'fa-check', bg: '#10b981', label: 'Soru Çözümü' }, study: { icon: 'fa-stopwatch', bg: '#6366f1', label: 'Konu Tanımı' }, exam: { icon: 'fa-file-signature', bg: '#f59e0b', label: 'Deneme Girişi' } }; const config = configMap[event.type] || { icon: 'fa-info', bg: 'var(--accent)', label: 'Bilgi' }; return (<div key={event.id} style={{ position: 'relative' }}><div style={{ position: 'absolute', left: '-25px', top: '0', width: '12px', height: '12px', borderRadius: '50%', background: config.bg, border: '3px solid var(--bg)', zIndex: 2 }}></div><div className="hover-bg" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px' }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}><span style={{ fontSize: '0.65rem', fontWeight: 800, color: config.bg, textTransform: 'uppercase' }}>{config.label} {isDb && '(DB)'}</span><span style={{ fontSize: '0.65rem', color: 'var(--text3)', fontWeight: 600 }}>{label}</span></div>{event.type === 'solve' && <div><p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.subject} <span style={{ color: 'var(--text2)', fontWeight: 500 }}>- {event.unit}</span></p><p style={{ fontSize: '0.8rem', fontWeight: 700, marginTop: '4px' }}><span style={{ color: '#3dd68c' }}>{event.correct} Doğru</span> • <span style={{ color: '#f43f5e' }}>{event.wrong} Yanlış</span></p></div>}{event.type === 'study' && <div><p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.subject} <span style={{ color: 'var(--text2)', fontWeight: 500 }}>- {event.unit}</span></p><p style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 700, marginTop: '4px' }}>{event.duration} dakika çalışıldı</p></div>}{event.type === 'exam' && <div><p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.name}</p><p style={{ fontSize: '0.9rem', color: '#f59e0b', fontWeight: 800, marginTop: '4px' }}>{event.net} Net</p></div>}</div></div>); })}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>{mergedHistory.map((event: any) => { const dateObj = new Date(event.date); const label = `${dateObj.getHours() || '00'}:${dateObj.getMinutes().toString().padStart(2, '0')} - ${dateObj.toLocaleDateString('tr-TR')}`; const isDb = typeof event.id === 'string'; const configMap: any = { solve: { icon: 'fa-check', bg: '#10b981', label: 'Soru Çözümü' }, study: { icon: 'fa-stopwatch', bg: '#6366f1', label: 'Konu Tanımı' }, exam: { icon: 'fa-file-signature', bg: '#f59e0b', label: 'Deneme Girişi' } }; const config = configMap[event.type] || { icon: 'fa-info', bg: 'var(--accent)', label: 'Bilgi' }; return (<div key={event.id} style={{ position: 'relative' }}><div style={{ position: 'absolute', left: '-25px', top: '0', width: '12px', height: '12px', borderRadius: '50%', background: config.bg, border: '3px solid var(--bg)', zIndex: 2 }}></div><div className="hover-bg" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px', position: 'relative' }}>{!isDb && event.type !== 'exam' && <button onClick={() => removeHistoryItem(event.id)} style={{ position: 'absolute', top: '12px', right: '12px', color: 'var(--text3)', fontSize: '0.8rem', opacity: 0.5, border: 'none', background: 'transparent', cursor: 'pointer' }} className="hover-bg-btn" title="Kaydı Sil"><i className="fas fa-trash-can"></i></button>}<div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}><span style={{ fontSize: '0.65rem', fontWeight: 800, color: config.bg, textTransform: 'uppercase' }}>{config.label} {isDb && '(DB)'}</span><span style={{ fontSize: '0.65rem', color: 'var(--text3)', fontWeight: 600 }}>{label}</span></div>{event.type === 'solve' && <div><p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.subject} <span style={{ color: 'var(--text2)', fontWeight: 500 }}>- {event.unit}</span></p><p style={{ fontSize: '0.85rem', color: 'var(--text3)', marginBottom: '4px' }}>{event.topic}</p><p style={{ fontSize: '0.8rem', fontWeight: 700, marginTop: '4px' }}><span style={{ color: '#3dd68c' }}>{event.correct} Doğru</span> • <span style={{ color: '#f43f5e' }}>{event.wrong} Yanlış</span></p></div>}{event.type === 'study' && <div><p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.subject} <span style={{ color: 'var(--text2)', fontWeight: 500 }}>- {event.unit}</span></p><p style={{ fontSize: '0.85rem', color: 'var(--text3)', marginBottom: '4px' }}>{event.topic}</p><p style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 700, marginTop: '4px' }}>{event.duration} dakika çalışıldı</p></div>}{event.type === 'exam' && <div><p style={{ fontSize: '0.9rem', fontWeight: 700 }}>{event.name}</p><p style={{ fontSize: '0.9rem', color: '#f59e0b', fontWeight: 800, marginTop: '4px' }}>{event.net} Net</p></div>}</div></div>); })}</div>
               </div>
             </div>
           </div>
