@@ -1242,6 +1242,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
+    </div>
     </>
   );
 }
