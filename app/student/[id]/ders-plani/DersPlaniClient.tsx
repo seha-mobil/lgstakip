@@ -325,6 +325,25 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
         };
     });
 
+    // Add Total Line
+    const totalDataArr = days.map((_, dayIdx) => {
+        return datasets.reduce((sum, ds) => sum + ds.data[dayIdx], 0);
+    });
+
+    datasets.unshift({
+        label: 'TOPLAM',
+        data: totalDataArr,
+        borderColor: '#ffffff',
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        fill: true,
+        tension: 0.4,
+        cubicInterpolationMode: 'monotone' as const,
+        pointRadius: 3,
+        pointHoverRadius: 6,
+        borderWidth: 3,
+        borderDash: [5, 5]
+    });
+
     return {
         labels: days.map(d => new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })),
         datasets
@@ -751,13 +770,13 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                 )}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
                 {SUBJECT_DATA.map(sub => {
                     const total = state.history.filter((h: any) => h.type === 'solve' && h.subject === sub.name).reduce((sum: number, s: any) => sum + (s.correct + s.wrong), 0);
                     return (
-                        <div key={sub.id} className="glass-card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', borderLeft: `4px solid ${sub.color}` }}>
-                            <p style={{ fontSize: '0.7rem', color: 'var(--text3)', fontWeight: 800, textTransform: 'uppercase' }}>{sub.name}</p>
-                            <p style={{ fontSize: '1.2rem', fontWeight: 900 }}>{total} <span style={{ fontSize: '0.7rem', color: 'var(--text3)' }}>Soru</span></p>
+                        <div key={sub.id} className="glass-card" style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: `3px solid ${sub.color}`, minHeight: '40px' }}>
+                            <p style={{ fontSize: '0.65rem', color: 'var(--text2)', fontWeight: 800, textTransform: 'uppercase', marginBottom: 0 }}>{sub.name}</p>
+                            <p style={{ fontSize: '0.9rem', fontWeight: 900, marginBottom: 0 }}>{total} <span style={{ fontSize: '0.6rem', color: 'var(--text3)', fontWeight: 600 }}>Soru</span></p>
                         </div>
                     );
                 })}
