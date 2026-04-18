@@ -747,35 +747,43 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   return (
     <>
       <div className="page animate-fade-up">
-        {/* Header */}
-        <div className="flex-mobile-col" style={{ alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '20px' }}>
+        {/* Header with Integrated Tabs */}
+        <div className="flex-mobile-col" style={{ alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <Link href={`/student/${studentId}`} className="btn btn-ghost" style={{ width: '36px', height: '36px', padding: 0, justifyContent: 'center' }}><i className="fas fa-arrow-left"></i></Link>
-            <div><h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Ders Planı: {studentName}</h1><p style={{ fontSize: '0.85rem', color: 'var(--text3)', fontWeight: 500 }}>Premium Gelişim Paneli</p></div>
+            <div>
+              <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Ders Planı: {studentName}</h1>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text3)', fontWeight: 500 }}>Premium Gelişim Paneli</p>
+            </div>
           </div>
-          <div style={{ background: 'var(--accent-dim)', border: '1px solid var(--accent-glow)', padding: '6px 14px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent)' }}><i className="fas fa-clock"></i> {countdown.days} GÜN ({countdown.weeks} Hafta)</div>
-        </div>
-
-        {/* Tabs - Premium Segmented Control */}
-        <div style={{ position: 'relative', display: 'flex', gap: '4px', marginBottom: '32px', background: 'rgba(13, 18, 32, 0.98)', padding: '6px', borderRadius: '18px', border: '1px solid var(--border)', width: 'fit-content', boxShadow: '0 8px 24px -8px rgba(0, 0, 0, 0.5)', marginLeft: 'auto', marginRight: 'auto', isolation: 'isolate', contain: 'content' }}>
-          <div style={{ 
-            position: 'absolute', 
-            top: '6px', 
-            bottom: '6px', 
-            left: '6px', 
-            width: 'calc(50% - 8px)', 
-            background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)', 
-            borderRadius: '14px', 
-            transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
-            transform: activeTab === 'analiz' ? 'translateX(0)' : 'translateX(calc(100% + 4px))',
-            boxShadow: '0 2px 10px rgba(232, 184, 75, 0.3)', 
-            zIndex: 0 
-          }} />
-          {[{ id: 'analiz', label: 'Analiz & Durum', icon: 'fa-chart-pie' }, { id: 'planlama', label: 'Ajanda & Planlama', icon: 'fa-calendar-alt' }].map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} style={{ position: 'relative', zIndex: 1, padding: '12px 24px', borderRadius: '14px', fontSize: '0.9rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '12px', transition: 'all 0.3s ease', background: 'transparent', color: activeTab === tab.id ? 'white' : 'var(--text3)', border: 'none', cursor: 'pointer', minWidth: '180px', justifyContent: 'center' }}>
-              <i className={`fas ${tab.icon}`} style={{ fontSize: '1rem', opacity: activeTab === tab.id ? 1 : 0.6, transform: activeTab === tab.id ? 'none' : 'none', transition: 'all 0.3s ease' }}></i> <span style={{ letterSpacing: '0.3px', textShadow: activeTab === tab.id ? '0 2px 4px rgba(0,0,0,0.2)' : 'none' }}>{tab.label}</span>
+          
+          {/* Tabs - Integrated into Header */}
+          <div style={{ position: 'relative', display: 'flex', gap: '4px', background: 'rgba(13, 18, 32, 0.98)', padding: '6px', borderRadius: '18px', border: '1px solid var(--border)', width: 'fit-content', boxShadow: '0 8px 24px -8px rgba(0, 0, 0, 0.5)', isolation: 'isolate', contain: 'content' }}>
+            <div style={{ 
+              position: 'absolute', 
+              top: '6px', 
+              bottom: '6px', 
+              left: '6px', 
+              width: 'calc(50% - 8px)', 
+              background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)', 
+              borderRadius: '14px', 
+              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+              transform: activeTab === 'analiz' ? 'translateX(0)' : 'translateX(calc(100% + 4px))',
+              zIndex: 0
+            }}></div>
+            <button 
+              onClick={() => setActiveTab('analiz')}
+              style={{ flex: 1, minWidth: '100px', border: 'none', background: 'transparent', padding: '10px 20px', fontSize: '0.85rem', fontWeight: 800, color: activeTab === 'analiz' ? 'white' : 'var(--text3)', cursor: 'pointer', position: 'relative', zIndex: 1, transition: 'color 0.3s' }}
+            >
+              <i className="fas fa-chart-line" style={{ marginRight: '8px' }}></i> Analiz
             </button>
-          ))}
+            <button 
+              onClick={() => setActiveTab('planlama')}
+              style={{ flex: 1, minWidth: '100px', border: 'none', background: 'transparent', padding: '10px 20px', fontSize: '0.85rem', fontWeight: 800, color: activeTab === 'planlama' ? 'white' : 'var(--text3)', cursor: 'pointer', position: 'relative', zIndex: 1, transition: 'color 0.3s' }}
+            >
+              <i className="fas fa-calendar-days" style={{ marginRight: '8px' }}></i> Ajanda
+            </button>
+          </div>
         </div>
 
         {activeTab === 'analiz' ? (
