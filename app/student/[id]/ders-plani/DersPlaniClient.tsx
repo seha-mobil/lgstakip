@@ -630,16 +630,38 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
     const empty = tickEmpty;
     const correct = Math.max(0, target - (wrong + empty));
 
-    const key = `${tickingGoal.sid}_u${tickingGoal.ui}_t${tickingGoal.ti}`;
+    // Resolve indices if missing (for legacy goals)
+    let sid = tickingGoal.sid;
+    let ui = tickingGoal.ui;
+    let ti = tickingGoal.ti;
+
+    if (sid === undefined || ui === undefined || ti === undefined) {
+        const sub = SUBJECT_DATA.find(s => s.name.trim().toLowerCase() === tickingGoal.subject?.trim().toLowerCase());
+        if (sub) {
+            sid = sub.id;
+            const unitIdx = sub.units.findIndex(u => u.name.trim().toLowerCase() === tickingGoal.unit?.trim().toLowerCase());
+            if (unitIdx !== -1) {
+                ui = unitIdx;
+                const topicIdx = sub.units[unitIdx].topics.findIndex(t => t.trim().toLowerCase() === tickingGoal.topic?.trim().toLowerCase());
+                if (topicIdx !== -1) ti = topicIdx;
+            }
+        }
+    }
+
+    // Safety check: if still not resolved, we can't update units
+    const hasIndices = sid !== undefined && ui !== -1 && ti !== -1;
+    const key = hasIndices ? `${sid}_u${ui}_t${ti}` : null;
     const logDate = new Date();
     const isoDate = logDate.toISOString();
     
     // 1. Update Units
-    if (!newState.units[key]) newState.units[key] = { correct: 0, wrong: 0 };
-    newState.units[key].correct += correct;
-    newState.units[key].wrong += wrong;
-    if (!newState.units[key].lastDate || new Date(isoDate) > new Date(newState.units[key].lastDate)) {
-        newState.units[key].lastDate = isoDate;
+    if (key) {
+        if (!newState.units[key]) newState.units[key] = { correct: 0, wrong: 0 };
+        newState.units[key].correct += correct;
+        newState.units[key].wrong += wrong;
+        if (!newState.units[key].lastDate || new Date(isoDate) > new Date(newState.units[key].lastDate)) {
+            newState.units[key].lastDate = isoDate;
+        }
     }
 
     // 2. Update Weekly
@@ -669,8 +691,15 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
         newState.lastSolveDate = dateStr; 
     }
 
-    // 5. Mark goal as done and link historyId
-    newState.agenda[dateKey][goalIdx] = { ...tickingGoal, done: true, historyId };
+    // 5. Mark goal as done and link historyId, AND save resolved indices for future use
+    newState.agenda[dateKey][goalIdx] = { 
+        ...tickingGoal, 
+        done: true, 
+        historyId,
+        sid, 
+        ui, 
+        ti 
+    };
     
     setState(newState);
     setTickGoalModalOpen(false);
