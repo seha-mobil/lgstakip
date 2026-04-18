@@ -391,7 +391,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
     const date = dateOverride || new Date().toISOString();
     newState.history.unshift({ id: Date.now(), type, date, ...data });
     // Sort history by date descending
-    newState.history.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    newState.history.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
     if (newState.history.length > 100) newState.history = newState.history.slice(0, 100);
     setState(newState);
   };
