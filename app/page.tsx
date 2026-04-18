@@ -41,18 +41,41 @@ export default async function Dashboard() {
   }
 
   return (
-    <div className="page animate-fade-up">
-      <div className="flex-mobile-col" style={{ alignItems: 'center', justifyContent: 'space-between', gap: '20px', marginBottom: '32px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <h2 style={{ fontSize: '28px', fontWeight: 900, letterSpacing: '-0.8px' }}>Ana Sayfa</h2>
-          <div>
-            <p style={{ fontSize: '13px', color: 'var(--text3)', marginTop: '3px', whiteSpace: 'nowrap' }}>LGS deneme takip özetiniz</p>
+      {/* Premium Hero Section */}
+      <div className="flex-mobile-col" style={{ alignItems: 'center', justifyContent: 'space-between', gap: '40px', marginBottom: '64px', marginTop: '20px' }}>
+        <div style={{ flex: 1, maxWidth: '650px' }}>
+          {/* Animated Badge */}
+          <div className="animate-fade-up" style={{ 
+            display: 'inline-flex', 
+            alignItems: 'center', 
+            gap: '8px', 
+            padding: '8px 16px', 
+            background: 'rgba(124, 58, 237, 0.1)', 
+            border: '1px solid rgba(124, 58, 237, 0.2)', 
+            borderRadius: '100px',
+            marginBottom: '24px'
+          }}>
+            <div style={{ width: '6px', height: '6px', background: '#a78bfa', borderRadius: '50%', boxShadow: '0 0 10px #a78bfa' }}></div>
+            <span style={{ fontSize: '12px', fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '1px' }}>Öğrenci, veli ve koç için tek panel</span>
           </div>
+
+          <h1 className="animate-fade-up" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '24px', animationDelay: '0.1s' }}>
+            <span style={{ 
+              background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)', 
+              WebkitBackgroundClip: 'text', 
+              WebkitTextFillColor: 'transparent',
+              filter: 'drop-shadow(0 0 20px rgba(232, 184, 75, 0.3))'
+            }}>Başarıya</span> giden yolu<br />adım adım takip et.
+          </h1>
+          
+          <p className="animate-fade-up" style={{ fontSize: '18px', color: 'var(--text2)', lineHeight: 1.6, maxWidth: '500px', animationDelay: '0.2s' }}>
+            Günlük görevler, deneme analitiği, koç notları ve ilerleme grafikleri tek bir uygulamada.
+          </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <CountdownCard targetDate="2026-06-13T09:30:00" title="LGS 2026" color="#FFFFFF" labelColor="#FFFFFF" />
-          <CountdownCard targetDate="2027-06-11T09:30:00" title="LGS 2027" color="#FF8C00" labelColor="#FFFFFF" />
+        <div className="animate-fade-up" style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center', animationDelay: '0.3s' }}>
+          <CountdownCard targetDate="2026-06-13T09:30:00" title="LGS 2026" />
+          <CountdownCard targetDate="2027-06-11T09:30:00" title="LGS 2027" />
         </div>
       </div>
 
@@ -67,42 +90,81 @@ export default async function Dashboard() {
         </div>
       ) : (
         <>
-          <div className="sec-title" style={{ marginBottom: '14px' }}>Öğrenciler</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+          <div className="sec-title" style={{ marginBottom: '24px', opacity: 0.6, fontSize: '11px', letterSpacing: '3px' }}>ÖĞRENCİLER</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
             {students.map((s, i) => {
               const lastExam = s.examResults[s.examResults.length - 1];
               const prevExam = s.examResults.length > 1 ? s.examResults[s.examResults.length - 2] : null;
               const trend = lastExam && prevExam ? lastExam.lgsPuani - prevExam.lgsPuani : 0;
               
               return (
-                <Link href={"/student/" + s.id} key={s.id} className="glass-card animate-fade-up" style={{ padding: '20px', textDecoration: 'none', color: 'inherit', display: 'block', animationDelay: (0.1 + i * 0.05) + "s" }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '15px', fontWeight: 700 }}>
-                      <div style={{ background: s.color, width: '11px', height: '11px', borderRadius: '50%' }}></div>
+                <Link href={"/student/" + s.id} key={s.id} className="glass-card animate-fade-up" style={{ 
+                  padding: '32px', 
+                  textDecoration: 'none', 
+                  color: 'inherit', 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '20px',
+                  background: 'rgba(10, 13, 20, 0.4)',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+                  animationDelay: (0.4 + i * 0.1) + "s" 
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '16px', fontWeight: 800 }}>
+                      <div style={{ background: s.color, width: '12px', height: '12px', borderRadius: '50%', boxShadow: `0 0 10px ${s.color}60` }}></div>
                       {s.name}
                     </div>
-                    <span style={{ fontSize: '11px', color: 'var(--text3)', fontFamily: 'var(--mono)' }}>{s.examResults.length} deneme</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text3)', fontWeight: 600 }}>{s.examResults.length} deneme</span>
                   </div>
                   
                   {lastExam ? (
                     <>
-                      <div style={{ textAlign: 'center', padding: '8px 0 4px' }}>
-                        <div style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-1px', color: lastExam.lgsPuani >= 400 ? 'var(--green)' : 'var(--accent)' }}>
+                      <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                        <div style={{ 
+                          fontSize: '52px', 
+                          fontWeight: 900, 
+                          letterSpacing: '-2px', 
+                          color: '#fff',
+                          textShadow: '0 0 20px rgba(255,255,255,0.1)'
+                        }}>
                           {lastExam.lgsPuani.toFixed(2).replace('.', ',')}
                         </div>
-                        <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '2px' }}>Son Deneme Puanı</div>
+                        <div style={{ fontSize: '13px', color: 'var(--text3)', fontWeight: 600, marginTop: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Son Deneme Puanı</div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '14px', paddingTop: '12px', borderTop: '1px solid var(--border)', fontSize: '12px' }}>
-                        <span style={{ color: 'var(--text3)' }}>Son Net <b style={{ color: 'var(--text2)' }}>{lastExam.toplamNet.toString().replace('.', ',')}</b></span>
-                        {trend > 0 && <span style={{ color: 'var(--green)', fontSize: '11px' }}><i className="fas fa-caret-up"></i> +{trend.toFixed(1).replace('.', ',')}</span>}
-                        {trend < 0 && <span style={{ color: 'var(--red)', fontSize: '11px' }}><i className="fas fa-caret-down"></i> {trend.toFixed(1).replace('.', ',')}</span>}
-                        {trend === 0 && <span style={{ color: 'var(--text3)', fontSize: '11px' }}>—</span>}
+                      
+                      <div style={{ 
+                        marginTop: 'auto',
+                        paddingTop: '20px', 
+                        borderTop: '1px solid rgba(255,255,255,0.05)', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between',
+                        fontSize: '14px' 
+                      }}>
+                        <span style={{ color: 'var(--text2)', fontWeight: 600 }}>Son Net <b style={{ color: '#fff', marginLeft: '6px' }}>{lastExam.toplamNet.toString().replace('.', ',')}</b></span>
+                        {trend !== 0 && (
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '4px', 
+                            color: trend > 0 ? 'var(--green)' : 'var(--red)',
+                            fontWeight: 800,
+                            fontSize: '13px',
+                            background: trend > 0 ? 'rgba(61, 214, 140, 0.1)' : 'rgba(240, 90, 90, 0.1)',
+                            padding: '4px 10px',
+                            borderRadius: '8px'
+                          }}>
+                            <i className={`fas fa-caret-${trend > 0 ? 'up' : 'down'}`}></i>
+                            {Math.abs(trend).toFixed(1).replace('.', ',')}
+                          </div>
+                        )}
                       </div>
                     </>
                   ) : (
-                    <div style={{ padding: '24px 0', textAlign: 'center' }}>
-                      <i className="fas fa-file-circle-plus" style={{ fontSize: '22px', color: 'var(--text3)', display: 'block', marginBottom: '8px' }}></i>
-                      <span style={{ fontSize: '12px', color: 'var(--text3)' }}>Henüz deneme yok</span>
+                    <div style={{ padding: '60px 0', textAlign: 'center', opacity: 0.4 }}>
+                      <i className="fas fa-file-circle-plus" style={{ fontSize: '32px', marginBottom: '12px', display: 'block' }}></i>
+                      <span style={{ fontSize: '14px', fontWeight: 600 }}>Henüz deneme kaydı yok</span>
                     </div>
                   )}
                 </Link>

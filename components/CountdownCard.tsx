@@ -65,90 +65,108 @@ export default function CountdownCard({
   if (!timeLeft) return null;
 
   return (
-    <div className="glass-stable" style={{ 
-      padding: '10px 16px', 
+    <div className="glass-card" style={{ 
+      padding: '20px', 
       display: 'flex', 
       flexDirection: 'column', 
       alignItems: 'center',
-      gap: '0px', 
-      border: `1px solid ${color}30`,
-      minWidth: '135px',
+      gap: '12px', 
+      border: `1px solid rgba(255,255,255,0.08)`,
+      background: 'rgba(10, 13, 20, 0.95)',
+      minWidth: '160px',
       position: 'relative',
+      borderRadius: '20px',
+      boxShadow: '0 15px 35px rgba(0,0,0,0.4)',
       overflow: 'hidden'
     }}>
       <style>{`
-        @keyframes scan-anim {
-          0% { transform: translateY(-10px); }
-          100% { transform: translateY(110px); }
+        @keyframes scan-line {
+          0% { transform: translateY(-100%); opacity: 0; }
+          50% { opacity: 0.1; }
+          100% { transform: translateY(200%); opacity: 0; }
         }
-        @keyframes heartbeat-glow {
-          0%, 100% { text-shadow: 0 0 5px ${color}40; opacity: 0.9; }
-          50% { text-shadow: 0 0 15px ${color}80; opacity: 1; }
-        }
-        .glow-heartbeat {
-          color: ${color};
-          font-family: var(--mono);
-          line-height: 1;
-          animation: heartbeat-glow ${pulseDuration}s ease-in-out infinite;
+        @keyframes pulse-orange {
+          0%, 100% { text-shadow: 0 0 10px rgba(245, 158, 11, 0.2); }
+          50% { text-shadow: 0 0 25px rgba(245, 158, 11, 0.5); }
         }
       `}</style>
       
-      {/* Decorative Scan Line */}
+      {/* Scan Line Effect */}
       <div style={{
         position: 'absolute',
-        top: 0, left: 0, right: 0, height: '1px',
-        background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
-        opacity: 0.2,
-        animation: 'scan-anim 4s linear infinite'
+        top: 0, left: 0, right: 0, height: '40%',
+        background: `linear-gradient(180deg, transparent, rgba(245, 158, 11, 0.05), transparent)`,
+        animation: 'scan-line 5s linear infinite'
       }}></div>
 
-      {/* Title */}
+      {/* Title with Subtle Glow */}
       <div style={{ 
-        fontSize: '11px', 
-        fontWeight: 900, 
-        color: labelColor, 
+        fontSize: '12px', 
+        fontWeight: 800, 
+        color: 'var(--text3)', 
         textTransform: 'uppercase', 
-        letterSpacing: '2px', 
-        marginBottom: '6px',
-        textAlign: 'center'
+        letterSpacing: '3px', 
+        textAlign: 'center',
+        opacity: 0.8
       }}>
         {title}
       </div>
 
-      {/* Large Days Section */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '4px' }}>
-        <div className="glow-heartbeat" style={{ fontSize: '42px', fontWeight: 900 }}>
+      {/* Days Section - High Contrast Orange */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+        <div style={{ 
+          fontSize: '56px', 
+          fontWeight: 900, 
+          color: '#F59E0B', 
+          lineHeight: 1,
+          fontFamily: 'var(--mono)',
+          animation: `pulse-orange ${pulseDuration}s ease-in-out infinite`
+        }}>
           {timeLeft.d}
         </div>
-        <div style={{ fontSize: '9px', fontWeight: 800, color: labelColor, marginTop: '-2px' }}>GÜN KALDI</div>
+        <div style={{ 
+          fontSize: '10px', 
+          fontWeight: 800, 
+          color: 'var(--text3)', 
+          marginTop: '4px',
+          letterSpacing: '1px'
+        }}>GÜN KALDI</div>
       </div>
 
-      <div style={{ width: '80%', height: '1px', background: `${color}15`, marginBottom: '6px' }}></div>
+      <div style={{ width: '100%', height: '1px', background: 'rgba(255,255,255,0.05)' }}></div>
 
-      {/* HMS Section */}
-      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-        <MiniUnit val={timeLeft.h} label="S" color={color} labelColor={labelColor} />
-        <span style={{ color: color, opacity: 0.2, fontWeight: 900, marginTop: '-4px' }}>:</span>
-        <MiniUnit val={timeLeft.m} label="D" color={color} labelColor={labelColor} />
-        <span style={{ color: color, opacity: 0.2, fontWeight: 900, marginTop: '-4px' }}>:</span>
-        <MiniUnit val={timeLeft.s} label="Sn" color={color} labelColor={labelColor} />
+      {/* HMS Section - Boxed Units */}
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <BoxUnit val={timeLeft.h} label="S" />
+        <span style={{ color: 'var(--text3)', opacity: 0.3, fontWeight: 900, fontSize: '18px' }}>:</span>
+        <BoxUnit val={timeLeft.m} label="D" />
+        <span style={{ color: 'var(--text3)', opacity: 0.3, fontWeight: 900, fontSize: '18px' }}>:</span>
+        <BoxUnit val={timeLeft.s} label="Sn" />
       </div>
     </div>
   );
 }
 
-function MiniUnit({ val, label, color, labelColor }: { val: number; label: string; color: string; labelColor: string }) {
+function BoxUnit({ val, label }: { val: number; label: string }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <div className="glow-heartbeat" style={{ 
-        fontSize: '14px', 
-        fontWeight: 700,
-        minWidth: '20px',
-        textAlign: 'center'
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+      <div style={{ 
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.05)',
+        borderRadius: '8px',
+        width: '32px',
+        height: '32px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '14px',
+        fontWeight: 800,
+        color: '#F59E0B',
+        fontFamily: 'var(--mono)'
       }}>
         {val.toString().padStart(2, '0')}
       </div>
-      <div style={{ fontSize: '7px', fontWeight: 600, color: labelColor, opacity: 0.7 }}>{label}</div>
+      <div style={{ fontSize: '8px', fontWeight: 700, color: 'var(--text3)', letterSpacing: '1px' }}>{label}</div>
     </div>
   );
 }
