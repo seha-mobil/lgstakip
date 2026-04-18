@@ -129,6 +129,8 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const [goalValue, setGoalValue] = useState("");
   const [goalCustomText, setGoalCustomText] = useState("");
   const [isAnalysisEditMode, setIsAnalysisEditMode] = useState(false);
+  const [currentCalendarMonth, setCurrentCalendarMonth] = useState(new Date());
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState(todayKey);
 
   const [currentAction, setCurrentAction] = useState<any>(null);
   const [solveData, setSolveData] = useState({ correct: 0, wrong: 0 });
@@ -797,24 +799,147 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
           </div>
         ) : (
           <div key="planlama" className="animate-fade" style={{ contain: 'content', isolation: 'isolate' }}>
-            <div className="glass-card" style={{ padding: '28px' }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}><i className="fas fa-calendar-alt" style={{ color: 'var(--accent)' }}></i> 15 Günlük Çalışma Ajandası</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {agendaDays.map(day => (
-                  <div key={day.dateKey} style={{ display: 'flex', gap: '16px', padding: '16px', borderRadius: '16px', background: day.isToday ? 'var(--accent-dim)' : 'var(--card-bg)', border: day.isToday ? '1px solid var(--accent-glow)' : '1px solid var(--border)' }}>
-                    <div style={{ width: '60px', textAlign: 'center', borderRight: '1px solid var(--border)', paddingRight: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                      <p style={{ fontSize: '0.65rem', fontWeight: 800, color: day.isToday ? 'var(--accent)' : 'var(--text3)', textTransform: 'uppercase' }}>{day.dayName.slice(0, 3)}</p>
-                      <p style={{ fontSize: '1.2rem', fontWeight: 900, color: day.isToday ? 'var(--accent)' : 'var(--text)', lineHeight: 1 }}>{day.label.split(' ')[0]}</p>
-                      <p style={{ fontSize: '0.6rem', fontWeight: 600, color: 'var(--text3)' }}>{day.label.split(' ')[1]}</p>
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {(state.agenda[day.dateKey] || []).map((goal: any) => (<div key={goal.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border)' }}><div onClick={() => toggleAgendaGoal(day.dateKey, goal.id)} style={{ width: '16px', height: '16px', borderRadius: '4px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: goal.done ? 'var(--accent)' : 'transparent', borderColor: goal.done ? 'var(--accent)' : 'var(--border)' }}>{goal.done && <i className="fas fa-check" style={{ fontSize: '8px', color: 'white' }}></i>}</div><span style={{ flex: 1, fontSize: '0.85rem', fontWeight: 600, color: goal.done ? 'var(--text3)' : 'var(--text)', textDecoration: goal.done ? 'line-through' : 'none' }}>{goal.text}</span><button onClick={() => removeGoal(day.dateKey, goal.id)} style={{ color: 'var(--text3)', fontSize: '0.8rem', opacity: 0.5 }} className="hover-bg-btn"><i className="fas fa-times"></i></button></div>))}
-                        <button onClick={() => { setGoalDateKey(day.dateKey); initDateTime(); setAddGoalModalOpen(true); }} style={{ padding: '8px', borderRadius: '10px', border: '1px dashed var(--border)', fontSize: '0.8rem', color: 'var(--text3)', fontWeight: 700, textAlign: 'left', cursor: 'pointer' }} className="hover-bg">+ Hedef Ekle</button>
-                      </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Modern Monthly Calendar */}
+              <div className="glass-card" style={{ padding: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}><i className="fas fa-calendar-alt"></i></div>
+                    <div>
+                      <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Çalışma Takvimi</h3>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        {currentCalendarMonth.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}
+                      </p>
                     </div>
                   </div>
-                ))}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={() => setCurrentCalendarMonth(new Date(currentCalendarMonth.getFullYear(), currentCalendarMonth.getMonth() - 1, 1))} className="hover-bg-btn" style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'transparent', color: 'var(--text)' }}><i className="fas fa-chevron-left"></i></button>
+                    <button onClick={() => setCurrentCalendarMonth(new Date())} className="hover-bg-btn" style={{ padding: '0 12px', borderRadius: '10px', border: '1px solid var(--border)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', background: 'transparent', color: 'var(--text)' }}>Bugün</button>
+                    <button onClick={() => setCurrentCalendarMonth(new Date(currentCalendarMonth.getFullYear(), currentCalendarMonth.getMonth() + 1, 1))} className="hover-bg-btn" style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'transparent', color: 'var(--text)' }}><i className="fas fa-chevron-right"></i></button>
+                  </div>
+                </div>
+
+                {/* Weekdays Header */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', marginBottom: '8px' }}>
+                  {['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map(d => (
+                    <div key={d} style={{ textAlign: 'center', fontSize: '0.65rem', fontWeight: 800, color: 'var(--text3)', textTransform: 'uppercase', padding: '8px 0' }}>{d}</div>
+                  ))}
+                </div>
+
+                {/* Calendar Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+                  {(() => {
+                    const year = currentCalendarMonth.getFullYear();
+                    const month = currentCalendarMonth.getMonth();
+                    const firstDay = new Date(year, month, 1);
+                    const lastDay = new Date(year, month + 1, 0);
+                    let startDayIdx = firstDay.getDay() - 1;
+                    if (startDayIdx === -1) startDayIdx = 6;
+                    
+                    const cells = [];
+                    const prevMonthLastDay = new Date(year, month, 0).getDate();
+                    for (let i = startDayIdx; i > 0; i--) {
+                        const d = prevMonthLastDay - i + 1;
+                        const date = new Date(year, month - 1, d);
+                        cells.push({ day: d, dateKey: date.toISOString().split('T')[0], current: false });
+                    }
+                    for (let i = 1; i <= lastDay.getDate(); i++) {
+                        const date = new Date(year, month, i);
+                        cells.push({ day: i, dateKey: date.toISOString().split('T')[0], current: true });
+                    }
+                    const remaining = 42 - cells.length;
+                    for (let i = 1; i <= remaining; i++) {
+                        const date = new Date(year, month + 1, i);
+                        cells.push({ day: i, dateKey: date.toISOString().split('T')[0], current: false });
+                    }
+
+                    return cells.map((cell, idx) => {
+                      const dayGoals = state.agenda[cell.dateKey] || [];
+                      const isSelected = selectedCalendarDate === cell.dateKey;
+                      const isToday = cell.dateKey === todayKey;
+                      
+                      return (
+                        <div 
+                          key={idx} 
+                          onClick={() => setSelectedCalendarDate(cell.dateKey)}
+                          style={{ 
+                            aspectRatio: '1', 
+                            padding: '6px', 
+                            borderRadius: '12px', 
+                            border: isSelected ? '1px solid var(--accent)' : '1px solid transparent',
+                            background: isSelected ? 'rgba(139, 92, 246, 0.1)' : (isToday ? 'var(--accent-dim)' : 'transparent'),
+                            cursor: 'pointer',
+                            position: 'relative',
+                            transition: 'all 0.2s ease',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                          className="hover-bg"
+                        >
+                          <span style={{ 
+                            fontSize: '0.9rem', 
+                            fontWeight: isToday || isSelected ? 900 : 600, 
+                            color: cell.current ? (isToday ? 'var(--accent)' : 'var(--text)') : 'var(--text3)',
+                            opacity: cell.current ? 1 : 0.4
+                          }}>{cell.day}</span>
+                          
+                          {dayGoals.length > 0 && (
+                            <div style={{ display: 'flex', gap: '2px', marginTop: '4px' }}>
+                              {dayGoals.slice(0, 3).map((g: any, i: number) => (
+                                <div key={i} style={{ width: '4px', height: '4px', borderRadius: '50%', background: g.done ? '#10b981' : (g.type === 'solve' ? 'var(--accent)' : '#f59e0b') }}></div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+
+              {/* Selected Day Details - Sade Akış */}
+              <div className="glass-card animate-fade-up" key={selectedCalendarDate} style={{ padding: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>
+                      {new Date(selectedCalendarDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })}
+                    </h3>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text3)', fontWeight: 600 }}>GÜNLÜK HEDEF LİSTESİ</p>
+                  </div>
+                  <button 
+                    onClick={() => { setGoalDateKey(selectedCalendarDate); initDateTime(); setAddGoalModalOpen(true); }}
+                    className="btn btn-ghost"
+                    style={{ padding: '8px 16px', borderRadius: '12px', fontSize: '0.8rem' }}
+                  >
+                    <i className="fas fa-plus"></i> Hedef Ekle
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {(state.agenda[selectedCalendarDate] || []).length > 0 ? (state.agenda[selectedCalendarDate] || []).map((goal: any) => (
+                    <div key={goal.id} className="hover-bg" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', borderRadius: '16px', background: 'var(--card-bg)', border: '1px solid var(--border)', transition: 'all 0.3s ease' }}>
+                      <div 
+                        onClick={() => toggleAgendaGoal(selectedCalendarDate, goal.id)} 
+                        style={{ width: '22px', height: '22px', borderRadius: '7px', border: '2px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: goal.done ? 'var(--accent)' : 'transparent', borderColor: goal.done ? 'var(--accent)' : 'var(--border)', transition: 'all 0.2s ease' }}
+                      >
+                        {goal.done && <i className="fas fa-check" style={{ fontSize: '10px', color: 'white' }}></i>}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: '0.9rem', fontWeight: 700, color: goal.done ? 'var(--text3)' : 'var(--text)', textDecoration: goal.done ? 'line-through' : 'none', transition: 'all 0.2s ease' }}>{goal.text}</p>
+                        {goal.time && <p style={{ fontSize: '0.7rem', color: 'var(--text3)', fontWeight: 600 }}><i className="fas fa-clock"></i> {goal.time}</p>}
+                      </div>
+                      <button onClick={() => removeGoal(selectedCalendarDate, goal.id)} style={{ padding: '8px', color: 'var(--text3)', fontSize: '0.9rem', opacity: 0.5 }} className="hover-bg-btn"><i className="fas fa-trash-can"></i></button>
+                    </div>
+                  )) : (
+                    <div style={{ textAlign: 'center', padding: '40px 20px', border: '1px dashed var(--border)', borderRadius: '20px', opacity: 0.6 }}>
+                      <i className="fas fa-calendar-day" style={{ fontSize: '2rem', marginBottom: '12px', color: 'var(--text3)' }}></i>
+                      <p style={{ fontSize: '0.85rem', fontWeight: 600 }}>Bu gün için henüz bir planlama yapılmamış.</p>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text3)' }}>Yukarıdaki butondan ilk hedefini ekleyebilirsin.</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
