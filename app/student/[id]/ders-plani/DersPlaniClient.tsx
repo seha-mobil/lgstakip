@@ -695,7 +695,10 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                                                                     {isDusty && (
                                                                         <span title="Tozlanmış: 15+ gündür çalışılmadı!" style={{ color: '#f59e0b', fontSize: '0.7rem' }}>
                                                                             <i className="fas fa-wind animate-pulse"></i>
-                                                                                                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '2px 8px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', userSelect: 'none' }}>
                                                                         <span style={{ color: '#3dd68c', fontWeight: 700 }}>{ud.correct}D</span>
                                                                         <span style={{ color: '#f43f5e', fontWeight: 700 }}>{ud.wrong}Y</span>
@@ -711,6 +714,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                                                                         >
                                                                             <i className="fas fa-pen"></i>
                                                                         </button>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         );
