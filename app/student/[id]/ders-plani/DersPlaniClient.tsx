@@ -411,11 +411,12 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
     const newState = { ...state };
     if (!newState.agenda[goalDateKey]) newState.agenda[goalDateKey] = [];
     let text = "";
-    if (goalType === "solve") text = `${goalSubject.name} - ${goalUnit}: ${goalValue} Soru`;
-    else if (goalType === "study") text = `${goalSubject.name} - ${goalUnit}: ${goalValue} Dakika Çalışma`;
+    if (goalType === "solve") text = `${goalSubject.name} - ${goalTopic} (${goalValue} Soru)`;
+    else if (goalType === "study") text = `${goalSubject.name} - ${goalTopic} (${goalValue} Dakika)`;
     else text = goalCustomText;
+    
     if (!text.trim()) return;
-    newState.agenda[goalDateKey].push({ id: Date.now(), type: goalType, subject: goalSubject.name, unit: goalUnit, targetValue: goalValue, text, done: false });
+    newState.agenda[goalDateKey].push({ id: Date.now(), type: goalType, subject: goalSubject.name, unit: goalUnit.name, topic: goalTopic, targetValue: goalValue, text, done: false });
     setState(newState);
     setAddGoalModalOpen(false);
     setGoalValue(""); setGoalCustomText("");
