@@ -144,6 +144,11 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const todayKey = formatDateKey(new Date());
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(todayKey);
   const [isDayDetailModalOpen, setDayDetailModalOpen] = useState(false);
+  const [isTickGoalModalOpen, setTickGoalModalOpen] = useState(false);
+  const [tickingGoal, setTickingGoal] = useState<any>(null);
+  const [tickingDateKey, setTickingDateKey] = useState("");
+  const [tickWrong, setTickWrong] = useState(0);
+  const [tickEmpty, setTickEmpty] = useState(0);
 
   const [currentAction, setCurrentAction] = useState<any>(null);
   const [solveData, setSolveData] = useState({ correct: 0, wrong: 0 });
@@ -559,10 +564,50 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const toggleAgendaGoal = (dateKey: string, goalId: number) => {
     const newState = { ...state };
     if (!newState.agenda[dateKey]) return;
-    newState.agenda[dateKey] = newState.agenda[dateKey].map((g: any) => 
-        g.id === goalId ? { ...g, done: !g.done } : g
-    );
-    setState(newState);
+    
+    const goalIdx = newState.agenda[dateKey].findIndex((g: any) => g.id === goalId);
+    if (goalIdx === -1) return;
+    const goal = newState.agenda[dateKey][goalIdx];
+
+    if (goal.done) {
+        // UNTICKING: Roll back stats if it was a solve goal with historyId
+        if (goal.type === 'solve' && goal.historyId) {
+            const hIdx = newState.history.findIndex((h: any) => h.id === goal.historyId);
+            if (hIdx !== -1) {
+                const item = newState.history[hIdx];
+                const logDate = new Date(item.date);
+                const dayIdx = [6, 0, 1, 2, 3, 4, 5][logDate.getDay()];
+                
+                // 1. Revert weekly
+                newState.weekly.correct[dayIdx] = Math.max(0, newState.weekly.correct[dayIdx] - (item.correct || 0));
+                newState.weekly.wrong[dayIdx] = Math.max(0, newState.weekly.wrong[dayIdx] - (item.wrong || 0));
+
+                // 2. Revert unit totals
+                const key = `${goal.sid}_u${goal.ui}_t${goal.ti}`;
+                if (newState.units[key]) {
+                    newState.units[key].correct = Math.max(0, newState.units[key].correct - (item.correct || 0));
+                    newState.units[key].wrong = Math.max(0, newState.units[key].wrong - (item.wrong || 0));
+                }
+                
+                // 3. Remove history item
+                newState.history.splice(hIdx, 1);
+            }
+        }
+        newState.agenda[dateKey][goalIdx] = { ...goal, done: false, historyId: undefined };
+        setState(newState);
+    } else {
+        // TICKING
+        if (goal.type === 'solve') {
+            setTickingGoal(goal);
+            setTickingDateKey(dateKey);
+            setTickWrong(0);
+            setTickEmpty(0);
+            setTickGoalModalOpen(true);
+        } else {
+            newState.agenda[dateKey][goalIdx] = { ...goal, done: true };
+            setState(newState);
+        }
+    }
   };
 
   const removeGoal = (dateKey: string, goalId: number) => {
@@ -571,7 +616,66 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
     setState(newState);
   };
 
-  const addNewGoal = () => {
+  const confirmTickGoalStats = () => {
+    if (!tickingGoal || !state) return;
+    const newState = { ...state };
+    const dateKey = tickingDateKey;
+    const goalId = tickingGoal.id;
+    
+    const goalIdx = newState.agenda[dateKey].findIndex((g: any) => g.id === goalId);
+    if (goalIdx === -1) return;
+    
+    const target = parseInt(tickingGoal.targetValue) || 0;
+    const wrong = tickWrong;
+    const empty = tickEmpty;
+    const correct = Math.max(0, target - (wrong + empty));
+
+    const key = `${tickingGoal.sid}_u${tickingGoal.ui}_t${tickingGoal.ti}`;
+    const logDate = new Date();
+    const isoDate = logDate.toISOString();
+    
+    // 1. Update Units
+    if (!newState.units[key]) newState.units[key] = { correct: 0, wrong: 0 };
+    newState.units[key].correct += correct;
+    newState.units[key].wrong += wrong;
+    if (!newState.units[key].lastDate || new Date(isoDate) > new Date(newState.units[key].lastDate)) {
+        newState.units[key].lastDate = isoDate;
+    }
+
+    // 2. Update Weekly
+    const dayIdx = [6, 0, 1, 2, 3, 4, 5][logDate.getDay()];
+    newState.weekly.correct[dayIdx] += correct;
+    newState.weekly.wrong[dayIdx] += wrong;
+
+    // 3. Update History
+    const historyId = Date.now();
+    newState.history.unshift({ 
+        id: historyId, 
+        type: 'solve', 
+        date: isoDate, 
+        subject: tickingGoal.subject, 
+        unit: tickingGoal.unit, 
+        topic: tickingGoal.topic, 
+        correct, 
+        wrong 
+    });
+    newState.history.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    if (newState.history.length > 100) newState.history = newState.history.slice(0, 100);
+
+    // 4. Update Streak
+    const dateStr = logDate.toDateString();
+    if (newState.lastSolveDate !== dateStr) { 
+        newState.streak++; 
+        newState.lastSolveDate = dateStr; 
+    }
+
+    // 5. Mark goal as done and link historyId
+    newState.agenda[dateKey][goalIdx] = { ...tickingGoal, done: true, historyId };
+    
+    setState(newState);
+    setTickGoalModalOpen(false);
+    setTickingGoal(null);
+  };
     const newState = { ...state };
     const logDate = selectedDateTime ? new Date(selectedDateTime) : new Date();
     const finalDateKey = selectedDateTime ? logDate.toISOString().split('T')[0] : goalDateKey;
@@ -584,7 +688,20 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
     else text = `${goalCustomText} [${timeStr}]`;
     
     if (!text.trim()) return;
-    newState.agenda[finalDateKey].push({ id: Date.now(), type: goalType, subject: goalSubject.name, unit: goalUnit.name, topic: goalTopic, targetValue: goalValue, text, done: false, time: timeStr });
+    newState.agenda[finalDateKey].push({ 
+      id: Date.now(), 
+      type: goalType, 
+      sid: goalSubject.id,
+      ui: goalSubject.units.indexOf(goalUnit),
+      ti: goalUnit.topics.indexOf(goalTopic),
+      subject: goalSubject.name, 
+      unit: goalUnit.name, 
+      topic: goalTopic, 
+      targetValue: goalValue, 
+      text, 
+      done: false, 
+      time: timeStr 
+    });
     setState(newState);
     setAddGoalModalOpen(false);
     setGoalValue(""); setGoalCustomText(""); setSelectedDateTime("");
@@ -1114,6 +1231,41 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                 <i className="fas fa-plus"></i> Yeni Hedef Ekle
             </button>
             <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setDayDetailModalOpen(false)}>Kapat</button>
+          </div>
+        </div>
+      )}
+
+      {isTickGoalModalOpen && (
+        <div className="modal-overlay open" onClick={() => setTickGoalModalOpen(false)}>
+          <div className="glass-card modal-content" style={{ padding: '24px', maxWidth: '400px', width: '100%', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }} onClick={e => e.stopPropagation()}>
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'var(--accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', fontSize: '2rem', margin: '0 auto 16px' }}>
+                    <i className="fas fa-check-circle animate-bounce"></i>
+                </div>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Hedef Tamamlandı!</h3>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text3)', marginTop: '8px' }}>"{tickingGoal?.text.split('[')[0]}"</p>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                <div className="input-field">
+                    <label className="input-label" style={{ color: '#f43f5e' }}>Yanlış Sayısı</label>
+                    <input type="number" className="input" style={{ borderColor: 'rgba(244, 63, 94, 0.2)' }} value={tickWrong} onChange={e => setTickWrong(Math.max(0, parseInt(e.target.value) || 0))} onFocus={e => e.target.select()} />
+                </div>
+                <div className="input-field">
+                    <label className="input-label" style={{ color: '#f59e0b' }}>Boş Sayısı</label>
+                    <input type="number" className="input" style={{ borderColor: 'rgba(245, 158, 11, 0.2)' }} value={tickEmpty} onChange={e => setTickEmpty(Math.max(0, parseInt(e.target.value) || 0))} onFocus={e => e.target.select()} />
+                </div>
+            </div>
+
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '16px', marginBottom: '24px', textAlign: 'center', border: '1px solid var(--border)' }}>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text3)', fontWeight: 600, marginBottom: '4px' }}>HESAPLANAN NET DOĞRU</p>
+                <p style={{ fontSize: '1.5rem', fontWeight: 900, color: '#10b981' }}>{Math.max(0, (parseInt(tickingGoal?.targetValue) || 0) - (tickWrong + tickEmpty))}</p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', height: '48px', fontSize: '1rem' }} onClick={confirmTickGoalStats}>İstatistikleri İşle</button>
+                <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setTickGoalModalOpen(false)}>Vazgeç</button>
+            </div>
           </div>
         </div>
       )}
