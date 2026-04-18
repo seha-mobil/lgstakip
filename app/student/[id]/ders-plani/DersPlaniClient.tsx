@@ -587,7 +587,6 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const totalNet = totalSolved ? (totalCorrect - (totalWrong / 3)).toFixed(2) : "0";
   const globalAcc = totalSolved ? Math.round((totalCorrect / totalSolved) * 100) : 0;
   const todayGoals = state.agenda[todayKey] || [];
-  const weeklyCompletion = Math.round((todayGoals.filter((g: any) => g.done).length / (todayGoals.length || 1)) * 100);
 
   return (
     <>
@@ -978,12 +977,12 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                     <div style={{ textAlign: 'center' }}>
                         <i className="fas fa-plus-circle" style={{ fontSize: '2rem', marginBottom: '12px' }}></i>
                         <p style={{ fontSize: '0.9rem', fontWeight: 600 }}>Buraya yeni özellikler gelecek...</p>
-                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Modals outside with absolute viewport-fixed positioning */}
       {isAddGoalModalOpen && (
@@ -1226,6 +1225,8 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
         </div>
       )}
 
+      </div>
+
       <style jsx global>{`
         .hover-bg:hover { background: var(--accent-dim) !important; }
         .hover-bg-btn:hover { opacity: 1 !important; color: #f43f5e !important; background: transparent; }
@@ -1242,7 +1243,6 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-    </div>
     </>
   );
 }
