@@ -817,13 +817,13 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button onClick={() => {
                         const target = new Date(currentCalendarMonth);
-                        target.setDate(target.getDate() - 28);
+                        target.setDate(target.getDate() - 7);
                         setCurrentCalendarMonth(target);
                     }} className="hover-bg-btn" style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'transparent', color: 'var(--text)' }}><i className="fas fa-chevron-left"></i></button>
                     <button onClick={() => setCurrentCalendarMonth(new Date())} className="hover-bg-btn" style={{ padding: '0 12px', borderRadius: '10px', border: '1px solid var(--border)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', background: 'transparent', color: 'var(--text)' }}>Bugün</button>
                     <button onClick={() => {
                         const target = new Date(currentCalendarMonth);
-                        target.setDate(target.getDate() + 28);
+                        target.setDate(target.getDate() + 7);
                         setCurrentCalendarMonth(target);
                     }} className="hover-bg-btn" style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'transparent', color: 'var(--text)' }}><i className="fas fa-chevron-right"></i></button>
                   </div>
@@ -839,29 +839,25 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                 {/* Calendar Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
                   {(() => {
-                    const rollingStart = new Date(currentCalendarMonth);
-                    let dayIdx = rollingStart.getDay() - 1;
+                    const timelineStart = new Date(currentCalendarMonth);
+                    // Start from Monday of the current week if it hasn't been navigated
+                    let dayIdx = timelineStart.getDay() - 1;
                     if (dayIdx === -1) dayIdx = 6;
-                    rollingStart.setDate(rollingStart.getDate() - dayIdx);
+                    timelineStart.setDate(timelineStart.getDate() - dayIdx);
                     
                     const cells = [];
-                    for (let i = 0; i < 42; i++) {
-                        const date = new Date(rollingStart);
-                        date.setDate(rollingStart.getDate() + i);
+                    for (let i = 0; i < 8; i++) {
+                        const date = new Date(timelineStart);
+                        date.setDate(timelineStart.getDate() + i);
                         const dateKey = date.toISOString().split('T')[0];
-                        cells.push({ 
-                            day: date.getDate(), 
-                            dateKey: dateKey, 
-                            // Current is true if same month as today OR simply true for rolling view?
-                            // Let's mark it current if it's within the main focal month of the view
-                            current: date.getMonth() === currentCalendarMonth.getMonth()
-                        });
+                        cells.push({ day: date.getDate(), dateKey, dateObj: date });
                     }
 
                     return cells.map((cell, idx) => {
                       const dayGoals = state.agenda[cell.dateKey] || [];
                       const isSelected = selectedCalendarDate === cell.dateKey;
                       const isToday = cell.dateKey === todayKey;
+                      const dayName = cell.dateObj.toLocaleDateString('tr-TR', { weekday: 'short' });
                       
                       return (
                         <div 
@@ -869,66 +865,120 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                           onClick={() => setSelectedCalendarDate(cell.dateKey)}
                           onDoubleClick={() => { setSelectedCalendarDate(cell.dateKey); setDayDetailModalOpen(true); }}
                           style={{ 
-                            minHeight: '80px',
-                            padding: '6px', 
-                            borderRadius: '12px', 
-                            border: isSelected ? '1px solid var(--accent)' : '1px solid transparent',
-                            background: isSelected ? 'rgba(139, 92, 246, 0.1)' : (isToday ? 'var(--accent-dim)' : 'transparent'),
+                            flex: 1,
+                            minHeight: '160px',
+                            padding: '10px 6px', 
+                            borderRadius: '16px', 
+                            border: isToday ? '2px solid var(--accent)' : (isSelected ? '1px solid var(--accent-glow)' : '1px solid var(--border)'),
+                            background: isToday ? 'var(--accent-dim)' : 'rgba(255,255,255,0.02)',
                             cursor: 'pointer',
                             position: 'relative',
-                            transition: 'all 0.2s ease',
+                            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
                             display: 'flex',
                             flexDirection: 'column',
-                            alignItems: 'flex-start',
-                            gap: '4px',
-                            overflow: 'hidden'
+                            gap: '8px',
+                            overflow: 'hidden',
+                            boxShadow: isToday ? '0 0 20px var(--accent-glow)' : 'none'
                           }}
                           className="hover-bg grow-safe"
                         >
-                          <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ 
-                                fontSize: '0.85rem', 
-                                fontWeight: isToday || isSelected ? 900 : 700, 
-                                color: cell.current ? (isToday ? 'var(--accent)' : 'var(--text)') : 'var(--text3)',
-                                opacity: cell.current ? 1 : 0.4
-                            }}>{cell.day}</span>
-                            
-                            <button 
-                                onClick={(e) => { e.stopPropagation(); setGoalDateKey(cell.dateKey); initDateTime(); setAddGoalModalOpen(true); }}
-                                style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text3)', fontSize: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                                className="hover-bg-btn"
-                            >
-                                <i className="fas fa-plus"></i>
-                            </button>
+                          <div style={{ textAlign: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>
+                            <p style={{ fontSize: '0.6rem', fontWeight: 800, color: 'var(--text3)', textTransform: 'uppercase' }}>{dayName}</p>
+                            <p style={{ fontSize: '1.1rem', fontWeight: 900, color: isToday ? 'var(--accent)' : 'var(--text)' }}>{cell.day}</p>
                           </div>
                           
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '100%' }}>
-                            {dayGoals.slice(0, 2).map((g: any, i: number) => (
-                                <div key={i} style={{ 
-                                    fontSize: '0.55rem', 
-                                    padding: '2px 4px', 
-                                    borderRadius: '4px', 
-                                    background: g.done ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.03)',
-                                    color: g.done ? '#10b981' : 'var(--text2)',
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    border: '1px solid rgba(255,255,255,0.05)',
-                                    fontWeight: 600
-                                }}>
-                                    {g.text}
-                                </div>
-                            ))}
-                            {dayGoals.length > 2 && (
-                                <p style={{ fontSize: '0.5rem', color: 'var(--text3)', fontWeight: 800, paddingLeft: '4px' }}>+{dayGoals.length - 2} daha...</p>
-                            )}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1 }}>
+                            {dayGoals.map((g: any, i: number) => {
+                                const typeColors: any = { solve: 'var(--blue)', study: 'var(--green)', custom: '#f59e0b' };
+                                const color = typeColors[g.type] || 'var(--accent)';
+                                return (
+                                    <div key={i} style={{ 
+                                        fontSize: '0.5rem', 
+                                        padding: '4px 6px', 
+                                        borderRadius: '6px', 
+                                        background: g.done ? 'rgba(255,255,255,0.05)' : `${color}20`,
+                                        color: g.done ? 'var(--text3)' : color,
+                                        borderLeft: `3px solid ${g.done ? 'var(--text3)' : color}`,
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        fontWeight: 800,
+                                        textDecoration: g.done ? 'line-through' : 'none'
+                                    }}>
+                                        {g.text}
+                                    </div>
+                                );
+                            })}
                           </div>
+
+                          <button 
+                                onClick={(e) => { e.stopPropagation(); setGoalDateKey(cell.dateKey); initDateTime(); setAddGoalModalOpen(true); }}
+                                style={{ width: '100%', padding: '4px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px dashed var(--border)', color: 'var(--text3)', fontSize: '0.6rem', cursor: 'pointer' }}
+                                className="hover-bg-btn"
+                          >
+                                <i className="fas fa-plus"></i>
+                          </button>
                         </div>
                       );
                     });
                   })()}
                 </div>
               </div>
+
+              {/* Monthly Mini Card - Bottom Left */}
+              <div style={{ display: 'flex', gap: '24px' }}>
+                <div className="glass-card" style={{ padding: '20px', width: '300px', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text2)' }}>AYLIK ÖZET</h4>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text3)' }}>{currentCalendarMonth.toLocaleDateString('tr-TR', { month: 'long' })}</span>
+                    </div>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
+                      {(() => {
+                        const year = currentCalendarMonth.getFullYear();
+                        const month = currentCalendarMonth.getMonth();
+                        const firstDay = new Date(year, month, 1);
+                        const lastDay = new Date(year, month + 1, 0);
+                        let startIdx = firstDay.getDay() - 1;
+                        if (startIdx === -1) startIdx = 6;
+                        
+                        const miniCells = [];
+                        const prevEnd = new Date(year, month, 0).getDate();
+                        for (let i = startIdx; i > 0; i--) miniCells.push({ d: prevEnd - i + 1, k: new Date(year, month-1, prevEnd-i+1).toISOString().split('T')[0], cur: false });
+                        for (let i = 1; i <= lastDay.getDate(); i++) miniCells.push({ d: i, k: new Date(year, month, i).toISOString().split('T')[0], cur: true });
+                        
+                        return miniCells.map((c, i) => {
+                            const hasGoals = (state.agenda[c.k] || []).length > 0;
+                            const isSel = selectedCalendarDate === c.k;
+                            return (
+                                <div key={i} onClick={() => { setSelectedCalendarDate(c.k); setCurrentCalendarMonth(new Date(c.k)); }} style={{ 
+                                    aspectRatio: '1', 
+                                    fontSize: '0.65rem', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    background: isSel ? 'var(--accent)' : (c.cur ? 'rgba(255,255,255,0.03)' : 'transparent'),
+                                    color: isSel ? 'black' : (c.cur ? 'var(--text)' : 'var(--text3)'),
+                                    position: 'relative'
+                                }} className="hover-bg">
+                                    {c.d}
+                                    {hasGoals && !isSel && <div style={{ position: 'absolute', bottom: '2px', width: '3px', height: '3px', borderRadius: '50%', background: 'var(--accent)' }}></div>}
+                                </div>
+                            );
+                        });
+                      })()}
+                    </div>
+                </div>
+
+                {/* Placeholder for future features */}
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed var(--border)', borderRadius: '24px', opacity: 0.3 }}>
+                    <div style={{ textAlign: 'center' }}>
+                        <i className="fas fa-plus-circle" style={{ fontSize: '2rem', marginBottom: '12px' }}></i>
+                        <p style={{ fontSize: '0.9rem', fontWeight: 600 }}>Buraya yeni özellikler gelecek...</p>
+                    </div>
+                </div>
             </div>
           </div>
         )}
