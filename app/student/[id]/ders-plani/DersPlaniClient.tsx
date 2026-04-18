@@ -131,6 +131,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
 
   const [currentAction, setCurrentAction] = useState<any>(null);
   const [solveData, setSolveData] = useState({ correct: 0, wrong: 0 });
+  const [selectedDateTime, setSelectedDateTime] = useState("");
   const [openSubjects, setOpenSubjects] = useState<Record<string, boolean>>({});
   const [openUnits, setOpenUnits] = useState<Record<string, boolean>>({});
 
@@ -385,9 +386,12 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const addHistory = (type: string, data: any) => {
+  const addHistory = (type: string, data: any, dateOverride?: string) => {
     const newState = { ...state };
-    newState.history.unshift({ id: Date.now(), type, date: new Date().toISOString(), ...data });
+    const date = dateOverride || new Date().toISOString();
+    newState.history.unshift({ id: Date.now(), type, date, ...data });
+    // Sort history by date descending
+    newState.history.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     if (newState.history.length > 100) newState.history = newState.history.slice(0, 100);
     setState(newState);
   };
@@ -396,19 +400,34 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
     const { correct, wrong } = solveData;
     if (correct + wrong > 0) {
       const newState = { ...state };
-      const key = `${currentAction.sid}_${currentAction.ui}`;
+      const key = `${currentAction.sid}_u${currentAction.ui}_t${currentAction.ti}`;
+      const logDate = selectedDateTime ? new Date(selectedDateTime) : new Date();
+      const isoDate = logDate.toISOString();
+
       if (!newState.units[key]) newState.units[key] = { correct: 0, wrong: 0 };
       newState.units[key].correct += correct;
       newState.units[key].wrong += wrong;
-      newState.units[key].lastDate = new Date().toISOString(); // Update last solve date
-      const today = new Date().toDateString();
-      if (newState.lastSolveDate !== today) { newState.streak++; newState.lastSolveDate = today; }
-      const dayIdx = [6, 0, 1, 2, 3, 4, 5][new Date().getDay()];
+      
+      // Update lastDate only if this solve is newer
+      if (!newState.units[key].lastDate || new Date(isoDate) > new Date(newState.units[key].lastDate)) {
+        newState.units[key].lastDate = isoDate;
+      }
+
+      const dateStr = logDate.toDateString();
+      if (newState.lastSolveDate !== dateStr) { 
+        newState.streak++; 
+        newState.lastSolveDate = dateStr; 
+      }
+      
+      const dayIdx = [6, 0, 1, 2, 3, 4, 5][logDate.getDay()];
       newState.weekly.correct[dayIdx] += correct;
       newState.weekly.wrong[dayIdx] += wrong;
+      
       setState(newState);
-      addHistory('solve', { subject: currentAction.subjectName, unit: currentAction.unitName, correct, wrong });
+      addHistory('solve', { subject: currentAction.subjectName, unit: currentAction.unitName, topic: currentAction.topicName, correct, wrong }, isoDate);
     }
+    setSolveData({ correct: 0, wrong: 0 });
+    setSelectedDateTime("");
     setSolveModalOpen(false);
   };
 
@@ -429,17 +448,21 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
 
   const addNewGoal = () => {
     const newState = { ...state };
-    if (!newState.agenda[goalDateKey]) newState.agenda[goalDateKey] = [];
+    const logDate = selectedDateTime ? new Date(selectedDateTime) : new Date();
+    const finalDateKey = selectedDateTime ? logDate.toISOString().split('T')[0] : goalDateKey;
+    const timeStr = logDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+
+    if (!newState.agenda[finalDateKey]) newState.agenda[finalDateKey] = [];
     let text = "";
-    if (goalType === "solve") text = `${goalSubject.name} - ${goalTopic} (${goalValue} Soru)`;
-    else if (goalType === "study") text = `${goalSubject.name} - ${goalTopic} (${goalValue} Dakika)`;
-    else text = goalCustomText;
+    if (goalType === "solve") text = `${goalSubject.name} - ${goalTopic} (${goalValue} Soru) [${timeStr}]`;
+    else if (goalType === "study") text = `${goalSubject.name} - ${goalTopic} (${goalValue} Dakika) [${timeStr}]`;
+    else text = `${goalCustomText} [${timeStr}]`;
     
     if (!text.trim()) return;
-    newState.agenda[goalDateKey].push({ id: Date.now(), type: goalType, subject: goalSubject.name, unit: goalUnit.name, topic: goalTopic, targetValue: goalValue, text, done: false });
+    newState.agenda[finalDateKey].push({ id: Date.now(), type: goalType, subject: goalSubject.name, unit: goalUnit.name, topic: goalTopic, targetValue: goalValue, text, done: false, time: timeStr });
     setState(newState);
     setAddGoalModalOpen(false);
-    setGoalValue(""); setGoalCustomText("");
+    setGoalValue(""); setGoalCustomText(""); setSelectedDateTime("");
   };
 
   let totalCorrect = 0, totalWrong = 0;
@@ -708,6 +731,10 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                     <div><label className="input-label">{goalType === 'solve' ? 'Hedef Soru Sayısı' : 'Hedef Süre (Dakika)'}</label><input type="number" className="input" placeholder={goalType === 'solve' ? "Örn: 50" : "Örn: 40"} value={goalValue} onChange={(e) => setGoalValue(e.target.value)} /></div>
                 </div>
             ) : (<div><label className="input-label">Özel Hedef Notu</label><textarea className="input" style={{ minHeight: '80px', resize: 'none' }} placeholder="Örn: Bugün genel deneme çözülecek..." value={goalCustomText} onChange={(e) => setGoalCustomText(e.target.value)}></textarea></div>)}
+            <div style={{ marginTop: '16px' }}>
+                <label className="input-label">Hedef Zamanı (Opsiyonel)</label>
+                <input type="datetime-local" className="input" value={selectedDateTime} onChange={(e) => setSelectedDateTime(e.target.value)} />
+            </div>
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}><button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setAddGoalModalOpen(false)}>Vazgeç</button><button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={addNewGoal}>Hedefi Ekle</button></div>
           </div>
         </div>
@@ -719,7 +746,11 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
             <h3 style={{ marginBottom: '4px', fontWeight: 800 }}>{currentAction?.subjectName}</h3>
             <p style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '2px' }}>{currentAction?.unitName}</p>
             <p style={{ fontSize: '0.85rem', color: 'var(--text3)', marginBottom: '20px' }}>{currentAction?.topicName}</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}><div><label className="input-label">Doğru</label><input type="number" className="input" value={solveData.correct} onChange={e => setSolveData({ ...solveData, correct: parseInt(e.target.value) || 0 })} /></div><div><label className="input-label">Yanlış</label><input type="number" className="input" value={solveData.wrong} onChange={e => setSolveData({ ...solveData, wrong: parseInt(e.target.value) || 0 })} /></div></div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}><div><label className="input-label">Doğru</label><input type="number" className="input" value={solveData.correct} onChange={e => setSolveData({ ...solveData, correct: parseInt(e.target.value) || 0 })} /></div><div><label className="input-label">Yanlış</label><input type="number" className="input" value={solveData.wrong} onChange={e => setSolveData({ ...solveData, wrong: parseInt(e.target.value) || 0 })} /></div></div>
+            <div style={{ marginBottom: '24px' }}>
+                <label className="input-label">Çözüm Zamanı (Opsiyonel)</label>
+                <input type="datetime-local" className="input" value={selectedDateTime} onChange={(e) => setSelectedDateTime(e.target.value)} />
+            </div>
             <div style={{ display: 'flex', gap: '12px' }}><button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setSolveModalOpen(false)}>İptal</button><button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={saveSolve}>Kaydet</button></div>
           </div>
         </div>
@@ -731,9 +762,12 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
             <h3 style={{ marginBottom: '4px', fontWeight: 800 }}>Konu Çalışma</h3>
             <p style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '2px' }}>{currentAction?.subjectName} - {currentAction?.unitName}</p>
             <p style={{ fontSize: '0.85rem', color: 'var(--text3)', marginBottom: '20px' }}>{currentAction?.topicName}</p>
-            <div style={{ background: 'var(--accent-dim)', padding: '20px', borderRadius: '16px', textAlign: 'center', marginBottom: '20px' }}><div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--accent)', marginBottom: '10px' }}>{formatTime(timerSeconds)}</div><button className={`btn ${isTimerRunning ? 'btn-ghost' : 'btn-primary'}`} style={{ width: '100%', justifyContent: 'center' }} onClick={() => setIsTimerRunning(!isTimerRunning)}>{isTimerRunning ? 'Duraklat' : 'Başlat'}</button></div>
-            <input type="number" className="input" value={studyMinutes} onChange={e => setStudyMinutes(parseInt(e.target.value) || 0)} placeholder="Dakika..." />
-            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}><button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { setIsTimerRunning(false); setStudyModalOpen(false); }}>İptal</button><button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { addHistory('study', { subject: currentAction.subjectName, unit: currentAction.unitName, topic: currentAction.topicName, duration: studyMinutes }); setStudyMinutes(0); setTimerSeconds(0); setIsTimerRunning(false); setStudyModalOpen(false); }}>Kaydet</button></div>
+            <div style={{ background: 'var(--accent-dim)', padding: '20px', borderRadius: '16px', textAlign: 'center', marginBottom: '16px' }}><div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--accent)', marginBottom: '10px' }}>{formatTime(timerSeconds)}</div><button className={`btn ${isTimerRunning ? 'btn-ghost' : 'btn-primary'}`} style={{ width: '100%', justifyContent: 'center' }} onClick={() => setIsTimerRunning(!isTimerRunning)}>{isTimerRunning ? 'Duraklat' : 'Başlat'}</button></div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                <div><label className="input-label">Dakika</label><input type="number" className="input" value={studyMinutes} onChange={e => setStudyMinutes(parseInt(e.target.value) || 0)} placeholder="Dakika..." /></div>
+                <div><label className="input-label">Çalışma Zamanı</label><input type="datetime-local" className="input" value={selectedDateTime} onChange={(e) => setSelectedDateTime(e.target.value)} /></div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}><button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { setIsTimerRunning(false); setSelectedDateTime(""); setStudyModalOpen(false); }}>İptal</button><button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { addHistory('study', { subject: currentAction.subjectName, unit: currentAction.unitName, topic: currentAction.topicName, duration: studyMinutes }, selectedDateTime ? new Date(selectedDateTime).toISOString() : undefined); setStudyMinutes(0); setTimerSeconds(0); setIsTimerRunning(false); setSelectedDateTime(""); setStudyModalOpen(false); }}>Kaydet</button></div>
           </div>
         </div>
       )}
