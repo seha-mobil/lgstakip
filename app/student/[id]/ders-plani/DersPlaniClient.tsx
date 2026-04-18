@@ -118,7 +118,6 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const [isAddGoalModalOpen, setAddGoalModalOpen] = useState(false);
   const [isSoruStatsModalOpen, setSoruStatsModalOpen] = useState(false);
   const storageKey = `lgs_premium_v5_${studentId}`;
-  const todayKey = new Date().toISOString().split('T')[0];
 
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [editUnitData, setEditUnitData] = useState({ correct: 0, wrong: 0, sid: '', ui: 0, ti: 0, topicName: '', unitName: '', subjectName: '' });
