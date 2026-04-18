@@ -979,6 +979,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                         <p style={{ fontSize: '0.9rem', fontWeight: 600 }}>Buraya yeni özellikler gelecek...</p>
                     </div>
                 </div>
+              </div>
             </div>
           </div>
         </div>
