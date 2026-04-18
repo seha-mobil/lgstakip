@@ -147,6 +147,21 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
     const localISO = new Date(current.getTime() - (current.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
     setSelectedDateTime(localISO);
   };
+
+  const updateTime = (h: string, m: string) => {
+    if (!selectedDateTime) return;
+    const [datePart] = selectedDateTime.split('T');
+    const hour = h.padStart(2, '0');
+    const min = m.padStart(2, '0');
+    setSelectedDateTime(`${datePart}T${hour}:${min}`);
+  };
+
+  const getHHMM = () => {
+    if (!selectedDateTime) return { h: "12", m: "00" };
+    const [, timePart] = selectedDateTime.split('T');
+    const [h, m] = timePart.split(':');
+    return { h: h || "12", m: m || "00" };
+  };
   const [openSubjects, setOpenSubjects] = useState<Record<string, boolean>>({});
   const [openUnits, setOpenUnits] = useState<Record<string, boolean>>({});
 
@@ -798,11 +813,17 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                 </div>
             ) : (<div><label className="input-label">Özel Hedef Notu</label><textarea className="input" style={{ minHeight: '80px', resize: 'none' }} placeholder="Örn: Bugün genel deneme çözülecek..." value={goalCustomText} onChange={(e) => setGoalCustomText(e.target.value)}></textarea></div>)}
             <div style={{ marginTop: '16px' }}>
-                <label className="input-label">Hedef Zamanı</label>
+                <label className="input-label">Hedef Zamanı (24S)</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <button className="btn btn-ghost" style={{ padding: '10px', width: '40px', height: '40px', justifyContent: 'center' }} onClick={() => changeDateTimeDay(-1)}><i className="fas fa-chevron-left"></i></button>
-                    <input type="datetime-local" className="input" style={{ flex: 1 }} value={selectedDateTime} onChange={(e) => setSelectedDateTime(e.target.value)} />
+                    <div className="input" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{new Date(selectedDateTime).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })}</div>
                     <button className="btn btn-ghost" style={{ padding: '10px', width: '40px', height: '40px', justifyContent: 'center' }} onClick={() => changeDateTimeDay(1)}><i className="fas fa-chevron-right"></i></button>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '8px' }}>
+                        <input type="number" min="0" max="23" className="input" style={{ width: '50px', textAlign: 'center', padding: '8px 4px' }} value={getHHMM().h} onChange={(e) => updateTime(e.target.value, getHHMM().m)} />
+                        <span style={{ fontWeight: 800 }}>:</span>
+                        <input type="number" min="0" max="59" className="input" style={{ width: '50px', textAlign: 'center', padding: '8px 4px' }} value={getHHMM().m} onChange={(e) => updateTime(getHHMM().h, e.target.value)} />
+                    </div>
                 </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}><button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setAddGoalModalOpen(false)}>Vazgeç</button><button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={addNewGoal}>Hedefi Ekle</button></div>
@@ -818,11 +839,17 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
             <p style={{ fontSize: '0.85rem', color: 'var(--text3)', marginBottom: '20px' }}>{currentAction?.topicName}</p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}><div><label className="input-label">Doğru</label><input type="number" className="input" value={solveData.correct} onChange={e => setSolveData({ ...solveData, correct: parseInt(e.target.value) || 0 })} /></div><div><label className="input-label">Yanlış</label><input type="number" className="input" value={solveData.wrong} onChange={e => setSolveData({ ...solveData, wrong: parseInt(e.target.value) || 0 })} /></div></div>
             <div style={{ marginBottom: '24px' }}>
-                <label className="input-label">Çözüm Zamanı</label>
+                <label className="input-label">Çözüm Zamanı (24S)</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <button className="btn btn-ghost" style={{ padding: '10px', width: '40px', height: '40px', justifyContent: 'center' }} onClick={() => changeDateTimeDay(-1)}><i className="fas fa-chevron-left"></i></button>
-                    <input type="datetime-local" className="input" style={{ flex: 1 }} value={selectedDateTime} onChange={(e) => setSelectedDateTime(e.target.value)} />
+                    <div className="input" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{new Date(selectedDateTime).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })}</div>
                     <button className="btn btn-ghost" style={{ padding: '10px', width: '40px', height: '40px', justifyContent: 'center' }} onClick={() => changeDateTimeDay(1)}><i className="fas fa-chevron-right"></i></button>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '8px' }}>
+                        <input type="number" min="0" max="23" className="input" style={{ width: '50px', textAlign: 'center', padding: '8px 4px' }} value={getHHMM().h} onChange={(e) => updateTime(e.target.value, getHHMM().m)} />
+                        <span style={{ fontWeight: 800 }}>:</span>
+                        <input type="number" min="0" max="59" className="input" style={{ width: '50px', textAlign: 'center', padding: '8px 4px' }} value={getHHMM().m} onChange={(e) => updateTime(getHHMM().h, e.target.value)} />
+                    </div>
                 </div>
             </div>
             <div style={{ display: 'flex', gap: '12px' }}><button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setSolveModalOpen(false)}>İptal</button><button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={saveSolve}>Kaydet</button></div>
@@ -840,11 +867,17 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div><label className="input-label">Dakika</label><input type="number" className="input" value={studyMinutes} onChange={e => setStudyMinutes(parseInt(e.target.value) || 0)} placeholder="Dakika..." /></div>
                 <div style={{ flex: 2 }}>
-                    <label className="input-label">Çalışma Zamanı</label>
+                    <label className="input-label">Zaman (24S)</label>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <button className="btn btn-ghost" style={{ padding: '8px', width: '32px', height: '32px', justifyContent: 'center' }} onClick={() => changeDateTimeDay(-1)}><i className="fas fa-chevron-left"></i></button>
-                        <input type="datetime-local" className="input" style={{ flex: 1, fontSize: '0.75rem', padding: '8px' }} value={selectedDateTime} onChange={(e) => setSelectedDateTime(e.target.value)} />
-                        <button className="btn btn-ghost" style={{ padding: '8px', width: '32px', height: '32px', justifyContent: 'center' }} onClick={() => changeDateTimeDay(1)}><i className="fas fa-chevron-right"></i></button>
+                        <button className="btn btn-ghost" style={{ padding: '4px', width: '28px', height: '28px', justifyContent: 'center' }} onClick={() => changeDateTimeDay(-1)}><i className="fas fa-chevron-left" style={{ fontSize: '0.7rem' }}></i></button>
+                        <div className="input" style={{ flex: 1, fontSize: '0.7rem', padding: '8px 4px', textAlign: 'center' }}>{new Date(selectedDateTime).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}</div>
+                        <button className="btn btn-ghost" style={{ padding: '4px', width: '28px', height: '28px', justifyContent: 'center' }} onClick={() => changeDateTimeDay(1)}><i className="fas fa-chevron-right" style={{ fontSize: '0.7rem' }}></i></button>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: '4px' }}>
+                            <input type="number" min="0" max="23" className="input" style={{ width: '38px', textAlign: 'center', padding: '6px 2px', fontSize: '0.75rem' }} value={getHHMM().h} onChange={(e) => updateTime(e.target.value, getHHMM().m)} />
+                            <span style={{ fontWeight: 800 }}>:</span>
+                            <input type="number" min="0" max="59" className="input" style={{ width: '38px', textAlign: 'center', padding: '6px 2px', fontSize: '0.75rem' }} value={getHHMM().m} onChange={(e) => updateTime(getHHMM().h, e.target.value)} />
+                        </div>
                     </div>
                 </div>
             </div>
