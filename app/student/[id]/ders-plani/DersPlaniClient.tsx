@@ -676,6 +676,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
     setTickGoalModalOpen(false);
     setTickingGoal(null);
   };
+  const addNewGoal = () => {
     const newState = { ...state };
     const logDate = selectedDateTime ? new Date(selectedDateTime) : new Date();
     const finalDateKey = selectedDateTime ? logDate.toISOString().split('T')[0] : goalDateKey;
