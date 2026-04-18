@@ -321,7 +321,8 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
             cubicInterpolationMode: 'monotone' as const,
             pointRadius: 2,
             pointHoverRadius: 5,
-            borderWidth: 2
+            borderWidth: 2,
+            borderDash: []
         };
     });
 
