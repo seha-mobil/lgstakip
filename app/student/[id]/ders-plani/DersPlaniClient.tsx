@@ -322,7 +322,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
             pointRadius: 2,
             pointHoverRadius: 5,
             borderWidth: 2,
-            borderDash: []
+            borderDash: [] as number[]
         };
     });
 
