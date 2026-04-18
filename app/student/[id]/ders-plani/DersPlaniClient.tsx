@@ -655,7 +655,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                     className="hover-bg-btn"
                     title={isAnalysisEditMode ? "Düzenlemeyi Kapat" : "Düzenlemeyi Aç"}
                   >
-                    <i className={`fas fa-pen${isAnalysisEditMode ? '-field' : ''}`}></i>
+                    <i className={`fas fa-${isAnalysisEditMode ? 'times' : 'pen'}`}></i>
                   </button>
                 </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
