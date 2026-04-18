@@ -128,6 +128,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const [goalTopic, setGoalTopic] = useState(SUBJECT_DATA[0].units[0].topics[0]);
   const [goalValue, setGoalValue] = useState("");
   const [goalCustomText, setGoalCustomText] = useState("");
+  const [isAnalysisEditMode, setIsAnalysisEditMode] = useState(false);
 
   const [currentAction, setCurrentAction] = useState<any>(null);
   const [solveData, setSolveData] = useState({ correct: 0, wrong: 0 });
@@ -637,7 +638,26 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                 </div>
                 {/* Subject Analysis (Including Dusty Icons) */}
                 <div className="glass-card" style={{ padding: '24px' }}>
-                  <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Ders, Ünite ve Konu Analizi</h3>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>Ders, Ünite ve Konu Analizi</h3>
+                  <button 
+                    onClick={() => setIsAnalysisEditMode(!isAnalysisEditMode)} 
+                    style={{ 
+                        padding: '8px 12px', 
+                        borderRadius: '10px', 
+                        background: isAnalysisEditMode ? 'var(--accent)' : 'rgba(255,255,255,0.05)', 
+                        color: isAnalysisEditMode ? 'white' : 'var(--text3)',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        fontSize: '0.9rem'
+                    }}
+                    className="hover-bg-btn"
+                    title={isAnalysisEditMode ? "Düzenlemeyi Kapat" : "Düzenlemeyi Aç"}
+                  >
+                    <i className={`fas fa-pen${isAnalysisEditMode ? '-field' : ''}`}></i>
+                  </button>
+                </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {SUBJECT_DATA.map(s => {
                       let totalC = 0, totalW = 0;
@@ -706,14 +726,16 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                                                                     <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                                                                         <button className="btn btn-ghost" style={{ padding: '3px 6px', fontSize: '10px' }} onClick={() => { setCurrentAction({ sid: s.id, ui, ti, subjectName: s.name, unitName: unit.name, topicName: topic }); setSolveData({ correct: 0, wrong: 0 }); initDateTime(); setSolveModalOpen(true); }}>Soru</button>
                                                                         <button className="btn btn-ghost" style={{ padding: '3px 6px', fontSize: '10px' }} onClick={() => { setCurrentAction({ sid: s.id, ui, ti, subjectName: s.name, unitName: unit.name, topicName: topic }); initDateTime(); setStudyModalOpen(true); }}>Çalış</button>
-                                                                        <button 
-                                                                            onClick={() => { setEditUnitData({ correct: ud.correct, wrong: ud.wrong, sid: s.id, ui, ti, topicName: topic, unitName: unit.name, subjectName: s.name }); setEditModalOpen(true); }}
-                                                                            style={{ padding: '4px 8px', borderRadius: '8px', color: 'var(--text3)', fontSize: '0.8rem', background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.5 }}
-                                                                            className="hover-bg-btn"
-                                                                            title="İstatistikleri Düzenle"
-                                                                        >
-                                                                            <i className="fas fa-pen"></i>
-                                                                        </button>
+                                                                        {isAnalysisEditMode && (
+                                                                            <button 
+                                                                                onClick={() => { setEditUnitData({ correct: ud.correct, wrong: ud.wrong, sid: s.id, ui, ti, topicName: topic, unitName: unit.name, subjectName: s.name }); setEditModalOpen(true); }}
+                                                                                style={{ padding: '4px 8px', borderRadius: '8px', color: 'var(--accent)', fontSize: '0.8rem', background: 'var(--accent-dim)', border: '1px solid var(--accent-glow)', cursor: 'pointer', animation: 'fadeIn 0.3s ease' }}
+                                                                                className="hover-bg-btn"
+                                                                                title="İstatistikleri Düzenle"
+                                                                            >
+                                                                                <i className="fas fa-pen"></i>
+                                                                            </button>
+                                                                        )}
                                                                     </div>
                                                                 </div>
                                                             </div>
