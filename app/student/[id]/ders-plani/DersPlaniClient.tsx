@@ -134,6 +134,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
   const [isAnalysisEditMode, setIsAnalysisEditMode] = useState(false);
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState(new Date());
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(todayKey);
+  const [isDayDetailModalOpen, setDayDetailModalOpen] = useState(false);
 
   const [currentAction, setCurrentAction] = useState<any>(null);
   const [solveData, setSolveData] = useState({ correct: 0, wrong: 0 });
@@ -863,8 +864,9 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                         <div 
                           key={idx} 
                           onClick={() => setSelectedCalendarDate(cell.dateKey)}
+                          onDoubleClick={() => { setSelectedCalendarDate(cell.dateKey); setDayDetailModalOpen(true); }}
                           style={{ 
-                            aspectRatio: '1', 
+                            minHeight: '80px',
                             padding: '6px', 
                             borderRadius: '12px', 
                             border: isSelected ? '1px solid var(--accent)' : '1px solid transparent',
@@ -874,25 +876,50 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
                             transition: 'all 0.2s ease',
                             display: 'flex',
                             flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center'
+                            alignItems: 'flex-start',
+                            gap: '4px',
+                            overflow: 'hidden'
                           }}
-                          className="hover-bg"
+                          className="hover-bg grow-safe"
                         >
-                          <span style={{ 
-                            fontSize: '0.9rem', 
-                            fontWeight: isToday || isSelected ? 900 : 600, 
-                            color: cell.current ? (isToday ? 'var(--accent)' : 'var(--text)') : 'var(--text3)',
-                            opacity: cell.current ? 1 : 0.4
-                          }}>{cell.day}</span>
+                          <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ 
+                                fontSize: '0.85rem', 
+                                fontWeight: isToday || isSelected ? 900 : 700, 
+                                color: cell.current ? (isToday ? 'var(--accent)' : 'var(--text)') : 'var(--text3)',
+                                opacity: cell.current ? 1 : 0.4
+                            }}>{cell.day}</span>
+                            
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); setGoalDateKey(cell.dateKey); initDateTime(); setAddGoalModalOpen(true); }}
+                                style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text3)', fontSize: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                className="hover-bg-btn"
+                            >
+                                <i className="fas fa-plus"></i>
+                            </button>
+                          </div>
                           
-                          {dayGoals.length > 0 && (
-                            <div style={{ display: 'flex', gap: '2px', marginTop: '4px' }}>
-                              {dayGoals.slice(0, 3).map((g: any, i: number) => (
-                                <div key={i} style={{ width: '4px', height: '4px', borderRadius: '50%', background: g.done ? '#10b981' : (g.type === 'solve' ? 'var(--accent)' : '#f59e0b') }}></div>
-                              ))}
-                            </div>
-                          )}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '100%' }}>
+                            {dayGoals.slice(0, 2).map((g: any, i: number) => (
+                                <div key={i} style={{ 
+                                    fontSize: '0.55rem', 
+                                    padding: '2px 4px', 
+                                    borderRadius: '4px', 
+                                    background: g.done ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.03)',
+                                    color: g.done ? '#10b981' : 'var(--text2)',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    fontWeight: 600
+                                }}>
+                                    {g.text}
+                                </div>
+                            ))}
+                            {dayGoals.length > 2 && (
+                                <p style={{ fontSize: '0.5rem', color: 'var(--text3)', fontWeight: 800, paddingLeft: '4px' }}>+{dayGoals.length - 2} daha...</p>
+                            )}
+                          </div>
                         </div>
                       );
                     });
@@ -1135,7 +1162,7 @@ export default function DersPlaniClient({ studentName, studentId, dbExams }: Pro
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div style={{ display: 'flex', gap: '12px' }}>
-                    <button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setEditModalOpen(false)}>Vazgeç</button>
+                    <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setAddGoalModalOpen(false)}>İptal</button>
                     <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={updateUnitStats}>Güncelle</button>
                 </div>
                 <button 
